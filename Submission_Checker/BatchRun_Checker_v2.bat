@@ -1,0 +1,1 @@
+C:\Python27\ArcGIS10.3\python.exe C:\DanielK_Workspace\testers\temp\InDevelopment\Submission_Checker\Checker_v2_command_line.py aws Hearst 2018 2009 C:\DanielK_Workspace\testers\Hearst_AWS\Hearst_AWS2018.gdb fc new limit 98765
