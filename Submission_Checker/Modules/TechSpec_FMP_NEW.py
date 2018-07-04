@@ -230,14 +230,14 @@ def run(gdb, summarytbl, year, fmpStartYear):  ## eg. summarytbl = {'MU110_17SAC
                     criticalError += 1
                     recordValCom[lyr].append("Error on %s record(s): FORMOD must be null when POLYTYPE is not equal to FOR."%len(errorList))
 
-                errorList = ["Error on OBJECTID %s: The population of FORMOD is mandatory and must follow the correct coding scheme when POLYTYPE is FOR."%cursor[OBJECTID] for row in cursor
+                errorList = ["Error on OBJECTID %s: FORMOD must not be blank or null, and must follow the correct coding scheme when POLYTYPE is FOR."%cursor[OBJECTID] for row in cursor
                                 if cursor[f.index('POLYTYPE')] == 'FOR'
                                 if cursor[f.index('FORMOD')] not in ['RP','MR','PF']]
                 cursor.reset()
                 if len(errorList) > 0:
                     errorDetail[lyr].append(errorList)
                     criticalError += 1
-                    recordValCom[lyr].append("Error on %s record(s): The population of FORMOD is mandatory and must follow the correct coding scheme when POLYTYPE is FOR."%len(errorList))
+                    recordValCom[lyr].append("Error on %s record(s): FORMOD must not be blank or null, and must follow the correct coding scheme when POLYTYPE is FOR."%len(errorList))
 
                 if "SC" in f:
                     errorList = ["Warning on OBJECTID %s: FORMOD attribute should be PF when SC equals 4."%cursor[OBJECTID] for row in cursor
@@ -246,7 +246,7 @@ def run(gdb, summarytbl, year, fmpStartYear):  ## eg. summarytbl = {'MU110_17SAC
                     cursor.reset()
                     if len(errorList) > 0:
                         errorDetail[lyr].append(errorList)
-                        minorError += 1                      # minor error!!!!
+                        minorError += 1                     
                         recordValCom[lyr].append("Warning on %s record(s): FORMOD attribute should be PF when SC equals 4."%len(errorList))
 
             # DEVSTAGE
@@ -929,24 +929,28 @@ def run(gdb, summarytbl, year, fmpStartYear):  ## eg. summarytbl = {'MU110_17SAC
                     recordValCom[lyr].append("Error on %s record(s): INCIDSPC must follow the correct species code (or NON) if populated."%len(errorList))
 
                 if lyrAcro == 'PCI':
-                    errorList = ["Warning on OBJECTID %s: INCIDSPC should not be found in OSPCOMP."%cursor[OBJECTID] for row in cursor
+# possibility of value error
+                    errorList = ["Warning on OBJECTID %s: INCIDSPC should not represent over 10 percent in OSPCOMP."%cursor[OBJECTID] for row in cursor
                                     if cursor[f.index('INCIDSPC')] not in [None,'',' ','NON','Non'] and cursor[f.index('OSPCOMP')] != None  # if INCIDSPC is None, '' or ' ', then the next statement wouldn't work.
-                                    if cursor[f.index('INCIDSPC')].upper() in cursor[f.index('OSPCOMP')].upper()]
+                                    if cursor[f.index('INCIDSPC')].upper() in cursor[f.index('OSPCOMP')].upper()
+                                    if int(cursor[f.index('OSPCOMP')][cursor[f.index('OSPCOMP')].upper().find(cursor[f.index('INCIDSPC')].upper())+3:cursor[f.index('OSPCOMP')].upper().find(cursor[f.index('INCIDSPC')].upper())+6] > 10)] # int(sp[sp.find(incidspc)+3:sp.find(incidspc)+6])
                     cursor.reset()
                     if len(errorList) > 0:
                         errorDetail[lyr].append(errorList)
                         minorError += 1
-                        recordValCom[lyr].append("Warning on %s record(s): INCIDSPC should not be found in OSPCOMP."%len(errorList))
+                        recordValCom[lyr].append("Warning on %s record(s): INCIDSPC should not represent over 10 percent in OSPCOMP."%len(errorList))
 
                 if lyrAcro in ["BMI", "OPI"]:
-                    errorList = ["Warning on OBJECTID %s: INCIDSPC should not be found in SPCOMP."%cursor[OBJECTID] for row in cursor
+# possibility of value error
+                    errorList = ["Warning on OBJECTID %s: INCIDSPC should not represent over 10 percent in SPCOMP."%cursor[OBJECTID] for row in cursor
                                     if cursor[f.index('INCIDSPC')] not in [None,'',' ','NON','Non'] and cursor[f.index('SPCOMP')] != None  # if INCIDSPC is None, '' or ' ', then the next statement wouldn't work.
-                                    if cursor[f.index('INCIDSPC')].upper() in cursor[f.index('SPCOMP')].upper()]
+                                    if cursor[f.index('INCIDSPC')].upper() in cursor[f.index('SPCOMP')].upper()
+                                    if int(cursor[f.index('SPCOMP')][cursor[f.index('SPCOMP')].upper().find(cursor[f.index('INCIDSPC')].upper())+3:cursor[f.index('SPCOMP')].upper().find(cursor[f.index('INCIDSPC')].upper())+6] > 10)]
                     cursor.reset()
                     if len(errorList) > 0:
                         errorDetail[lyr].append(errorList)
                         minorError += 1
-                        recordValCom[lyr].append("Warning on %s record(s): INCIDSPC should not be found in SPCOMP."%len(errorList))                                        
+                        recordValCom[lyr].append("Warning on %s record(s): INCIDSPC should not represent over 10 percent in SPCOMP."%len(errorList))                                      
 
             # VERT
                 errorList = ["Error on OBJECTID %s: VERT must be populated and must follow the correct coding scheme when POLYTYPE is FOR."%cursor[OBJECTID] for row in cursor
@@ -969,6 +973,7 @@ def run(gdb, summarytbl, year, fmpStartYear):  ## eg. summarytbl = {'MU110_17SAC
                     recordValCom[lyr].append("Error on %s record(s): HORIZ must be populated and must follow the correct coding scheme when POLYTYPE is FOR."%len(errorList))
 
             # PRI_ECO and SEC_ECO
+
                 errorList = ["Error on OBJECTID %s: PRI_ECO must be populated when POLYTYPE is FOR or when SEC_ECO is not null."%cursor[OBJECTID] for row in cursor
                                 if cursor[f.index('POLYTYPE')] == 'FOR' or cursor[f.index('SEC_ECO')] not in vnull
                                 if cursor[f.index('PRI_ECO')] in vnull]
@@ -977,6 +982,7 @@ def run(gdb, summarytbl, year, fmpStartYear):  ## eg. summarytbl = {'MU110_17SAC
                     errorDetail[lyr].append(errorList)
                     criticalError += 1
                     recordValCom[lyr].append("Error on %s record(s): PRI_ECO must be populated when POLYTYPE is FOR or when SEC_ECO is not null."%len(errorList))
+
 
                 ## code to check PRI_ECO and SEC_ECO
                 for fname in ["PRI_ECO", "SEC_ECO"]:
@@ -2411,7 +2417,7 @@ def run(gdb, summarytbl, year, fmpStartYear):  ## eg. summarytbl = {'MU110_17SAC
         if verbose:
             for errors_flagged in recordValCom[lyr]:
                 arcpy.AddMessage('  - ' + errors_flagged)
-            arcpy.AddMessage('') # just to add new line.
+            arcpy.AddMessage('') # just to add a new line.
 
     return [errorDetail, recordVal, recordValCom, fieldValUpdate, fieldValComUpdate]
 
