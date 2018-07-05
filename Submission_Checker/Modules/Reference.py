@@ -88,18 +88,43 @@ def spcVal(data, fieldname, version = 2017): #sample data: 'Cw  70La  20Sb  10'
                             if sorted(percentList,reverse=True) == percentList:
                                 return None
                             else:
-                                return ["Warning","%s values are not in descending order. This might be an issue when assigning LEADSPC."%fieldname]
+                                return ["Warning1","%s values are not in descending order. This might be an issue when assigning LEADSPC"%fieldname]
                         else:
                             wrongList = list(set(spcList) - set(correctList))
-                            return ["Error","%s has invalid species code(s): %s"%(fieldname,wrongList)]
+                            return ["Error4","%s has invalid species code(s)"%fieldname]
                     else:
-                        return ["Error","%s has duplicate species codes"%fieldname]
+                        return ["Error3","%s has duplicate species codes"%fieldname]
                 else:
-                    return ["Error","%s does not add up to 100"%fieldname]
+                    return ["Error2","%s does not add up to 100"%fieldname]
             else:
-                return ["Error", "%s does not follow the SSSPPPSSSPPP patern"%fieldname]
+                return ["Error1", "%s does not follow the SSSPPPSSSPPP patern"%fieldname]
         except:
-            return ["Error", "%s does not follow the SSSPPPSSSPPP patern"%fieldname]
+            return ["Error1", "%s does not follow the SSSPPPSSSPPP patern"%fieldname]
+
+
+def findLeadSpc(spcomp):
+    """
+    This function will try to find lead species of a given spcomp.
+    Data parameter is the value of SPCOMP - for example, 'PR  80PW  20'
+    The function will return None if spcomp doesn't follow the coding scheme.
+    The function will return a list of lead species (in case there's a tie) if spcomp follows the coding scheme.
+    """
+    try:
+        if len(spcomp)> 0 and len(spcomp)%6 == 0:
+            n = len(spcomp)/6
+            spcList = [spcomp[6*i:6*i+3].strip().upper() for i in range(n)]
+            percentList = [int(spcomp[6*i+3:6*i+6].strip()) for i in range(n)]
+            spcompDict = dict(zip(spcList,percentList))
+
+            maxPercent = sorted(percentList, reverse=True)[0] # highest number in percentList
+            leadSpcList = [spc for spc, percent in spcompDict.items() if percent == maxPercent]
+            return leadSpcList
+
+        else:
+            return None
+    except:
+        return None
+
 
 
 #    ------------       Checker for PRI_ECO and SEC_ECO     --------------------
@@ -291,3 +316,15 @@ if __name__ == '__main__':
     # print(ecoVal('B365TtD n',"PRI_ECO"))
     # print(ecoVal('B999TtDn',"PRI_ECO"))
     # print(ecoVal('B06',"PRI_ECO"))
+
+
+# Testing findLeadSpc function:
+    s1 = 'PR  80PW  20'
+    s2 = 'ab  70or  29'
+    s3 = ''
+    s4 = None
+    s5 = 'pj'
+    s6 = 'PR  20PW  80'
+    s7 = 'PR  40PW  40BW  20' # tie
+    for i in [s1,s2,s3,s4,s5,s6,s7]:
+        print(findLeadSpc(i))

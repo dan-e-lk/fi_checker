@@ -334,29 +334,37 @@ def run(gdb, summarytbl, year, fmpStartYear):  ## eg. summarytbl = {'MU110_17SAC
                     criticalError += 1
                     recordValCom[lyr].append("Error on %s record(s): SPCOMP must not be null when POLYTYPE is FOR."%len(errorList))
 
-                # code to check spcomp
-                fieldname = "SPCOMP"
-                errorList = []
-                warningList = []
-                for row in cursor:
-                    if cursor[f.index(fieldname)] not in vnull:
-                        check = R.spcVal(cursor[f.index(fieldname)],fieldname)
-                        if check is None: ## when no error found
-                            pass
-                        elif check[0] == "Error":
-                            errorList.append("%s on OBJECTID %s: %s"%(check[0],cursor[OBJECTID],check[1]))
-                        elif check[0] == "Warning":
-                            warningList.append("%s on OBJECTID %s: %s"%(check[0],cursor[OBJECTID],check[1]))
-                cursor.reset()
-                if len(errorList) > 0:
-                    errorDetail[lyr].append(errorList)
-                    criticalError += 1
-                    recordValCom[lyr].append("Error on %s record(s): %s value error. For more info, search for '%s' in the Error Detail section."%(len(errorList),fieldname,fieldname))
-                if len(warningList) > 0:
-                    errorDetail[lyr].append(warningList)
-                    minorError += 1
-                    recordValCom[lyr].append("Warning on %s record(s): %s value warning. For more info, search for '%s' in the Error Detail section."%(len(warningList),fieldname,fieldname))
-
+                    # code to check spcomp
+                    fieldname = "SPCOMP"
+                    e1List, e2List, e3List, e4List, w1List = [],[],[],[],[]
+                    for row in cursor:
+                        if cursor[f.index(fieldname)] not in vnull:
+                            check = R.spcVal(cursor[f.index(fieldname)],fieldname)
+                            if check is None: ## when no error found
+                                pass
+                            elif check[0] == "Error1":
+                                e1List.append("%s on OBJECTID %s: %s"%(check[0],cursor[OBJECTID],check[1]))
+                            elif check[0] == "Error2":
+                                e2List.append("%s on OBJECTID %s: %s"%(check[0],cursor[OBJECTID],check[1]))
+                            elif check[0] == "Error3":
+                                e3List.append("%s on OBJECTID %s: %s"%(check[0],cursor[OBJECTID],check[1]))
+                            elif check[0] == "Error4":
+                                e4List.append("%s on OBJECTID %s: %s"%(check[0],cursor[OBJECTID],check[1]))
+                            elif check[0] == "Warning1":
+                                w1List.append("%s on OBJECTID %s: %s"%(check[0],cursor[OBJECTID],check[1]))
+                    cursor.reset()
+                        # summarizing errors
+                    if len(e1List + e2List + e3List + e4List) > 0:
+                        criticalError += 1
+                    for errorlist in [e1List, e2List, e3List, e4List]:
+                        if len(errorlist) > 0:
+                            errorDetail[lyr].append(errorlist)
+                            recordValCom[lyr].append("Error on %s record(s):%s."%(len(errorlist),errorlist[0][errorlist[0].find(':')+1:]))
+                        # summarizing warnings
+                    if len(w1List) > 0:
+                        minorError += 1
+                        errorDetail[lyr].append(w1List)
+                        recordValCom[lyr].append("Warning on %s record(s):%s."%(len(w1List),w1List[0][w1List[0].find(':')+1:]))
             # WG (this occurs only in 2009 spec)
                 if 'WG' in f:
                     errorList = ["Error on OBJECTID %s: WG must follow the correct coding scheme when POLYTYPE is FOR."%cursor[OBJECTID] for row in cursor

@@ -415,26 +415,37 @@ def run(gdb, summarytbl, year, fmpStartYear):  ## eg. summarytbl = {'MU110_17SAC
 
                     # code to check spcomp
                     fieldname = "OSPCOMP"
-                    errorList = []
-                    warningList = []
+                    e1List, e2List, e3List, e4List, w1List = [],[],[],[],[]
                     for row in cursor:
                         if cursor[f.index(fieldname)] not in vnull:
                             check = R.spcVal(cursor[f.index(fieldname)],fieldname)
                             if check is None: ## when no error found
                                 pass
-                            elif check[0] == "Error":
-                                errorList.append("%s on OBJECTID %s: %s"%(check[0],cursor[OBJECTID],check[1]))
-                            elif check[0] == "Warning":
-                                warningList.append("%s on OBJECTID %s: %s"%(check[0],cursor[OBJECTID],check[1]))
+                            elif check[0] == "Error1":
+                                e1List.append("%s on OBJECTID %s: %s"%(check[0],cursor[OBJECTID],check[1]))
+                            elif check[0] == "Error2":
+                                e2List.append("%s on OBJECTID %s: %s"%(check[0],cursor[OBJECTID],check[1]))
+                            elif check[0] == "Error3":
+                                e3List.append("%s on OBJECTID %s: %s"%(check[0],cursor[OBJECTID],check[1]))
+                            elif check[0] == "Error4":
+                                e4List.append("%s on OBJECTID %s: %s"%(check[0],cursor[OBJECTID],check[1]))
+                            elif check[0] == "Warning1":
+                                w1List.append("%s on OBJECTID %s: %s"%(check[0],cursor[OBJECTID],check[1]))
                     cursor.reset()
-                    if len(errorList) > 0:
-                        errorDetail[lyr].append(errorList)
+                        # summarizing errors
+                    if len(e1List + e2List + e3List + e4List) > 0:
                         criticalError += 1
-                        recordValCom[lyr].append("Error on %s record(s): %s value error. For more info, search for '%s' in the Error Detail section."%(len(errorList),fieldname,fieldname))
-                    if len(warningList) > 0:
-                        errorDetail[lyr].append(warningList)
+                    for errorlist in [e1List, e2List, e3List, e4List]:
+                        if len(errorlist) > 0:
+                            errorDetail[lyr].append(errorlist)
+                            recordValCom[lyr].append("Error on %s record(s):%s."%(len(errorlist),errorlist[0][errorlist[0].find(':')+1:]))
+                        # summarizing warnings
+                    if len(w1List) > 0:
                         minorError += 1
-                        recordValCom[lyr].append("Warning on %s record(s): %s value warning. For more info, search for '%s' in the Error Detail section."%(len(warningList),fieldname,fieldname))
+                        errorDetail[lyr].append(w1List)
+                        recordValCom[lyr].append("Warning on %s record(s):%s."%(len(w1List),w1List[0][w1List[0].find(':')+1:]))
+  
+
 
             # OLEADSPC (PCI and BMI only)
                 if lyrAcro in ["PCI", "BMI"]:
@@ -466,11 +477,11 @@ def run(gdb, summarytbl, year, fmpStartYear):  ## eg. summarytbl = {'MU110_17SAC
                         criticalError += 1
                         recordValCom[lyr].append("Error on %s record(s): OLEADSPC must be a species listed in the OSPCOMP when POLYTYPE = FOR."%len(errorList))
 
-                    # this check works only if the spcomp is in descending order.
+                    # this check works even if the SPCOMP is not in descending order or if there are two or more species tied for greatest percent composition.
                     errorList = ["Error on OBJECTID %s: OLEADSPC must be the species with the greatest percent composition."%cursor[OBJECTID] for row in cursor
                                     if cursor[f.index('OLEADSPC')] not in vnull
-                                    if cursor[f.index('OSPCOMP')] not in vnull and len(cursor[f.index('OSPCOMP')]) > 3
-                                    if cursor[f.index('OLEADSPC')].strip().upper() <> cursor[f.index('OSPCOMP')][:3].strip().upper()]
+                                    if R.findLeadSpc(cursor[f.index('OSPCOMP')]) != None # if lead species can be found in the OSPCOMP - if lead spc cant be found, OSPCOMP value either is null or does not meet the tech spec.
+                                    if cursor[f.index('OLEADSPC')].strip().upper() not in R.findLeadSpc(cursor[f.index('OSPCOMP')])]
                     cursor.reset()
                     if len(errorList) > 0:
                         errorDetail[lyr].append(errorList)
@@ -479,9 +490,9 @@ def run(gdb, summarytbl, year, fmpStartYear):  ## eg. summarytbl = {'MU110_17SAC
 
             # OAGE (PCI and BMI only)
                 if lyrAcro in ["PCI", "BMI"]:
-                    errorList = ["Error on OBJECTID %s: OAGE must be zero when POLYTYPE is not FOR."%cursor[OBJECTID] for row in cursor
+                    errorList = ["Error on OBJECTID %s: OAGE must be zero (or null) when POLYTYPE is not FOR."%cursor[OBJECTID] for row in cursor
                                     if cursor[f.index('POLYTYPE')] != 'FOR'
-                                    if cursor[f.index('OAGE')] != 0]
+                                    if cursor[f.index('OAGE')] not in [0,None]]
                     cursor.reset()
                     if len(errorList) > 0:
                         errorDetail[lyr].append(errorList)
@@ -509,9 +520,9 @@ def run(gdb, summarytbl, year, fmpStartYear):  ## eg. summarytbl = {'MU110_17SAC
 
             # OHT (PCI and BMI only)
                 if lyrAcro in ["PCI", "BMI"]:
-                    errorList = ["Error on OBJECTID %s: OHT must be zero when POLYTYPE is not FOR."%cursor[OBJECTID] for row in cursor
+                    errorList = ["Error on OBJECTID %s: OHT must be zero (or null) when POLYTYPE is not FOR."%cursor[OBJECTID] for row in cursor
                                     if cursor[f.index('POLYTYPE')] != 'FOR'
-                                    if cursor[f.index('OHT')] != 0]
+                                    if cursor[f.index('OHT')] not in [0,None]]
                     cursor.reset()
                     if len(errorList) > 0:
                         errorDetail[lyr].append(errorList)
@@ -651,14 +662,23 @@ def run(gdb, summarytbl, year, fmpStartYear):  ## eg. summarytbl = {'MU110_17SAC
                         criticalError += 1
                         recordValCom[lyr].append("Error on %s record(s): UYRORG must equal zero when POLYTYPE is not FOR or if DEVSTAGE is DEPHARV or DEPNAT."%len(errorList))
 
-                    errorList = ["Error on OBJECTID %s: UYRORG must be greater than OYRORG, greater than 1800, but less than the plan start year when POLYTYPE is FOR and VERT is TO, TU, MO or MU."%cursor[OBJECTID] for row in cursor
+                    errorList = ["Error on OBJECTID %s: UYRORG must be greater than OYRORG and greater than 1800 (when POLYTYPE is FOR and VERT is TO, TU, MO or MU)."%cursor[OBJECTID] for row in cursor
                                     if cursor[f.index('POLYTYPE')] == 'FOR' and cursor[f.index('VERT')] in ['TO','TU','MO','MU']
-                                    if cursor[f.index('UYRORG')] < 1800 or cursor[f.index('UYRORG')] < cursor[f.index('OYRORG')] or cursor[f.index('UYRORG')] >= fmpStartYear ]
+                                    if cursor[f.index('UYRORG')] < 1800 or cursor[f.index('UYRORG')] < cursor[f.index('OYRORG')] ]
                     cursor.reset()
                     if len(errorList) > 0:
                         errorDetail[lyr].append(errorList)
                         criticalError += 1
-                        recordValCom[lyr].append("Error on %s record(s): UYRORG must be greater than OYRORG, greater than 1800, but less than the plan start year when POLYTYPE is FOR and VERT is TO, TU, MO or MU."%len(errorList))
+                        recordValCom[lyr].append("Error on %s record(s): UYRORG must be greater than OYRORG and greater than 1800 (when POLYTYPE is FOR and VERT is TO, TU, MO or MU)."%len(errorList))
+
+                    errorList = ["Error on OBJECTID %s: UYRORG must be less than the plan start year (when POLYTYPE is FOR and VERT is TO, TU, MO or MU)."%cursor[OBJECTID] for row in cursor
+                                    if cursor[f.index('POLYTYPE')] == 'FOR' and cursor[f.index('VERT')] in ['TO','TU','MO','MU']
+                                    if cursor[f.index('UYRORG')] >= fmpStartYear ]
+                    cursor.reset()
+                    if len(errorList) > 0:
+                        errorDetail[lyr].append(errorList)
+                        criticalError += 1
+                        recordValCom[lyr].append("Error on %s record(s): UYRORG must be less than the plan start year (when POLYTYPE is FOR and VERT is TO, TU, MO or MU)."%len(errorList))
 
                     errorList = ["Warning on OBJECTID %s: UYRORG should not be greater than YRSOURCE when POLYTYPE is FOR and VERT is TO, TU, MO or MU."%cursor[OBJECTID] for row in cursor
                                     if cursor[f.index('POLYTYPE')] == 'FOR' and cursor[f.index('VERT')] in ['TO','TU','MO','MU']
@@ -691,27 +711,35 @@ def run(gdb, summarytbl, year, fmpStartYear):  ## eg. summarytbl = {'MU110_17SAC
 
                     # code to check spcomp
                     fieldname = "USPCOMP"
-                    errorList = []
-                    warningList = []
+                    e1List, e2List, e3List, e4List, w1List = [],[],[],[],[]
                     for row in cursor:
                         if cursor[f.index(fieldname)] not in vnull:
                             check = R.spcVal(cursor[f.index(fieldname)],fieldname)
                             if check is None: ## when no error found
                                 pass
-                            elif check[0] == "Error":
-                                errorList.append("%s on OBJECTID %s: %s"%(check[0],cursor[OBJECTID],check[1]))
-                            elif check[0] == "Warning":
-                                warningList.append("%s on OBJECTID %s: %s"%(check[0],cursor[OBJECTID],check[1]))
+                            elif check[0] == "Error1":
+                                e1List.append("%s on OBJECTID %s: %s"%(check[0],cursor[OBJECTID],check[1]))
+                            elif check[0] == "Error2":
+                                e2List.append("%s on OBJECTID %s: %s"%(check[0],cursor[OBJECTID],check[1]))
+                            elif check[0] == "Error3":
+                                e3List.append("%s on OBJECTID %s: %s"%(check[0],cursor[OBJECTID],check[1]))
+                            elif check[0] == "Error4":
+                                e4List.append("%s on OBJECTID %s: %s"%(check[0],cursor[OBJECTID],check[1]))
+                            elif check[0] == "Warning1":
+                                w1List.append("%s on OBJECTID %s: %s"%(check[0],cursor[OBJECTID],check[1]))
                     cursor.reset()
-                    if len(errorList) > 0:
-                        errorDetail[lyr].append(errorList)
+                        # summarizing errors
+                    if len(e1List + e2List + e3List + e4List) > 0:
                         criticalError += 1
-                        recordValCom[lyr].append("Error on %s record(s): %s value error. For more info, search for '%s' in the Error Detail section."%(len(errorList),fieldname,fieldname))
-                    if len(warningList) > 0:
-                        errorDetail[lyr].append(warningList)
+                    for errorlist in [e1List, e2List, e3List, e4List]:
+                        if len(errorlist) > 0:
+                            errorDetail[lyr].append(errorlist)
+                            recordValCom[lyr].append("Error on %s record(s):%s."%(len(errorlist),errorlist[0][errorlist[0].find(':')+1:]))
+                        # summarizing warnings
+                    if len(w1List) > 0:
                         minorError += 1
-                        recordValCom[lyr].append("Warning on %s record(s): %s value warning. For more info, search for '%s' in the Error Detail section."%(len(warningList),fieldname,fieldname))
-
+                        errorDetail[lyr].append(w1List)
+                        recordValCom[lyr].append("Warning on %s record(s):%s."%(len(w1List),w1List[0][w1List[0].find(':')+1:]))
             # ULEADSPC (PCI and BMI only)
                 if lyrAcro in ["PCI", "BMI"]:
                     errorList = ["Error on OBJECTID %s: ULEADSPC must be null when POLYTYPE is not FOR or when DEVSTAGE is DEPHARV or DEPNAT."%cursor[OBJECTID] for row in cursor
@@ -741,11 +769,11 @@ def run(gdb, summarytbl, year, fmpStartYear):  ## eg. summarytbl = {'MU110_17SAC
                         criticalError += 1
                         recordValCom[lyr].append("Error on %s record(s): ULEADSPC must be a species listed in the USPCOMP."%len(errorList))
 
-                    # this check works only if the spcomp is in descending order.
+                    # this check works even if the SPCOMP is not in descending order or if there are two or more species tied for greatest percent composition.
                     errorList = ["Error on OBJECTID %s: ULEADSPC must be the species with the greatest percent composition."%cursor[OBJECTID] for row in cursor
                                     if cursor[f.index('ULEADSPC')] not in vnull
-                                    if cursor[f.index('USPCOMP')] not in vnull and len(cursor[f.index('USPCOMP')]) > 3
-                                    if cursor[f.index('ULEADSPC')].strip().upper() <> cursor[f.index('USPCOMP')][:3].strip().upper()]
+                                    if R.findLeadSpc(cursor[f.index('USPCOMP')]) != None # if lead species can be found in the OSPCOMP - if lead spc cant be found, OSPCOMP value either is null or does not meet the tech spec.
+                                    if cursor[f.index('ULEADSPC')].strip().upper() not in R.findLeadSpc(cursor[f.index('USPCOMP')])]
                     cursor.reset()
                     if len(errorList) > 0:
                         errorDetail[lyr].append(errorList)
@@ -754,14 +782,14 @@ def run(gdb, summarytbl, year, fmpStartYear):  ## eg. summarytbl = {'MU110_17SAC
 
             # UAGE (PCI and BMI only)
                 if lyrAcro in ["PCI", "BMI"]:
-                    errorList = ["Error on OBJECTID %s: UAGE must be zero when POLYTYPE is not FOR or when DEVSTAGE is DEPHARV or DEPNAT."%cursor[OBJECTID] for row in cursor
+                    errorList = ["Error on OBJECTID %s: UAGE must be zero (or null) when POLYTYPE is not FOR or when DEVSTAGE is DEPHARV or DEPNAT."%cursor[OBJECTID] for row in cursor
                                     if cursor[f.index('POLYTYPE')] != 'FOR' or cursor[f.index('DEVSTAGE')] in ['DEPHARV','DEPNAT']
-                                    if cursor[f.index('UAGE')] != 0]
+                                    if cursor[f.index('UAGE')] not in [0,None]]
                     cursor.reset()
                     if len(errorList) > 0:
                         errorDetail[lyr].append(errorList)
                         criticalError += 1
-                        recordValCom[lyr].append("Error on %s record(s): UAGE must be zero when POLYTYPE is not FOR or when DEVSTAGE is DEPHARV or DEPNAT."%len(errorList))
+                        recordValCom[lyr].append("Error on %s record(s): UAGE must be zero (or null) when POLYTYPE is not FOR or when DEVSTAGE is DEPHARV or DEPNAT."%len(errorList))
 
                     errorList = ["Error on OBJECTID %s: UAGE must be populated and follow the correct format when POLYTYPE is FOR and when VERT is TO, TU, MO or MU."%cursor[OBJECTID] for row in cursor
                                     if cursor[f.index('POLYTYPE')] == 'FOR' and cursor[f.index('VERT')] in ['TO','TU','MO','MU']
@@ -774,14 +802,14 @@ def run(gdb, summarytbl, year, fmpStartYear):  ## eg. summarytbl = {'MU110_17SAC
 
             # UHT (PCI and BMI only)
                 if lyrAcro in ["PCI", "BMI"]:
-                    errorList = ["Error on OBJECTID %s: UHT must be zero when POLYTYPE is not FOR or when DEVSTAGE is DEPHARV or DEPNAT."%cursor[OBJECTID] for row in cursor
+                    errorList = ["Error on OBJECTID %s: UHT must be zero (or null) when POLYTYPE is not FOR or when DEVSTAGE is DEPHARV or DEPNAT."%cursor[OBJECTID] for row in cursor
                                     if cursor[f.index('POLYTYPE')] != 'FOR' or cursor[f.index('DEVSTAGE')] in ['DEPHARV','DEPNAT']
-                                    if cursor[f.index('UHT')] != 0]
+                                    if cursor[f.index('UHT')] not in [0,None] ]
                     cursor.reset()
                     if len(errorList) > 0:
                         errorDetail[lyr].append(errorList)
                         criticalError += 1
-                        recordValCom[lyr].append("Error on %s record(s): UHT must be zero when POLYTYPE is not FOR or when DEVSTAGE is DEPHARV or DEPNAT."%len(errorList))
+                        recordValCom[lyr].append("Error on %s record(s): UHT must be zero (or null) when POLYTYPE is not FOR or when DEVSTAGE is DEPHARV or DEPNAT."%len(errorList))
 
                     errorList = ["Error on OBJECTID %s: UHT must be greater than 0 when POLYTYPE = FOR and when VERT is TO, TU, MO or MU."%cursor[OBJECTID] for row in cursor
                                     if cursor[f.index('POLYTYPE')] == 'FOR' and cursor[f.index('VERT')] in ['TO','TU','MO','MU']
@@ -973,7 +1001,6 @@ def run(gdb, summarytbl, year, fmpStartYear):  ## eg. summarytbl = {'MU110_17SAC
                     recordValCom[lyr].append("Error on %s record(s): HORIZ must be populated and must follow the correct coding scheme when POLYTYPE is FOR."%len(errorList))
 
             # PRI_ECO and SEC_ECO
-
                 errorList = ["Error on OBJECTID %s: PRI_ECO must be populated when POLYTYPE is FOR or when SEC_ECO is not null."%cursor[OBJECTID] for row in cursor
                                 if cursor[f.index('POLYTYPE')] == 'FOR' or cursor[f.index('SEC_ECO')] not in vnull
                                 if cursor[f.index('PRI_ECO')] in vnull]
@@ -982,7 +1009,6 @@ def run(gdb, summarytbl, year, fmpStartYear):  ## eg. summarytbl = {'MU110_17SAC
                     errorDetail[lyr].append(errorList)
                     criticalError += 1
                     recordValCom[lyr].append("Error on %s record(s): PRI_ECO must be populated when POLYTYPE is FOR or when SEC_ECO is not null."%len(errorList))
-
 
                 ## code to check PRI_ECO and SEC_ECO
                 for fname in ["PRI_ECO", "SEC_ECO"]:
@@ -1289,27 +1315,35 @@ def run(gdb, summarytbl, year, fmpStartYear):  ## eg. summarytbl = {'MU110_17SAC
 
                     # code to check spcomp
                     fieldname = "SPCOMP"
-                    errorList = []
-                    warningList = []
+                    e1List, e2List, e3List, e4List, w1List = [],[],[],[],[]
                     for row in cursor:
                         if cursor[f.index(fieldname)] not in vnull:
                             check = R.spcVal(cursor[f.index(fieldname)],fieldname)
                             if check is None: ## when no error found
                                 pass
-                            elif check[0] == "Error":
-                                errorList.append("%s on OBJECTID %s: %s"%(check[0],cursor[OBJECTID],check[1]))
-                            elif check[0] == "Warning":
-                                warningList.append("%s on OBJECTID %s: %s"%(check[0],cursor[OBJECTID],check[1]))
+                            elif check[0] == "Error1":
+                                e1List.append("%s on OBJECTID %s: %s"%(check[0],cursor[OBJECTID],check[1]))
+                            elif check[0] == "Error2":
+                                e2List.append("%s on OBJECTID %s: %s"%(check[0],cursor[OBJECTID],check[1]))
+                            elif check[0] == "Error3":
+                                e3List.append("%s on OBJECTID %s: %s"%(check[0],cursor[OBJECTID],check[1]))
+                            elif check[0] == "Error4":
+                                e4List.append("%s on OBJECTID %s: %s"%(check[0],cursor[OBJECTID],check[1]))
+                            elif check[0] == "Warning1":
+                                w1List.append("%s on OBJECTID %s: %s"%(check[0],cursor[OBJECTID],check[1]))
                     cursor.reset()
-                    if len(errorList) > 0:
-                        errorDetail[lyr].append(errorList)
+                        # summarizing errors
+                    if len(e1List + e2List + e3List + e4List) > 0:
                         criticalError += 1
-                        recordValCom[lyr].append("Error on %s record(s): %s value error. For more info, search for '%s' in the Error Detail section."%(len(errorList),fieldname,fieldname))
-                    if len(warningList) > 0:
-                        errorDetail[lyr].append(warningList)
+                    for errorlist in [e1List, e2List, e3List, e4List]:
+                        if len(errorlist) > 0:
+                            errorDetail[lyr].append(errorlist)
+                            recordValCom[lyr].append("Error on %s record(s):%s."%(len(errorlist),errorlist[0][errorlist[0].find(':')+1:]))
+                        # summarizing warnings
+                    if len(w1List) > 0:
                         minorError += 1
-                        recordValCom[lyr].append("Warning on %s record(s): %s value warning. For more info, search for '%s' in the Error Detail section."%(len(warningList),fieldname,fieldname))
-
+                        errorDetail[lyr].append(w1List)
+                        recordValCom[lyr].append("Warning on %s record(s):%s."%(len(w1List),w1List[0][w1List[0].find(':')+1:]))
             # LEADSPC (BMI and OPI only)
                 if lyrAcro in ["BMI", "OPI"]:
                     errorList = ["Error on OBJECTID %s: LEADSPC must be null when POLYTYPE is not FOR."%cursor[OBJECTID] for row in cursor
@@ -1340,11 +1374,11 @@ def run(gdb, summarytbl, year, fmpStartYear):  ## eg. summarytbl = {'MU110_17SAC
                         criticalError += 1
                         recordValCom[lyr].append("Error on %s record(s): LEADSPC must be species listed in the SPCOMP when POLYTYPE = FOR."%len(errorList))
 
-                    # this check works only if the spcomp is in descending order.
+                    # this check works even if the SPCOMP is not in descending order or if there are two or more species tied for greatest percent composition.
                     errorList = ["Error on OBJECTID %s: LEADSPC must be the species with the greatest percent composition."%cursor[OBJECTID] for row in cursor
                                     if cursor[f.index('LEADSPC')] not in vnull
-                                    if cursor[f.index('SPCOMP')] not in vnull and cursor[f.index('LEADSPC')] not in vnull
-                                    if cursor[f.index('LEADSPC')].strip().upper() <> cursor[f.index('SPCOMP')][:3].strip().upper()]
+                                    if R.findLeadSpc(cursor[f.index('SPCOMP')]) != None # if lead species can be found in the OSPCOMP - if lead spc cant be found, OSPCOMP value either is null or does not meet the tech spec.
+                                    if cursor[f.index('LEADSPC')].strip().upper() not in R.findLeadSpc(cursor[f.index('SPCOMP')])]
                     cursor.reset()
                     if len(errorList) > 0:
                         errorDetail[lyr].append(errorList)
@@ -1769,14 +1803,13 @@ def run(gdb, summarytbl, year, fmpStartYear):  ## eg. summarytbl = {'MU110_17SAC
             try: # need try and except block here for cases such as not having mandatory fields.
 
             # FSOURCE
-                errorList = ["Error on OBJECTID %s: FSOURCE must be populated."%cursor[OBJECTID] for row in cursor
-                                if cursor[f.index('FSOURCE')] in vnull]
+                errorList = ["Error on OBJECTID %s: FSOURCE must be populated and must follow the correct coding scheme."%cursor[OBJECTID] for row in cursor
+                                if cursor[f.index('FSOURCE')] not in ['FORECAST','BASECOVR','DIGITALA','DIGITALP','ESTIMATE','FOC','FRICNVRT','INFRARED','MARKING','OCULARA','OCULARG','OPC','PHOTO','PHOTOLS','PHOTOSS','LOTFIXD','PLOTVAR','RADAR','REGENASS','SEMEXTEN','SEMINTEN','SPECTRAL','SUPINFO']]
                 cursor.reset()
                 if len(errorList) > 0:
                     errorDetail[lyr].append(errorList)
                     criticalError += 1
-                    recordValCom[lyr].append("Error on %s record(s): FSOURCE must be populated."%len(errorList))
-                # Not checking for valid coding scheme because the tech spec says FSOURCE attribute may be populated with other codes when it's being used for natural disturbances.
+                    recordValCom[lyr].append("Error on %s record(s): FSOURCE must be populated and must follow the correct coding scheme."%len(errorList))
 
             # FYRDEP
                 errorList = ["Error on OBJECTID %s: FYRDEP must be populated and zero is not a valid code."%cursor[OBJECTID] for row in cursor
