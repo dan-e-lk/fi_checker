@@ -299,15 +299,15 @@ def run(gdb, summarytbl, year, fmpStartYear):  ## eg. summarytbl = {'MU615_15AGG
                             if check is None: ## when no error found
                                 pass
                             elif check[0] == "Error1":
-                                e1List.append("%s on OBJECTID %s: %s"%(check[0],cursor[OBJECTID],check[1]))
+                                e1List.append("Error on OBJECTID %s: %s"%(cursor[OBJECTID],check[1]))
                             elif check[0] == "Error2":
-                                e2List.append("%s on OBJECTID %s: %s"%(check[0],cursor[OBJECTID],check[1]))
+                                e2List.append("Error on OBJECTID %s: %s"%(cursor[OBJECTID],check[1]))
                             elif check[0] == "Error3":
-                                e3List.append("%s on OBJECTID %s: %s"%(check[0],cursor[OBJECTID],check[1]))
+                                e3List.append("Error on OBJECTID %s: %s"%(cursor[OBJECTID],check[1]))
                             elif check[0] == "Error4":
-                                e4List.append("%s on OBJECTID %s: %s"%(check[0],cursor[OBJECTID],check[1]))
+                                e4List.append("Error on OBJECTID %s: %s"%(cursor[OBJECTID],check[1]))
                             elif check[0] == "Warning1":
-                                w1List.append("%s on OBJECTID %s: %s"%(check[0],cursor[OBJECTID],check[1]))
+                                w1List.append("Warning on OBJECTID %s: %s"%(cursor[OBJECTID],check[1]))
                     cursor.reset()
                         # summarizing errors
                     if len(e1List + e2List + e3List + e4List) > 0:

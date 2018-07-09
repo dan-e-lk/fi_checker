@@ -257,7 +257,21 @@ def findPDF(pdf):
     return pdf_path
 
 
+# def standard_check(current_field, cursor, objectid, error_msg, if_statement, critical_error = True):
+#     list_comprehension = """errorList = ["Error on OBJECTID %s: "%cursor[objectid] + error_msg  for row in cursor """ + if_statement + "]"
+#     exec(list_comprehension)
+#     cursor.reset()
+#     if len(errorList) > 0:
+#         errorDetail[lyr].append(errorList)
+#         criticalError += 1
+#         recordValCom[lyr].append("Error on %s record(s): The population of POLYID is mandatory."%len(errorList))
 
+#     polyIDList = [cursor[f.index('POLYID')] for row in cursor if cursor[f.index('POLYID')] not in vnull ]
+#     cursor.reset()
+#     numDuplicates = len(polyIDList) - len(set(polyIDList))
+#     if numDuplicates > 0:
+#         criticalError += 1
+#         recordValCom[lyr].append("Error on %s record(s): The POLYID attribute must contain a unique value."%numDuplicates)
 
 
 

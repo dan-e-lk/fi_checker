@@ -1,5 +1,6 @@
 #-------------------------------------------------------------------------------
 # Name:        	checker_v2
+# Version:		2.3
 # Purpose:	   	This tool checks the FMP, AR or AWS submission (according to the 
 #				FIM Technical Specifications 2009 or 2017) and outputs a validation report 
 #				in html format.The report will be saved at the same folder level where your 

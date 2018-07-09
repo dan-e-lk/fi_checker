@@ -138,8 +138,10 @@ def run(gdb, summarytbl, year, fmpStartYear):  ## eg. summarytbl = {'MU110_17SAC
 
 
         if lyrAcro in ["PCI","BMI","OPI"]:
-            try: # need try and except block here for cases such as not having mandatory fields. 
+
             # POLYID
+            try:
+                current_field = 'POLYID'
                 errorList = ["Error on OBJECTID %s: The population of POLYID is mandatory."%cursor[OBJECTID] for row in cursor
                                 if cursor[f.index('POLYID')] in vnull]
                 cursor.reset()
@@ -154,8 +156,14 @@ def run(gdb, summarytbl, year, fmpStartYear):  ## eg. summarytbl = {'MU110_17SAC
                 if numDuplicates > 0:
                     criticalError += 1
                     recordValCom[lyr].append("Error on %s record(s): The POLYID attribute must contain a unique value."%numDuplicates)
+            except ValueError:
+                recordValCom[lyr].append("***Unable to run full validation on %s field due to value error - most likely due to missing mandatory field(s)"%current_field)
+                arcpy.AddWarning("***Unable to run full validation on %s field due to the following error:\n"%current_field + str(sys.exc_info()[1]))
+                criticalError += 1
 
             # POLYTYPE
+            try:
+                current_field = 'POLYTYPE'
                 errorList = ["Error on OBJECTID %s: The population of POLYTYPE is mandatory and must follow the correct coding scheme."%cursor[OBJECTID] for row in cursor
                                 if cursor[f.index('POLYTYPE')] not in ['WAT','DAL','GRS','ISL','UCL','BSH','RCK','TMS','OMS','FOR']]
                 cursor.reset()
@@ -164,9 +172,17 @@ def run(gdb, summarytbl, year, fmpStartYear):  ## eg. summarytbl = {'MU110_17SAC
                     criticalError += 1
                     recordValCom[lyr].append("Error on %s record(s): The population of POLYTYPE is mandatory and must follow the correct coding scheme."%len(errorList))
 
-                ## "If POLYTYPE attribute does not equal FOR, then FORMOD,DEVSTAGE, OYRORG, OSPCOMP..." can be checked on other fields.
+                ## The following statement can be checked on other fields: "If POLYTYPE attribute does not equal FOR, then FORMOD,DEVSTAGE, OYRORG, OSPCOMP..."
+
+            except ValueError:
+                recordValCom[lyr].append("***Unable to run full validation on %s field due to value error - most likely due to missing mandatory field(s)"%current_field)
+                arcpy.AddWarning("***Unable to run full validation on %s field due to the following error:\n"%current_field + str(sys.exc_info()[1]))
+                criticalError += 1
+
 
             # OWNER
+            try:
+                current_field = 'OWNER'            
                 errorList = ["Error on OBJECTID %s: The population of OWNER is mandatory and must follow the correct coding scheme."%cursor[OBJECTID] for row in cursor
                                 if str(cursor[f.index('OWNER')]) not in ['0','1','2','3','4','5','6','7','8','9']]
                 cursor.reset()
@@ -174,8 +190,14 @@ def run(gdb, summarytbl, year, fmpStartYear):  ## eg. summarytbl = {'MU110_17SAC
                     errorDetail[lyr].append(errorList)
                     criticalError += 1
                     recordValCom[lyr].append("Error on %s record(s): The population of OWNER is mandatory and must follow the correct coding scheme."%len(errorList))
+            except ValueError:
+                recordValCom[lyr].append("***Unable to run full validation on %s field due to value error - most likely due to missing mandatory field(s)"%current_field)
+                arcpy.AddWarning("***Unable to run full validation on %s field due to the following error:\n"%current_field + str(sys.exc_info()[1]))
+                criticalError += 1
 
             # YRSOURCE
+            try:
+                current_field = 'YRSOURCE'                 
                 errorList = ["Error on OBJECTID %s: The YRSOURCE must be populated with the correct format (YYYY)."%cursor[OBJECTID] for row in cursor
                                 if cursor[f.index('YRSOURCE')] in vnull or cursor[f.index('YRSOURCE')] < 1000 or cursor[f.index('YRSOURCE')] > 9999 ]
                 cursor.reset()
@@ -191,8 +213,14 @@ def run(gdb, summarytbl, year, fmpStartYear):  ## eg. summarytbl = {'MU110_17SAC
                     errorDetail[lyr].append(errorList)
                     criticalError += 1
                     recordValCom[lyr].append("Error on %s record(s): The YRSOURCE must be at least a year less than the plan period start year."%len(errorList))
+            except ValueError:
+                recordValCom[lyr].append("***Unable to run full validation on %s field due to value error - most likely due to missing mandatory field(s)"%current_field)
+                arcpy.AddWarning("***Unable to run full validation on %s field due to the following error:\n"%current_field + str(sys.exc_info()[1]))
+                criticalError += 1
 
             # SOURCE
+            try:
+                current_field = 'SOURCE'                
                 errorList = ["Error on OBJECTID %s: The population of SOURCE must follow the correct coding scheme."%cursor[OBJECTID] for row in cursor
                                 if cursor[f.index('SOURCE')] not in ['BASECOVR','DIGITALA','DIGITALP','ESTIMATE','FOC','FORECAST','FRICNVRT','INFRARED','MARKING','OCULARA','OCULARG','OPC','PHOTO','PHOTOLS','PHOTOSS','LOTFIXD','PLOTVAR','RADAR','REGENASS','SEMEXTEN','SEMINTEN','SPECTRAL','SUPINFO']]
                 cursor.reset()
@@ -219,8 +247,14 @@ def run(gdb, summarytbl, year, fmpStartYear):  ## eg. summarytbl = {'MU110_17SAC
                     errorDetail[lyr].append(errorList)
                     criticalError += 1
                     recordValCom[lyr].append("Error on %s record(s): SOURCE must not equal ESTIMATE if the DEVSTAGE is NAT or starts with EST."%len(errorList))
+            except ValueError:
+                recordValCom[lyr].append("***Unable to run full validation on %s field due to value error - most likely due to missing mandatory field(s)"%current_field)
+                arcpy.AddWarning("***Unable to run full validation on %s field due to the following error:\n"%current_field + str(sys.exc_info()[1]))
+                criticalError += 1
 
             # FORMOD
+            try:
+                current_field = 'FORMOD'              
                 errorList = ["Error on OBJECTID %s: FORMOD must be null when POLYTYPE is not equal to FOR."%cursor[OBJECTID] for row in cursor
                                 if cursor[f.index('POLYTYPE')] != 'FOR'
                                 if cursor[f.index('FORMOD')] not in vnull]
@@ -248,8 +282,15 @@ def run(gdb, summarytbl, year, fmpStartYear):  ## eg. summarytbl = {'MU110_17SAC
                         errorDetail[lyr].append(errorList)
                         minorError += 1                     
                         recordValCom[lyr].append("Warning on %s record(s): FORMOD attribute should be PF when SC equals 4."%len(errorList))
+            except ValueError:
+                recordValCom[lyr].append("***Unable to run full validation on %s field due to value error - most likely due to missing mandatory field(s)"%current_field)
+                arcpy.AddWarning("***Unable to run full validation on %s field due to the following error:\n"%current_field + str(sys.exc_info()[1]))
+                criticalError += 1
+
 
             # DEVSTAGE
+            try:
+                current_field = 'DEVSTAGE'                
                 errorList = ["Error on OBJECTID %s: DEVSTAGE must be null when POLYTYPE is not equal to FOR."%cursor[OBJECTID] for row in cursor
                                 if cursor[f.index('POLYTYPE')] != 'FOR'
                                 if cursor[f.index('DEVSTAGE')] not in vnull]
@@ -296,8 +337,15 @@ def run(gdb, summarytbl, year, fmpStartYear):  ## eg. summarytbl = {'MU110_17SAC
                         errorDetail[lyr].append(errorList)
                         minorError += 1                      # minor error!!!!
                         recordValCom[lyr].append("Warning on %s record(s): DEVSTAGE should be LOWMGMT, LOWNAT, DEPHARV or DEPNAT if POLYTYPE = FOR and if UCCLO + OCCLO < 25."%len(errorList))
+            except ValueError:
+                recordValCom[lyr].append("***Unable to run full validation on %s field due to value error - most likely due to missing mandatory field(s)"%current_field)
+                arcpy.AddWarning("***Unable to run full validation on %s field due to the following error:\n"%current_field + str(sys.exc_info()[1]))
+                criticalError += 1
+
 
             # YRDEP
+            try:
+                current_field = 'YRDEP'               
                 errorList = ["Error on OBJECTID %s: YRDEP must equal zero when POLYTYPE is not FOR."%cursor[OBJECTID] for row in cursor
                                 if cursor[f.index('POLYTYPE')] != 'FOR'
                                 if cursor[f.index('YRDEP')] <> 0] 
@@ -333,8 +381,15 @@ def run(gdb, summarytbl, year, fmpStartYear):  ## eg. summarytbl = {'MU110_17SAC
                     errorDetail[lyr].append(errorList)
                     minorError += 1
                     recordValCom[lyr].append("Warning on %s record(s): YRDEP should be greater than or equal to 1900 where DEPTYPE is not null (4.1.4 YRDEP)."%len(errorList))
+            except ValueError:
+                recordValCom[lyr].append("***Unable to run full validation on %s field due to value error - most likely due to missing mandatory field(s)"%current_field)
+                arcpy.AddWarning("***Unable to run full validation on %s field due to the following error:\n"%current_field + str(sys.exc_info()[1]))
+                criticalError += 1
+
 
             # DEPTYPE
+            try:
+                current_field = 'DEPTYPE'               
                 errorList = ["Error on OBJECTID %s: DEPTYPE must be null when POLYTYPE is not FOR."%cursor[OBJECTID] for row in cursor
                                 if cursor[f.index('POLYTYPE')] != 'FOR'
                                 if cursor[f.index('DEPTYPE')] not in vnull]
@@ -364,7 +419,15 @@ def run(gdb, summarytbl, year, fmpStartYear):  ## eg. summarytbl = {'MU110_17SAC
 
                 ## The following has been included in YRDEP validation: If the disturbance type is not null (DEPTYPE ? null) then disturbance year should be greater than or equal nineteen hundred (YRDEP >= 1900)
 
+            except ValueError:
+                recordValCom[lyr].append("***Unable to run full validation on %s field due to value error - most likely due to missing mandatory field(s)"%current_field)
+                arcpy.AddWarning("***Unable to run full validation on %s field due to the following error:\n"%current_field + str(sys.exc_info()[1]))
+                criticalError += 1
+
+
             # OYRORG (PCI and BMI only)
+            try:
+                current_field = 'OYRORG'                 
                 if lyrAcro in ["PCI", "BMI"]:
                     errorList = ["Error on OBJECTID %s: OYRORG must equal zero when POLYTYPE is not FOR."%cursor[OBJECTID] for row in cursor
                                     if cursor[f.index('POLYTYPE')] != 'FOR'
@@ -392,8 +455,15 @@ def run(gdb, summarytbl, year, fmpStartYear):  ## eg. summarytbl = {'MU110_17SAC
                         errorDetail[lyr].append(errorList)
                         minorError += 1
                         recordValCom[lyr].append("Warning on %s record(s): OYRORG should not be greater than YRSOURCE when POLYTYPE is FOR."%len(errorList))
+            except ValueError:
+                recordValCom[lyr].append("***Unable to run full validation on %s field due to value error - most likely due to missing mandatory field(s)"%current_field)
+                arcpy.AddWarning("***Unable to run full validation on %s field due to the following error:\n"%current_field + str(sys.exc_info()[1]))
+                criticalError += 1
+
 
             # OSPCOMP (PCI and BMI only)
+            try:
+                current_field = 'OSPCOMP'                
                 if lyrAcro in ["PCI", "BMI"]:
                     errorList = ["Error on OBJECTID %s: OSPCOMP must be null when POLYTYPE is not FOR."%cursor[OBJECTID] for row in cursor
                                     if cursor[f.index('POLYTYPE')] != 'FOR'
@@ -414,23 +484,22 @@ def run(gdb, summarytbl, year, fmpStartYear):  ## eg. summarytbl = {'MU110_17SAC
                         recordValCom[lyr].append("Error on %s record(s): OSPCOMP must be populated when POLYTYPE is FOR."%len(errorList))
 
                     # code to check spcomp
-                    fieldname = "OSPCOMP"
                     e1List, e2List, e3List, e4List, w1List = [],[],[],[],[]
                     for row in cursor:
-                        if cursor[f.index(fieldname)] not in vnull:
-                            check = R.spcVal(cursor[f.index(fieldname)],fieldname)
+                        if cursor[f.index(current_field)] not in vnull:
+                            check = R.spcVal(cursor[f.index(current_field)],current_field)
                             if check is None: ## when no error found
                                 pass
                             elif check[0] == "Error1":
-                                e1List.append("%s on OBJECTID %s: %s"%(check[0],cursor[OBJECTID],check[1]))
+                                e1List.append("Error on OBJECTID %s: %s"%(cursor[OBJECTID],check[1]))
                             elif check[0] == "Error2":
-                                e2List.append("%s on OBJECTID %s: %s"%(check[0],cursor[OBJECTID],check[1]))
+                                e2List.append("Error on OBJECTID %s: %s"%(cursor[OBJECTID],check[1]))
                             elif check[0] == "Error3":
-                                e3List.append("%s on OBJECTID %s: %s"%(check[0],cursor[OBJECTID],check[1]))
+                                e3List.append("Error on OBJECTID %s: %s"%(cursor[OBJECTID],check[1]))
                             elif check[0] == "Error4":
-                                e4List.append("%s on OBJECTID %s: %s"%(check[0],cursor[OBJECTID],check[1]))
+                                e4List.append("Error on OBJECTID %s: %s"%(cursor[OBJECTID],check[1]))
                             elif check[0] == "Warning1":
-                                w1List.append("%s on OBJECTID %s: %s"%(check[0],cursor[OBJECTID],check[1]))
+                                w1List.append("Warning on OBJECTID %s: %s"%(cursor[OBJECTID],check[1]))
                     cursor.reset()
                         # summarizing errors
                     if len(e1List + e2List + e3List + e4List) > 0:
@@ -444,10 +513,15 @@ def run(gdb, summarytbl, year, fmpStartYear):  ## eg. summarytbl = {'MU110_17SAC
                         minorError += 1
                         errorDetail[lyr].append(w1List)
                         recordValCom[lyr].append("Warning on %s record(s):%s."%(len(w1List),w1List[0][w1List[0].find(':')+1:]))
-  
+            except ValueError:
+                recordValCom[lyr].append("***Unable to run full validation on %s field due to value error - most likely due to missing mandatory field(s)"%current_field)
+                arcpy.AddWarning("***Unable to run full validation on %s field due to the following error:\n"%current_field + str(sys.exc_info()[1]))
+                criticalError += 1  
 
 
             # OLEADSPC (PCI and BMI only)
+            try:
+                current_field = 'OLEADSPC'               
                 if lyrAcro in ["PCI", "BMI"]:
                     errorList = ["Error on OBJECTID %s: OLEADSPC must be null when POLYTYPE is not FOR."%cursor[OBJECTID] for row in cursor
                                     if cursor[f.index('POLYTYPE')] != 'FOR'
@@ -487,8 +561,14 @@ def run(gdb, summarytbl, year, fmpStartYear):  ## eg. summarytbl = {'MU110_17SAC
                         errorDetail[lyr].append(errorList)
                         criticalError += 1
                         recordValCom[lyr].append("Error on %s record(s): OLEADSPC must be the species with the greatest percent composition."%len(errorList))
+            except ValueError:
+                recordValCom[lyr].append("***Unable to run full validation on %s field due to value error - most likely due to missing mandatory field(s)"%current_field)
+                arcpy.AddWarning("***Unable to run full validation on %s field due to the following error:\n"%current_field + str(sys.exc_info()[1]))
+                criticalError += 1  
 
             # OAGE (PCI and BMI only)
+            try:
+                current_field = 'OAGE'              
                 if lyrAcro in ["PCI", "BMI"]:
                     errorList = ["Error on OBJECTID %s: OAGE must be zero (or null) when POLYTYPE is not FOR."%cursor[OBJECTID] for row in cursor
                                     if cursor[f.index('POLYTYPE')] != 'FOR'
@@ -517,8 +597,14 @@ def run(gdb, summarytbl, year, fmpStartYear):  ## eg. summarytbl = {'MU110_17SAC
                         errorDetail[lyr].append(errorList)
                         criticalError += 1
                         recordValCom[lyr].append("Error on %s record(s): OAGE can be zero only when DEVSTAGE is DEPHARV or DEPNAT (when POLYTYPE = FOR)."%len(errorList))
+            except ValueError:
+                recordValCom[lyr].append("***Unable to run full validation on %s field due to value error - most likely due to missing mandatory field(s)"%current_field)
+                arcpy.AddWarning("***Unable to run full validation on %s field due to the following error:\n"%current_field + str(sys.exc_info()[1]))
+                criticalError += 1  
 
             # OHT (PCI and BMI only)
+            try:
+                current_field = 'OHT'              
                 if lyrAcro in ["PCI", "BMI"]:
                     errorList = ["Error on OBJECTID %s: OHT must be zero (or null) when POLYTYPE is not FOR."%cursor[OBJECTID] for row in cursor
                                     if cursor[f.index('POLYTYPE')] != 'FOR'
@@ -548,8 +634,15 @@ def run(gdb, summarytbl, year, fmpStartYear):  ## eg. summarytbl = {'MU110_17SAC
                         errorDetail[lyr].append(errorList)
                         criticalError += 1
                         recordValCom[lyr].append("Error on %s record(s): OHT must be greater than zero if the DEVSTAGE does not start with DEP, NEW or LOW (when POLYTYPE = FOR)."%len(errorList))
+            except ValueError:
+                recordValCom[lyr].append("***Unable to run full validation on %s field due to value error - most likely due to missing mandatory field(s)"%current_field)
+                arcpy.AddWarning("***Unable to run full validation on %s field due to the following error:\n"%current_field + str(sys.exc_info()[1]))
+                criticalError += 1  
+
 
             # OCCLO (PCI and BMI only)
+            try:
+                current_field = 'OCCLO'            
                 if lyrAcro in ["PCI", "BMI"]:
                     errorList = ["Error on OBJECTID %s: OCCLO must be zero when POLYTYPE is not FOR."%cursor[OBJECTID] for row in cursor
                                     if cursor[f.index('POLYTYPE')] != 'FOR'
@@ -568,8 +661,14 @@ def run(gdb, summarytbl, year, fmpStartYear):  ## eg. summarytbl = {'MU110_17SAC
                         errorDetail[lyr].append(errorList)
                         criticalError += 1
                         recordValCom[lyr].append("Error on %s record(s): OCCLO must be populated and must be between 0 and 100 (when POLYTYPE = FOR)."%len(errorList))
+            except ValueError:
+                recordValCom[lyr].append("***Unable to run full validation on %s field due to value error - most likely due to missing mandatory field(s)"%current_field)
+                arcpy.AddWarning("***Unable to run full validation on %s field due to the following error:\n"%current_field + str(sys.exc_info()[1]))
+                criticalError += 1  
 
             # OSTKG (PCI and BMI only)
+            try:
+                current_field = 'OSTKG'            
                 if lyrAcro in ["PCI", "BMI"]:
                     errorList = ["Error on OBJECTID %s: OSTKG must be zero when POLYTYPE is not FOR."%cursor[OBJECTID] for row in cursor
                                     if cursor[f.index('POLYTYPE')] != 'FOR'
@@ -630,8 +729,14 @@ def run(gdb, summarytbl, year, fmpStartYear):  ## eg. summarytbl = {'MU110_17SAC
                         errorDetail[lyr].append(errorList)
                         minorError += 1
                         recordValCom[lyr].append("Warning on %s record(s): OSTKG should be less than 2.5."%len(errorList))
+            except ValueError:
+                recordValCom[lyr].append("***Unable to run full validation on %s field due to value error - most likely due to missing mandatory field(s)"%current_field)
+                arcpy.AddWarning("***Unable to run full validation on %s field due to the following error:\n"%current_field + str(sys.exc_info()[1]))
+                criticalError += 1  
 
             # OSC (PCI and BMI only)
+            try:
+                current_field = 'OSTKG'            
                 if lyrAcro in ["PCI", "BMI"]:
                     errorList = ["Error on OBJECTID %s: OSC must be zero when POLYTYPE is not FOR."%cursor[OBJECTID] for row in cursor
                                     if cursor[f.index('POLYTYPE')] != 'FOR'
@@ -650,8 +755,14 @@ def run(gdb, summarytbl, year, fmpStartYear):  ## eg. summarytbl = {'MU110_17SAC
                         errorDetail[lyr].append(errorList)
                         criticalError += 1
                         recordValCom[lyr].append("Error on %s record(s): OSC must be between 0 and 4 when POLYTYPE = FOR."%len(errorList))
+            except ValueError:
+                recordValCom[lyr].append("***Unable to run full validation on %s field due to value error - most likely due to missing mandatory field(s)"%current_field)
+                arcpy.AddWarning("***Unable to run full validation on %s field due to the following error:\n"%current_field + str(sys.exc_info()[1]))
+                criticalError += 1  
 
             # UYRORG (PCI and BMI only)
+            try:
+                current_field = 'UYRORG'              
                 if lyrAcro in ["PCI", "BMI"]:
                     errorList = ["Error on OBJECTID %s: UYRORG must equal zero when POLYTYPE is not FOR or if DEVSTAGE is DEPHARV or DEPNAT."%cursor[OBJECTID] for row in cursor
                                     if cursor[f.index('POLYTYPE')] != 'FOR' or cursor[f.index('DEVSTAGE')] in ['DEPHARV','DEPNAT']
@@ -688,8 +799,14 @@ def run(gdb, summarytbl, year, fmpStartYear):  ## eg. summarytbl = {'MU110_17SAC
                         errorDetail[lyr].append(errorList)
                         minorError += 1
                         recordValCom[lyr].append("Warning on %s record(s): UYRORG should not be greater than YRSOURCE when POLYTYPE is FOR and VERT is TO, TU, MO or MU."%len(errorList))
+            except ValueError:
+                recordValCom[lyr].append("***Unable to run full validation on %s field due to value error - most likely due to missing mandatory field(s)"%current_field)
+                arcpy.AddWarning("***Unable to run full validation on %s field due to the following error:\n"%current_field + str(sys.exc_info()[1]))
+                criticalError += 1  
 
             # USPCOMP (PCI and BMI only)
+            try:
+                current_field = 'USPCOMP'            
                 if lyrAcro in ["PCI", "BMI"]:
                     errorList = ["Error on OBJECTID %s: USPCOMP must be null when POLYTYPE is not FOR or when DEVSTAGE is DEPHARV or DEPNAT."%cursor[OBJECTID] for row in cursor
                                     if cursor[f.index('POLYTYPE')] != 'FOR' or cursor[f.index('DEVSTAGE')] in ['DEPHARV','DEPNAT']
@@ -710,23 +827,22 @@ def run(gdb, summarytbl, year, fmpStartYear):  ## eg. summarytbl = {'MU110_17SAC
                         recordValCom[lyr].append("Error on %s record(s): USPCOMP must be entered when POLYTYPE is FOR and VERT is TO, TU, MO or MU."%len(errorList))
 
                     # code to check spcomp
-                    fieldname = "USPCOMP"
                     e1List, e2List, e3List, e4List, w1List = [],[],[],[],[]
                     for row in cursor:
-                        if cursor[f.index(fieldname)] not in vnull:
-                            check = R.spcVal(cursor[f.index(fieldname)],fieldname)
+                        if cursor[f.index(current_field)] not in vnull:
+                            check = R.spcVal(cursor[f.index(current_field)],current_field)
                             if check is None: ## when no error found
                                 pass
                             elif check[0] == "Error1":
-                                e1List.append("%s on OBJECTID %s: %s"%(check[0],cursor[OBJECTID],check[1]))
+                                e1List.append("Error on OBJECTID %s: %s"%(cursor[OBJECTID],check[1]))
                             elif check[0] == "Error2":
-                                e2List.append("%s on OBJECTID %s: %s"%(check[0],cursor[OBJECTID],check[1]))
+                                e2List.append("Error on OBJECTID %s: %s"%(cursor[OBJECTID],check[1]))
                             elif check[0] == "Error3":
-                                e3List.append("%s on OBJECTID %s: %s"%(check[0],cursor[OBJECTID],check[1]))
+                                e3List.append("Error on OBJECTID %s: %s"%(cursor[OBJECTID],check[1]))
                             elif check[0] == "Error4":
-                                e4List.append("%s on OBJECTID %s: %s"%(check[0],cursor[OBJECTID],check[1]))
+                                e4List.append("Error on OBJECTID %s: %s"%(cursor[OBJECTID],check[1]))
                             elif check[0] == "Warning1":
-                                w1List.append("%s on OBJECTID %s: %s"%(check[0],cursor[OBJECTID],check[1]))
+                                w1List.append("Warning on OBJECTID %s: %s"%(cursor[OBJECTID],check[1]))
                     cursor.reset()
                         # summarizing errors
                     if len(e1List + e2List + e3List + e4List) > 0:
@@ -740,7 +856,14 @@ def run(gdb, summarytbl, year, fmpStartYear):  ## eg. summarytbl = {'MU110_17SAC
                         minorError += 1
                         errorDetail[lyr].append(w1List)
                         recordValCom[lyr].append("Warning on %s record(s):%s."%(len(w1List),w1List[0][w1List[0].find(':')+1:]))
+            except ValueError:
+                recordValCom[lyr].append("***Unable to run full validation on %s field due to value error - most likely due to missing mandatory field(s)"%current_field)
+                arcpy.AddWarning("***Unable to run full validation on %s field due to the following error:\n"%current_field + str(sys.exc_info()[1]))
+                criticalError += 1
+
             # ULEADSPC (PCI and BMI only)
+            try:
+                current_field = 'ULEADSPC'            
                 if lyrAcro in ["PCI", "BMI"]:
                     errorList = ["Error on OBJECTID %s: ULEADSPC must be null when POLYTYPE is not FOR or when DEVSTAGE is DEPHARV or DEPNAT."%cursor[OBJECTID] for row in cursor
                                     if cursor[f.index('POLYTYPE')] != 'FOR' or cursor[f.index('DEVSTAGE')] in ['DEPHARV','DEPNAT']
@@ -779,8 +902,14 @@ def run(gdb, summarytbl, year, fmpStartYear):  ## eg. summarytbl = {'MU110_17SAC
                         errorDetail[lyr].append(errorList)
                         criticalError += 1
                         recordValCom[lyr].append("Error on %s record(s): ULEADSPC must be the species with the greatest percent composition."%len(errorList))
+            except ValueError:
+                recordValCom[lyr].append("***Unable to run full validation on %s field due to value error - most likely due to missing mandatory field(s)"%current_field)
+                arcpy.AddWarning("***Unable to run full validation on %s field due to the following error:\n"%current_field + str(sys.exc_info()[1]))
+                criticalError += 1
 
             # UAGE (PCI and BMI only)
+            try:
+                current_field = 'UAGE'            
                 if lyrAcro in ["PCI", "BMI"]:
                     errorList = ["Error on OBJECTID %s: UAGE must be zero (or null) when POLYTYPE is not FOR or when DEVSTAGE is DEPHARV or DEPNAT."%cursor[OBJECTID] for row in cursor
                                     if cursor[f.index('POLYTYPE')] != 'FOR' or cursor[f.index('DEVSTAGE')] in ['DEPHARV','DEPNAT']
@@ -799,8 +928,14 @@ def run(gdb, summarytbl, year, fmpStartYear):  ## eg. summarytbl = {'MU110_17SAC
                         errorDetail[lyr].append(errorList)
                         criticalError += 1
                         recordValCom[lyr].append("Error on %s record(s): UAGE must be populated and follow the correct format when POLYTYPE is FOR and when VERT is TO, TU, MO or MU."%len(errorList))
+            except ValueError:
+                recordValCom[lyr].append("***Unable to run full validation on %s field due to value error - most likely due to missing mandatory field(s)"%current_field)
+                arcpy.AddWarning("***Unable to run full validation on %s field due to the following error:\n"%current_field + str(sys.exc_info()[1]))
+                criticalError += 1
 
             # UHT (PCI and BMI only)
+            try:
+                current_field = 'UHT'              
                 if lyrAcro in ["PCI", "BMI"]:
                     errorList = ["Error on OBJECTID %s: UHT must be zero (or null) when POLYTYPE is not FOR or when DEVSTAGE is DEPHARV or DEPNAT."%cursor[OBJECTID] for row in cursor
                                     if cursor[f.index('POLYTYPE')] != 'FOR' or cursor[f.index('DEVSTAGE')] in ['DEPHARV','DEPNAT']
@@ -838,8 +973,15 @@ def run(gdb, summarytbl, year, fmpStartYear):  ## eg. summarytbl = {'MU110_17SAC
                         errorDetail[lyr].append(errorList)
                         criticalError += 1
                         recordValCom[lyr].append("Error on %s record(s): OHT minus UHT must be >= 3 OR OAGE minus UAGE must be >= 20, when VERT is TO, TU, MO or MU."%len(errorList))      # *UD2 update on Dec 2017
+            except ValueError:
+                recordValCom[lyr].append("***Unable to run full validation on %s field due to value error - most likely due to missing mandatory field(s)"%current_field)
+                arcpy.AddWarning("***Unable to run full validation on %s field due to the following error:\n"%current_field + str(sys.exc_info()[1]))
+                criticalError += 1
+
 
             # UCCLO (PCI and BMI only)
+            try:
+                current_field = 'UCCLO'              
                 if lyrAcro in ["PCI", "BMI"]:
                     errorList = ["Error on OBJECTID %s: UCCLO must be zero when POLYTYPE is not FOR or when DEVSTAGE is DEPHARV or DEPNAT."%cursor[OBJECTID] for row in cursor
                                     if cursor[f.index('POLYTYPE')] != 'FOR' or cursor[f.index('DEVSTAGE')] in ['DEPHARV','DEPNAT']
@@ -867,8 +1009,14 @@ def run(gdb, summarytbl, year, fmpStartYear):  ## eg. summarytbl = {'MU110_17SAC
                         errorDetail[lyr].append(errorList)
                         criticalError += 1
                         recordValCom[lyr].append("Error on %s record(s): UCCLO must be between 0 and 100 when POLYTYPE = FOR."%len(errorList))
+            except ValueError:
+                recordValCom[lyr].append("***Unable to run full validation on %s field due to value error - most likely due to missing mandatory field(s)"%current_field)
+                arcpy.AddWarning("***Unable to run full validation on %s field due to the following error:\n"%current_field + str(sys.exc_info()[1]))
+                criticalError += 1
 
             # USTKG (PCI and BMI only)
+            try:
+                current_field = 'USTKG'             
                 if lyrAcro in ["PCI", "BMI"]:
                     errorList = ["Error on OBJECTID %s: USTKG must be zero when POLYTYPE is not FOR or when DEVSTAGE is DEPHARV or DEPNAT."%cursor[OBJECTID] for row in cursor
                                     if cursor[f.index('POLYTYPE')] != 'FOR' or cursor[f.index('DEVSTAGE')] in ['DEPHARV','DEPNAT']
@@ -906,8 +1054,15 @@ def run(gdb, summarytbl, year, fmpStartYear):  ## eg. summarytbl = {'MU110_17SAC
                         errorDetail[lyr].append(errorList)
                         minorError += 1
                         recordValCom[lyr].append("Warning on %s record(s): USTKG should be less than 2.5."%len(errorList))
+            except ValueError:
+                recordValCom[lyr].append("***Unable to run full validation on %s field due to value error - most likely due to missing mandatory field(s)"%current_field)
+                arcpy.AddWarning("***Unable to run full validation on %s field due to the following error:\n"%current_field + str(sys.exc_info()[1]))
+                criticalError += 1
+
 
             # USC (PCI and BMI only)
+            try:
+                current_field = 'USC'            
                 if lyrAcro in ["PCI", "BMI"]:
                     errorList = ["Error on OBJECTID %s: USC must be zero when POLYTYPE is not FOR or when DEVSTAGE is DEPHARV or DEPNAT."%cursor[OBJECTID] for row in cursor
                                     if cursor[f.index('POLYTYPE')] != 'FOR' or cursor[f.index('DEVSTAGE')] in ['DEPHARV','DEPNAT']
@@ -926,8 +1081,15 @@ def run(gdb, summarytbl, year, fmpStartYear):  ## eg. summarytbl = {'MU110_17SAC
                         errorDetail[lyr].append(errorList)
                         criticalError += 1
                         recordValCom[lyr].append("Error on %s record(s): USC must be between 0 and 4 when POLYTYPE = FOR."%len(errorList))
+            except ValueError:
+                recordValCom[lyr].append("***Unable to run full validation on %s field due to value error - most likely due to missing mandatory field(s)"%current_field)
+                arcpy.AddWarning("***Unable to run full validation on %s field due to the following error:\n"%current_field + str(sys.exc_info()[1]))
+                criticalError += 1
+
 
             # INCIDSPC (applies to PCI BMI and OPI)
+            try:
+                current_field = 'INCIDSPC'            
                 errorList = ["Error on OBJECTID %s: INCIDSPC must be null when POLYTYPE is not FOR."%cursor[OBJECTID] for row in cursor
                                 if cursor[f.index('POLYTYPE')] != 'FOR'
                                 if cursor[f.index('INCIDSPC')] not in vnull]
@@ -957,7 +1119,6 @@ def run(gdb, summarytbl, year, fmpStartYear):  ## eg. summarytbl = {'MU110_17SAC
                     recordValCom[lyr].append("Error on %s record(s): INCIDSPC must follow the correct species code (or NON) if populated."%len(errorList))
 
                 if lyrAcro == 'PCI':
-# possibility of value error
                     errorList = ["Warning on OBJECTID %s: INCIDSPC should not represent over 10 percent in OSPCOMP."%cursor[OBJECTID] for row in cursor
                                     if cursor[f.index('INCIDSPC')] not in [None,'',' ','NON','Non'] and cursor[f.index('OSPCOMP')] != None  # if INCIDSPC is None, '' or ' ', then the next statement wouldn't work.
                                     if cursor[f.index('INCIDSPC')].upper() in cursor[f.index('OSPCOMP')].upper()
@@ -969,9 +1130,8 @@ def run(gdb, summarytbl, year, fmpStartYear):  ## eg. summarytbl = {'MU110_17SAC
                         recordValCom[lyr].append("Warning on %s record(s): INCIDSPC should not represent over 10 percent in OSPCOMP."%len(errorList))
 
                 if lyrAcro in ["BMI", "OPI"]:
-# possibility of value error
                     errorList = ["Warning on OBJECTID %s: INCIDSPC should not represent over 10 percent in SPCOMP."%cursor[OBJECTID] for row in cursor
-                                    if cursor[f.index('INCIDSPC')] not in [None,'',' ','NON','Non'] and cursor[f.index('SPCOMP')] != None  # if INCIDSPC is None, '' or ' ', then the next statement wouldn't work.
+                                    if cursor[f.index('INCIDSPC')] not in [None,'',' ','NON','Non'] and cursor[f.index('SPCOMP')] != None
                                     if cursor[f.index('INCIDSPC')].upper() in cursor[f.index('SPCOMP')].upper()
                                     if int(cursor[f.index('SPCOMP')][cursor[f.index('SPCOMP')].upper().find(cursor[f.index('INCIDSPC')].upper())+3:cursor[f.index('SPCOMP')].upper().find(cursor[f.index('INCIDSPC')].upper())+6] > 10)]
                     cursor.reset()
@@ -979,8 +1139,14 @@ def run(gdb, summarytbl, year, fmpStartYear):  ## eg. summarytbl = {'MU110_17SAC
                         errorDetail[lyr].append(errorList)
                         minorError += 1
                         recordValCom[lyr].append("Warning on %s record(s): INCIDSPC should not represent over 10 percent in SPCOMP."%len(errorList))                                      
+            except ValueError:
+                recordValCom[lyr].append("***Unable to run full validation on %s field due to value error - most likely due to missing mandatory field(s)"%current_field)
+                arcpy.AddWarning("***Unable to run full validation on %s field due to the following error:\n"%current_field + str(sys.exc_info()[1]))
+                criticalError += 1
 
             # VERT
+            try:
+                current_field = 'VERT'            
                 errorList = ["Error on OBJECTID %s: VERT must be populated and must follow the correct coding scheme when POLYTYPE is FOR."%cursor[OBJECTID] for row in cursor
                                 if cursor[f.index('POLYTYPE')] == 'FOR'
                                 if cursor[f.index('VERT')] not in ['SI','SV','TO','TU','MO','MU','CX']]
@@ -989,8 +1155,14 @@ def run(gdb, summarytbl, year, fmpStartYear):  ## eg. summarytbl = {'MU110_17SAC
                     errorDetail[lyr].append(errorList)
                     criticalError += 1
                     recordValCom[lyr].append("Error on %s record(s): VERT must be populated and must follow the correct coding scheme when POLYTYPE is FOR."%len(errorList))
+            except ValueError:
+                recordValCom[lyr].append("***Unable to run full validation on %s field due to value error - most likely due to missing mandatory field(s)"%current_field)
+                arcpy.AddWarning("***Unable to run full validation on %s field due to the following error:\n"%current_field + str(sys.exc_info()[1]))
+                criticalError += 1
 
             # HORIZ
+            try:
+                current_field = 'HORIZ'            
                 errorList = ["Error on OBJECTID %s: HORIZ must be populated and must follow the correct coding scheme when POLYTYPE is FOR."%cursor[OBJECTID] for row in cursor
                                 if cursor[f.index('POLYTYPE')] == 'FOR'
                                 if cursor[f.index('HORIZ')] not in ['SS','SP','FP','MP','OC','OU']]
@@ -999,8 +1171,14 @@ def run(gdb, summarytbl, year, fmpStartYear):  ## eg. summarytbl = {'MU110_17SAC
                     errorDetail[lyr].append(errorList)
                     criticalError += 1
                     recordValCom[lyr].append("Error on %s record(s): HORIZ must be populated and must follow the correct coding scheme when POLYTYPE is FOR."%len(errorList))
+            except ValueError:
+                recordValCom[lyr].append("***Unable to run full validation on %s field due to value error - most likely due to missing mandatory field(s)"%current_field)
+                arcpy.AddWarning("***Unable to run full validation on %s field due to the following error:\n"%current_field + str(sys.exc_info()[1]))
+                criticalError += 1
 
             # PRI_ECO and SEC_ECO
+            try:
+                current_field = 'PRI_ECO and SEC_ECO'
                 errorList = ["Error on OBJECTID %s: PRI_ECO must be populated when POLYTYPE is FOR or when SEC_ECO is not null."%cursor[OBJECTID] for row in cursor
                                 if cursor[f.index('POLYTYPE')] == 'FOR' or cursor[f.index('SEC_ECO')] not in vnull
                                 if cursor[f.index('PRI_ECO')] in vnull]
@@ -1026,8 +1204,14 @@ def run(gdb, summarytbl, year, fmpStartYear):  ## eg. summarytbl = {'MU110_17SAC
                         errorDetail[lyr].append(errorList)
                         criticalError += 1
                         recordValCom[lyr].append("Error on %s record(s): %s value error. For more info, search for '%s' in the Error Detail section."%(len(errorList),fname,fname))
+            except ValueError:
+                recordValCom[lyr].append("***Unable to run full validation on %s field due to value error - most likely due to missing mandatory field(s)"%current_field)
+                arcpy.AddWarning("***Unable to run full validation on %s field due to the following error:\n"%current_field + str(sys.exc_info()[1]))
+                criticalError += 1
 
             # ACCESS1
+            try:
+                current_field = 'ACCESS1'            
                 errorList = ["Error on OBJECTID %s: ACCESS1 must be null when POLYTYPE is not FOR."%cursor[OBJECTID] for row in cursor
                                 if cursor[f.index('POLYTYPE')] != 'FOR'
                                 if cursor[f.index('ACCESS1')] not in vnull]
@@ -1046,8 +1230,14 @@ def run(gdb, summarytbl, year, fmpStartYear):  ## eg. summarytbl = {'MU110_17SAC
                     errorDetail[lyr].append(errorList)
                     criticalError += 1
                     recordValCom[lyr].append("Error on %s record(s): ACCESS1 must be populated and must follow the correct coding scheme when POLYTYPE is FOR."%len(errorList))
+            except ValueError:
+                recordValCom[lyr].append("***Unable to run full validation on %s field due to value error - most likely due to missing mandatory field(s)"%current_field)
+                arcpy.AddWarning("***Unable to run full validation on %s field due to the following error:\n"%current_field + str(sys.exc_info()[1]))
+                criticalError += 1
 
             # ACCESS2
+            try:
+                current_field = 'ACCESS2'               
                 if 'ACCESS2' in f:
                     errorList = ["Error on OBJECTID %s: ACCESS2 must be null when POLYTYPE is not FOR."%cursor[OBJECTID] for row in cursor
                                     if cursor[f.index('POLYTYPE')] != 'FOR'
@@ -1085,8 +1275,14 @@ def run(gdb, summarytbl, year, fmpStartYear):  ## eg. summarytbl = {'MU110_17SAC
                         errorDetail[lyr].append(errorList)
                         criticalError += 1
                         recordValCom[lyr].append("Error on %s record(s): ACCESS1 must not be the same as ACCESS2 unless both are NON."%len(errorList))
+            except ValueError:
+                recordValCom[lyr].append("***Unable to run full validation on %s field due to value error - most likely due to missing mandatory field(s)"%current_field)
+                arcpy.AddWarning("***Unable to run full validation on %s field due to the following error:\n"%current_field + str(sys.exc_info()[1]))
+                criticalError += 1
 
             # MGMTCON1
+            try:
+                current_field = 'MGMTCON1'            
                 try:
                     errorList = ["Error on OBJECTID %s: MGMTCON1, MGMTCON2 and MGMTCON3 must be null when POLYTYPE is not FOR."%cursor[OBJECTID] for row in cursor
                                     if cursor[f.index('POLYTYPE')] != 'FOR'
@@ -1157,8 +1353,15 @@ def run(gdb, summarytbl, year, fmpStartYear):  ## eg. summarytbl = {'MU110_17SAC
                     errorDetail[lyr].append(errorList)
                     criticalError += 1
                     recordValCom[lyr].append("Error on %s record(s): MGMTCON1 must not equal 'NONE' when FORMOD = 'PF'."%len(errorList))
+            except ValueError:
+                recordValCom[lyr].append("***Unable to run full validation on %s field due to value error - most likely due to missing mandatory field(s)"%current_field)
+                arcpy.AddWarning("***Unable to run full validation on %s field due to the following error:\n"%current_field + str(sys.exc_info()[1]))
+                criticalError += 1
+
 
             # MGMTCON2, MGMTCON3
+            try:
+                current_field = 'MGMTCON2 and MGMTCON3'            
                 if "MGMTCON2" in f:
                     errorList = ["Error on OBJECTID %s: MGMTCON1 must not be 'NONE' if MGMTCON2 is not 'NONE'."%cursor[OBJECTID] for row in cursor
                                     if cursor[f.index('POLYTYPE')] == 'FOR'
@@ -1239,12 +1442,17 @@ def run(gdb, summarytbl, year, fmpStartYear):  ## eg. summarytbl = {'MU110_17SAC
                    fieldValComUpdate[lyr].append("Missing MGMTCON2: If MGMTCON3 field exists, then MGMTCON2 field should also exist.")
                    fieldValUpdate[lyr] = 'Invalid'
 
-
+            except ValueError:
+                recordValCom[lyr].append("***Unable to run full validation on %s field due to value error - most likely due to missing mandatory field(s)"%current_field)
+                arcpy.AddWarning("***Unable to run full validation on %s field due to the following error:\n"%current_field + str(sys.exc_info()[1]))
+                criticalError += 1
 
 
             ################################     BMI and OPI ONLY     ##################################
 
             # YRORG (BMI and OPI only)
+            try:
+                current_field = 'YRORG'             
                 if lyrAcro in ["BMI","OPI"]:
                     errorList = ["Error on OBJECTID %s: YRORG must equal zero when POLYTYPE is not FOR."%cursor[OBJECTID] for row in cursor
                                     if cursor[f.index('POLYTYPE')] != 'FOR'
@@ -1292,8 +1500,14 @@ def run(gdb, summarytbl, year, fmpStartYear):  ## eg. summarytbl = {'MU110_17SAC
                         errorDetail[lyr].append(errorList)
                         minorError += 1
                         recordValCom[lyr].append("Warning on %s record(s): YRORG should be less than or equal to UYRORG if UYRORG is not 0."%len(errorList))
+            except ValueError:
+                recordValCom[lyr].append("***Unable to run full validation on %s field due to value error - most likely due to missing mandatory field(s)"%current_field)
+                arcpy.AddWarning("***Unable to run full validation on %s field due to the following error:\n"%current_field + str(sys.exc_info()[1]))
+                criticalError += 1
 
             # SPCOMP (BMI and OPI only)
+            try:
+                current_field = 'SPCOMP'            
                 if lyrAcro in ["BMI", "OPI"]:
                     errorList = ["Error on OBJECTID %s: SPCOMP must be null when POLYTYPE is not FOR."%cursor[OBJECTID] for row in cursor
                                     if cursor[f.index('POLYTYPE')] != 'FOR'
@@ -1314,23 +1528,22 @@ def run(gdb, summarytbl, year, fmpStartYear):  ## eg. summarytbl = {'MU110_17SAC
                         recordValCom[lyr].append("Error on %s record(s): SPCOMP must be populated when POLYTYPE is FOR."%len(errorList))
 
                     # code to check spcomp
-                    fieldname = "SPCOMP"
                     e1List, e2List, e3List, e4List, w1List = [],[],[],[],[]
                     for row in cursor:
-                        if cursor[f.index(fieldname)] not in vnull:
-                            check = R.spcVal(cursor[f.index(fieldname)],fieldname)
+                        if cursor[f.index(current_field)] not in vnull:
+                            check = R.spcVal(cursor[f.index(current_field)],current_field)
                             if check is None: ## when no error found
                                 pass
                             elif check[0] == "Error1":
-                                e1List.append("%s on OBJECTID %s: %s"%(check[0],cursor[OBJECTID],check[1]))
+                                e1List.append("Error on OBJECTID %s: %s"%(cursor[OBJECTID],check[1]))
                             elif check[0] == "Error2":
-                                e2List.append("%s on OBJECTID %s: %s"%(check[0],cursor[OBJECTID],check[1]))
+                                e2List.append("Error on OBJECTID %s: %s"%(cursor[OBJECTID],check[1]))
                             elif check[0] == "Error3":
-                                e3List.append("%s on OBJECTID %s: %s"%(check[0],cursor[OBJECTID],check[1]))
+                                e3List.append("Error on OBJECTID %s: %s"%(cursor[OBJECTID],check[1]))
                             elif check[0] == "Error4":
-                                e4List.append("%s on OBJECTID %s: %s"%(check[0],cursor[OBJECTID],check[1]))
+                                e4List.append("Error on OBJECTID %s: %s"%(cursor[OBJECTID],check[1]))
                             elif check[0] == "Warning1":
-                                w1List.append("%s on OBJECTID %s: %s"%(check[0],cursor[OBJECTID],check[1]))
+                                w1List.append("Warning on OBJECTID %s: %s"%(cursor[OBJECTID],check[1]))
                     cursor.reset()
                         # summarizing errors
                     if len(e1List + e2List + e3List + e4List) > 0:
@@ -1344,7 +1557,14 @@ def run(gdb, summarytbl, year, fmpStartYear):  ## eg. summarytbl = {'MU110_17SAC
                         minorError += 1
                         errorDetail[lyr].append(w1List)
                         recordValCom[lyr].append("Warning on %s record(s):%s."%(len(w1List),w1List[0][w1List[0].find(':')+1:]))
+            except ValueError:
+                recordValCom[lyr].append("***Unable to run full validation on %s field due to value error - most likely due to missing mandatory field(s)"%current_field)
+                arcpy.AddWarning("***Unable to run full validation on %s field due to the following error:\n"%current_field + str(sys.exc_info()[1]))
+                criticalError += 1
+
             # LEADSPC (BMI and OPI only)
+            try:
+                current_field = 'LEADSPC'              
                 if lyrAcro in ["BMI", "OPI"]:
                     errorList = ["Error on OBJECTID %s: LEADSPC must be null when POLYTYPE is not FOR."%cursor[OBJECTID] for row in cursor
                                     if cursor[f.index('POLYTYPE')] != 'FOR'
@@ -1384,8 +1604,14 @@ def run(gdb, summarytbl, year, fmpStartYear):  ## eg. summarytbl = {'MU110_17SAC
                         errorDetail[lyr].append(errorList)
                         criticalError += 1
                         recordValCom[lyr].append("Error on %s record(s): LEADSPC must be the species with the greatest percent composition."%len(errorList))
+            except ValueError:
+                recordValCom[lyr].append("***Unable to run full validation on %s field due to value error - most likely due to missing mandatory field(s)"%current_field)
+                arcpy.AddWarning("***Unable to run full validation on %s field due to the following error:\n"%current_field + str(sys.exc_info()[1]))
+                criticalError += 1
 
             # AGE (BMI and OPI only)
+            try:
+                current_field = 'LEADSPC'              
                 if lyrAcro in ["BMI", "OPI"]:
                     errorList = ["Error on OBJECTID %s: AGE must be zero when POLYTYPE is not FOR."%cursor[OBJECTID] for row in cursor
                                     if cursor[f.index('POLYTYPE')] != 'FOR'
@@ -1424,8 +1650,14 @@ def run(gdb, summarytbl, year, fmpStartYear):  ## eg. summarytbl = {'MU110_17SAC
                         errorDetail[lyr].append(errorList)
                         criticalError += 1
                         recordValCom[lyr].append("Error on %s record(s): AGE must be equal to the plan start year minus the YRORG."%len(errorList))
+            except ValueError:
+                recordValCom[lyr].append("***Unable to run full validation on %s field due to value error - most likely due to missing mandatory field(s)"%current_field)
+                arcpy.AddWarning("***Unable to run full validation on %s field due to the following error:\n"%current_field + str(sys.exc_info()[1]))
+                criticalError += 1
 
             # HT (BMI and OPI only)
+            try:
+                current_field = 'HT'            
                 if lyrAcro in ["BMI", "OPI"]:
                     errorList = ["Error on OBJECTID %s: HT must be zero when POLYTYPE is not FOR."%cursor[OBJECTID] for row in cursor
                                     if cursor[f.index('POLYTYPE')] != 'FOR'
@@ -1467,8 +1699,14 @@ def run(gdb, summarytbl, year, fmpStartYear):  ## eg. summarytbl = {'MU110_17SAC
                             errorDetail[lyr].append(errorList)
                             minorError += 1
                             recordValCom[lyr].append("Warning on %s record(s): HT should be greater than or equal to UHT and less than or equal to OHT."%len(errorList))
+            except ValueError:
+                recordValCom[lyr].append("***Unable to run full validation on %s field due to value error - most likely due to missing mandatory field(s)"%current_field)
+                arcpy.AddWarning("***Unable to run full validation on %s field due to the following error:\n"%current_field + str(sys.exc_info()[1]))
+                criticalError += 1
 
             # CCLO (BMI and OPI only)
+            try:
+                current_field = 'CCLO'            
                 if lyrAcro in ["BMI", "OPI"]:
                     errorList = ["Error on OBJECTID %s: CCLO must be zero when POLYTYPE is not FOR."%cursor[OBJECTID] for row in cursor
                                     if cursor[f.index('POLYTYPE')] != 'FOR'
@@ -1487,8 +1725,14 @@ def run(gdb, summarytbl, year, fmpStartYear):  ## eg. summarytbl = {'MU110_17SAC
                         errorDetail[lyr].append(errorList)
                         criticalError += 1
                         recordValCom[lyr].append("Error on %s record(s): CCLO must be populated and must be between 0 and 100 (when POLYTYPE = FOR)."%len(errorList))
+            except ValueError:
+                recordValCom[lyr].append("***Unable to run full validation on %s field due to value error - most likely due to missing mandatory field(s)"%current_field)
+                arcpy.AddWarning("***Unable to run full validation on %s field due to the following error:\n"%current_field + str(sys.exc_info()[1]))
+                criticalError += 1
 
             # STKG (BMI and OPI only)
+            try:
+                current_field = 'STKG'             
                 if lyrAcro in ["BMI", "OPI"]:
                     errorList = ["Error on OBJECTID %s: STKG must be zero when POLYTYPE is not FOR."%cursor[OBJECTID] for row in cursor
                                     if cursor[f.index('POLYTYPE')] != 'FOR'
@@ -1553,7 +1797,14 @@ def run(gdb, summarytbl, year, fmpStartYear):  ## eg. summarytbl = {'MU110_17SAC
                         minorError += 1
                         recordValCom[lyr].append("Warning on %s record(s): STKG should be less than 2.5."%len(errorList))
 
+            except ValueError:
+                recordValCom[lyr].append("***Unable to run full validation on %s field due to value error - most likely due to missing mandatory field(s)"%current_field)
+                arcpy.AddWarning("***Unable to run full validation on %s field due to the following error:\n"%current_field + str(sys.exc_info()[1]))
+                criticalError += 1
+
             # SC (BMI and OPI only)
+            try:
+                current_field = 'SC'            
                 if lyrAcro in ["BMI", "OPI"]:
                     errorList = ["Error on OBJECTID %s: SC must be zero when POLYTYPE is not FOR."%cursor[OBJECTID] for row in cursor
                                     if cursor[f.index('POLYTYPE')] != 'FOR'
@@ -1572,8 +1823,14 @@ def run(gdb, summarytbl, year, fmpStartYear):  ## eg. summarytbl = {'MU110_17SAC
                         errorDetail[lyr].append(errorList)
                         criticalError += 1
                         recordValCom[lyr].append("Error on %s record(s): SC must be between 0 and 4 when POLYTYPE = FOR."%len(errorList))
+            except ValueError:
+                recordValCom[lyr].append("***Unable to run full validation on %s field due to value error - most likely due to missing mandatory field(s)"%current_field)
+                arcpy.AddWarning("***Unable to run full validation on %s field due to the following error:\n"%current_field + str(sys.exc_info()[1]))
+                criticalError += 1
 
             # MANAGED (BMI and OPI only)
+            try:
+                current_field = 'MANAGED'            
                 if lyrAcro in ["BMI", "OPI"]:
                     errorList = ["Error on OBJECTID %s: MANAGED must be null when POLYTYPE is not FOR."%cursor[OBJECTID] for row in cursor
                                     if cursor[f.index('POLYTYPE')] != 'FOR'
@@ -1592,8 +1849,14 @@ def run(gdb, summarytbl, year, fmpStartYear):  ## eg. summarytbl = {'MU110_17SAC
                         errorDetail[lyr].append(errorList)
                         criticalError += 1
                         recordValCom[lyr].append("Error on %s record(s): MANAGED must be M or U when POLYTYPE = FOR."%len(errorList))
+            except ValueError:
+                recordValCom[lyr].append("***Unable to run full validation on %s field due to value error - most likely due to missing mandatory field(s)"%current_field)
+                arcpy.AddWarning("***Unable to run full validation on %s field due to the following error:\n"%current_field + str(sys.exc_info()[1]))
+                criticalError += 1
 
             # SMZ (BMI and OPI only)
+            try:
+                current_field = 'SMZ'            
                 if lyrAcro in ["BMI", "OPI"]:
                     errorList = ["Error on OBJECTID %s: SMZ must be populated."%cursor[OBJECTID] for row in cursor
                                     if cursor[f.index('SMZ')] in vnull]
@@ -1602,8 +1865,14 @@ def run(gdb, summarytbl, year, fmpStartYear):  ## eg. summarytbl = {'MU110_17SAC
                         errorDetail[lyr].append(errorList)
                         criticalError += 1
                         recordValCom[lyr].append("Error on %s record(s): SMZ must be populated."%len(errorList))
+            except ValueError:
+                recordValCom[lyr].append("***Unable to run full validation on %s field due to value error - most likely due to missing mandatory field(s)"%current_field)
+                arcpy.AddWarning("***Unable to run full validation on %s field due to the following error:\n"%current_field + str(sys.exc_info()[1]))
+                criticalError += 1
 
             # PLANFU (BMI and OPI only)
+            try:
+                current_field = 'PLANFU'         
                 if lyrAcro in ["BMI", "OPI"]:
                     errorList = ["Error on OBJECTID %s: PLANFU must be null when POLYTYPE is not FOR."%cursor[OBJECTID] for row in cursor
                                     if cursor[f.index('POLYTYPE')] != 'FOR'
@@ -1622,8 +1891,14 @@ def run(gdb, summarytbl, year, fmpStartYear):  ## eg. summarytbl = {'MU110_17SAC
                         errorDetail[lyr].append(errorList)
                         criticalError += 1
                         recordValCom[lyr].append("Error on %s record(s): PLANFU must be populated when POLYTYPE = FOR."%len(errorList))
+            except ValueError:
+                recordValCom[lyr].append("***Unable to run full validation on %s field due to value error - most likely due to missing mandatory field(s)"%current_field)
+                arcpy.AddWarning("***Unable to run full validation on %s field due to the following error:\n"%current_field + str(sys.exc_info()[1]))
+                criticalError += 1
 
             # AU (BMI and OPI only)
+            try:
+                current_field = 'AU'             
                 if lyrAcro in ["BMI", "OPI"]:
                     errorList = ["Error on OBJECTID %s: AU must be null when POLYTYPE is not FOR."%cursor[OBJECTID] for row in cursor
                                     if cursor[f.index('POLYTYPE')] != 'FOR'
@@ -1633,8 +1908,14 @@ def run(gdb, summarytbl, year, fmpStartYear):  ## eg. summarytbl = {'MU110_17SAC
                         errorDetail[lyr].append(errorList)
                         criticalError += 1
                         recordValCom[lyr].append("Error on %s record(s): AU must be null when POLYTYPE is not FOR."%len(errorList))
+            except ValueError:
+                recordValCom[lyr].append("***Unable to run full validation on %s field due to value error - most likely due to missing mandatory field(s)"%current_field)
+                arcpy.AddWarning("***Unable to run full validation on %s field due to the following error:\n"%current_field + str(sys.exc_info()[1]))
+                criticalError += 1
 
             # AVAIL (BMI and OPI only)
+            try:
+                current_field = 'AVAIL'             
                 if lyrAcro in ["BMI", "OPI"]:
                     errorList = ["Error on OBJECTID %s: AVAIL must be null when POLYTYPE is not FOR."%cursor[OBJECTID] for row in cursor
                                     if cursor[f.index('POLYTYPE')] != 'FOR'
@@ -1696,8 +1977,14 @@ def run(gdb, summarytbl, year, fmpStartYear):  ## eg. summarytbl = {'MU110_17SAC
                         errorDetail[lyr].append(errorList)
                         minorError += 1
                         recordValCom[lyr].append("Warning on %s record(s): AVAIL should be U when ACCESS1 is GEO, LUD, OWN, PRC or STO."%len(errorList))
+            except ValueError:
+                recordValCom[lyr].append("***Unable to run full validation on %s field due to value error - most likely due to missing mandatory field(s)"%current_field)
+                arcpy.AddWarning("***Unable to run full validation on %s field due to the following error:\n"%current_field + str(sys.exc_info()[1]))
+                criticalError += 1
 
             # SILVSYS (BMI and OPI only)
+            try:
+                current_field = 'SILVSYS'            
                 if lyrAcro in ["BMI", "OPI"]:
                     errorList = ["Error on OBJECTID %s: SILVSYS must be null when POLYTYPE is not FOR."%cursor[OBJECTID] for row in cursor
                                     if cursor[f.index('POLYTYPE')] != 'FOR'
@@ -1716,8 +2003,14 @@ def run(gdb, summarytbl, year, fmpStartYear):  ## eg. summarytbl = {'MU110_17SAC
                         errorDetail[lyr].append(errorList)
                         criticalError += 1
                         recordValCom[lyr].append("Error on %s record(s): SILVSYS must be CC, SE or SH when POLYTYPE is FOR."%len(errorList))
+            except ValueError:
+                recordValCom[lyr].append("***Unable to run full validation on %s field due to value error - most likely due to missing mandatory field(s)"%current_field)
+                arcpy.AddWarning("***Unable to run full validation on %s field due to the following error:\n"%current_field + str(sys.exc_info()[1]))
+                criticalError += 1
 
             # NEXTSTG (BMI and OPI only)
+            try:
+                current_field = 'NEXTSTG'            
                 if lyrAcro in ["BMI", "OPI"]:
                     errorList = ["Error on OBJECTID %s: NEXTSTG must be null when POLYTYPE is not FOR."%cursor[OBJECTID] for row in cursor
                                     if cursor[f.index('POLYTYPE')] != 'FOR'
@@ -1737,8 +2030,14 @@ def run(gdb, summarytbl, year, fmpStartYear):  ## eg. summarytbl = {'MU110_17SAC
                         errorDetail[lyr].append(errorList)
                         criticalError += 1
                         recordValCom[lyr].append("Error on %s record(s): NEXTSTG must follow the coding scheme when POLYTYPE is FOR and AVAIL = A."%len(errorList))
+            except ValueError:
+                recordValCom[lyr].append("***Unable to run full validation on %s field due to value error - most likely due to missing mandatory field(s)"%current_field)
+                arcpy.AddWarning("***Unable to run full validation on %s field due to the following error:\n"%current_field + str(sys.exc_info()[1]))
+                criticalError += 1
 
             # YIELD (BMI and OPI only)
+            try:
+                current_field = 'YIELD'            
                 if lyrAcro in ["BMI", "OPI"]:
                     errorList = ["Error on OBJECTID %s: YIELD must be null when POLYTYPE is not FOR."%cursor[OBJECTID] for row in cursor
                                     if cursor[f.index('POLYTYPE')] != 'FOR'
@@ -1757,7 +2056,10 @@ def run(gdb, summarytbl, year, fmpStartYear):  ## eg. summarytbl = {'MU110_17SAC
                         errorDetail[lyr].append(errorList)
                         criticalError += 1
                         recordValCom[lyr].append("Error on %s record(s): YIELD must be populated when POLYTYPE is FOR."%len(errorList))
-
+            except ValueError:
+                recordValCom[lyr].append("***Unable to run full validation on %s field due to value error - most likely due to missing mandatory field(s)"%current_field)
+                arcpy.AddWarning("***Unable to run full validation on %s field due to the following error:\n"%current_field + str(sys.exc_info()[1]))
+                criticalError += 1
 
             ################################     OPI ONLY     ##################################
 
@@ -1765,6 +2067,8 @@ def run(gdb, summarytbl, year, fmpStartYear):  ## eg. summarytbl = {'MU110_17SAC
                 # There's nothing to validate.
 
             # SGR (OPI only)
+            try:
+                current_field = 'YIELD'            
                 if lyrAcro == "OPI":
                     errorList = ["Error on OBJECTID %s: SGR must be null when POLYTYPE is not FOR."%cursor[OBJECTID] for row in cursor
                                     if cursor[f.index('POLYTYPE')] != 'FOR'
@@ -1785,24 +2089,26 @@ def run(gdb, summarytbl, year, fmpStartYear):  ## eg. summarytbl = {'MU110_17SAC
                         errorDetail[lyr].append(errorList)
                         criticalError += 1
                         recordValCom[lyr].append("Error on %s record(s): SGR must not be null when POLYTYPE is FOR, AVAIL = A, and AGE >= 30."%len(errorList))
-
-
-            # that's all for BMI, PCI and OPI!!!!!
-
-            except ValueError: # This try statement begins way up - "if lyrAcro in ["PCI","BMI","OPI"]:""
-                recordValCom[lyr].append("***Unable to run full validation on %s due to value error - most likely due to missing mandatory field(s)"%lyr)
-                arcpy.AddError("***Unable to run full validation on %s due to the following error:\n"%lyr + str(sys.exc_info()[1]))
+            except ValueError:
+                recordValCom[lyr].append("***Unable to run full validation on %s field due to value error - most likely due to missing mandatory field(s)"%current_field)
+                arcpy.AddWarning("***Unable to run full validation on %s field due to the following error:\n"%current_field + str(sys.exc_info()[1]))
                 criticalError += 1
 
-
+        
+                # that's all for the inventory data (BMI, PCI and OPI)!!!!!
+        #############################################################################
+        #############################################################################
+        #############################################################################
+        #############################################################################
 
 
         ########################         Checking FDP        ########################
 
         if lyrAcro == "FDP":
-            try: # need try and except block here for cases such as not having mandatory fields.
 
             # FSOURCE
+            try:
+                current_field = 'FSOURCE'              
                 errorList = ["Error on OBJECTID %s: FSOURCE must be populated and must follow the correct coding scheme."%cursor[OBJECTID] for row in cursor
                                 if cursor[f.index('FSOURCE')] not in ['FORECAST','BASECOVR','DIGITALA','DIGITALP','ESTIMATE','FOC','FRICNVRT','INFRARED','MARKING','OCULARA','OCULARG','OPC','PHOTO','PHOTOLS','PHOTOSS','LOTFIXD','PLOTVAR','RADAR','REGENASS','SEMEXTEN','SEMINTEN','SPECTRAL','SUPINFO']]
                 cursor.reset()
@@ -1810,8 +2116,14 @@ def run(gdb, summarytbl, year, fmpStartYear):  ## eg. summarytbl = {'MU110_17SAC
                     errorDetail[lyr].append(errorList)
                     criticalError += 1
                     recordValCom[lyr].append("Error on %s record(s): FSOURCE must be populated and must follow the correct coding scheme."%len(errorList))
+            except ValueError:
+                recordValCom[lyr].append("***Unable to run full validation on %s field due to value error - most likely due to missing mandatory field(s)"%current_field)
+                arcpy.AddWarning("***Unable to run full validation on %s field due to the following error:\n"%current_field + str(sys.exc_info()[1]))
+                criticalError += 1
 
             # FYRDEP
+            try:
+                current_field = 'FYRDEP'            
                 errorList = ["Error on OBJECTID %s: FYRDEP must be populated and zero is not a valid code."%cursor[OBJECTID] for row in cursor
                                 if cursor[f.index('FYRDEP')] in [0, None, '',' ']]
                 cursor.reset()
@@ -1828,8 +2140,14 @@ def run(gdb, summarytbl, year, fmpStartYear):  ## eg. summarytbl = {'MU110_17SAC
                     errorDetail[lyr].append(errorList)
                     minorError += 1
                     recordValCom[lyr].append("Warning on %s record(s): FYRDEP should not be less than plan start year minus 4."%len(errorList))
+            except ValueError:
+                recordValCom[lyr].append("***Unable to run full validation on %s field due to value error - most likely due to missing mandatory field(s)"%current_field)
+                arcpy.AddWarning("***Unable to run full validation on %s field due to the following error:\n"%current_field + str(sys.exc_info()[1]))
+                criticalError += 1
 
             # FDEVSTAGE
+            try:
+                current_field = 'FDEVSTAGE'            
                 errorList = ["Error on OBJECTID %s: FDEVSTAGE must be populated with the correct coding scheme."%cursor[OBJECTID] for row in cursor
                                 if cursor[f.index('FDEVSTAGE')] not in ['DEPHARV', 'DEPNAT','LOWMGMT','LOWNAT','NEWPLANT','NEWSEED','NEWNAT','ESTPLANT','ESTSEED','ESTNAT','NAT','THINPRE','THINCOM','BLKSTRIP','SEEDTREE','FRSTPASS','PREPCUT','SEEDCUT','FIRSTCUT','LASTCUT','THINCOM','IMPROVE','SELECT']]
                 cursor.reset()
@@ -1837,20 +2155,19 @@ def run(gdb, summarytbl, year, fmpStartYear):  ## eg. summarytbl = {'MU110_17SAC
                     errorDetail[lyr].append(errorList)
                     criticalError += 1
                     recordValCom[lyr].append("Error on %s record(s): FDEVSTAGE must be populated with the correct coding scheme."%len(errorList))
-
             except ValueError:
-                recordValCom[lyr].append("***Unable to run full validation on %s due to value error - most likely due to missing mandatory field(s)"%lyr)
-                arcpy.AddError("***Unable to run full validation on %s due to the following error:\n"%lyr + str(sys.exc_info()[1]))
+                recordValCom[lyr].append("***Unable to run full validation on %s field due to value error - most likely due to missing mandatory field(s)"%current_field)
+                arcpy.AddWarning("***Unable to run full validation on %s field due to the following error:\n"%current_field + str(sys.exc_info()[1]))
                 criticalError += 1
-
 
 
         ########################         Checking AOC        ########################
 
         if lyrAcro == "AOC":
-            try: # need try and except block here for cases such as not having mandatory fields.
 
             # AOCID
+            try:
+                current_field = 'AOCID'            
                 errorList = ["Error on OBJECTID %s: AOCID must be populated."%cursor[OBJECTID] for row in cursor
                                 if cursor[f.index('AOCID')] in vnull]
                 cursor.reset()
@@ -1858,8 +2175,14 @@ def run(gdb, summarytbl, year, fmpStartYear):  ## eg. summarytbl = {'MU110_17SAC
                     errorDetail[lyr].append(errorList)
                     criticalError += 1
                     recordValCom[lyr].append("Error on %s record(s): AOCID must be populated."%len(errorList))
+            except ValueError:
+                recordValCom[lyr].append("***Unable to run full validation on %s field due to value error - most likely due to missing mandatory field(s)"%current_field)
+                arcpy.AddWarning("***Unable to run full validation on %s field due to the following error:\n"%current_field + str(sys.exc_info()[1]))
+                criticalError += 1
 
             # AOCTYPE
+            try:
+                current_field = 'AOCTYPE'             
                 errorList = ["Error on OBJECTID %s: AOCTYPE must be populated with M or R."%cursor[OBJECTID] for row in cursor
                                 if cursor[f.index('AOCTYPE')] not in ['M','R']]
                 cursor.reset()
@@ -1867,19 +2190,19 @@ def run(gdb, summarytbl, year, fmpStartYear):  ## eg. summarytbl = {'MU110_17SAC
                     errorDetail[lyr].append(errorList)
                     criticalError += 1
                     recordValCom[lyr].append("Error on %s record(s): AOCTYPE must be populated with M or R."%len(errorList))
-
             except ValueError:
-                recordValCom[lyr].append("***Unable to run full validation on %s due to value error - most likely due to missing mandatory field(s)"%lyr)
-                arcpy.AddError("***Unable to run full validation on %s due to the following error:\n"%lyr + str(sys.exc_info()[1]))
+                recordValCom[lyr].append("***Unable to run full validation on %s field due to value error - most likely due to missing mandatory field(s)"%current_field)
+                arcpy.AddWarning("***Unable to run full validation on %s field due to the following error:\n"%current_field + str(sys.exc_info()[1]))
                 criticalError += 1
 
 
         ########################         Checking ERU        ########################
 
         if lyrAcro == "ERU":
-            try: # need try and except block here for cases such as not having mandatory fields.
 
             # ROADID
+            try:
+                current_field = 'ROADID'            
                 errorList = ["Error on OBJECTID %s: ROADID must be populated."%cursor[OBJECTID] for row in cursor
                                 if cursor[f.index('ROADID')] in vnull]
                 cursor.reset()
@@ -1887,8 +2210,14 @@ def run(gdb, summarytbl, year, fmpStartYear):  ## eg. summarytbl = {'MU110_17SAC
                     errorDetail[lyr].append(errorList)
                     criticalError += 1
                     recordValCom[lyr].append("Error on %s record(s): ROADID must be populated."%len(errorList))
+            except ValueError:
+                recordValCom[lyr].append("***Unable to run full validation on %s field due to value error - most likely due to missing mandatory field(s)"%current_field)
+                arcpy.AddWarning("***Unable to run full validation on %s field due to the following error:\n"%current_field + str(sys.exc_info()[1]))
+                criticalError += 1
 
             # ROADCLAS
+            try:
+                current_field = 'ROADCLAS'            
                 errorList = ["Error on OBJECTID %s: ROADCLAS must be populated with P, B or O."%cursor[OBJECTID] for row in cursor
                                 if cursor[f.index('ROADCLAS')] not in ['P','B','O']]
                 cursor.reset()
@@ -1896,8 +2225,14 @@ def run(gdb, summarytbl, year, fmpStartYear):  ## eg. summarytbl = {'MU110_17SAC
                     errorDetail[lyr].append(errorList)
                     criticalError += 1
                     recordValCom[lyr].append("Error on %s record(s): ROADCLAS must be populated with P, B or O."%len(errorList))
+            except ValueError:
+                recordValCom[lyr].append("***Unable to run full validation on %s field due to value error - most likely due to missing mandatory field(s)"%current_field)
+                arcpy.AddWarning("***Unable to run full validation on %s field due to the following error:\n"%current_field + str(sys.exc_info()[1]))
+                criticalError += 1
 
             # TRANS
+            try:
+                current_field = 'TRANS'            
                 errorList = ["Error on OBJECTID %s: TRANS, if populated, must be greater than or equal to the plan start year."%cursor[OBJECTID] for row in cursor
                                 if cursor[f.index('TRANS')] not in [0, None, '', ' ']
                                 if cursor[f.index('TRANS')] < fmpStartYear]
@@ -1917,8 +2252,14 @@ def run(gdb, summarytbl, year, fmpStartYear):  ## eg. summarytbl = {'MU110_17SAC
                     errorDetail[lyr].append(errorList)
                     minorError += 1
                     recordValCom[lyr].append("Warning on %s record(s): TRANS, if populated, should not be greater than plan start year plus 20."%len(errorList))
+            except ValueError:
+                recordValCom[lyr].append("***Unable to run full validation on %s field due to value error - most likely due to missing mandatory field(s)"%current_field)
+                arcpy.AddWarning("***Unable to run full validation on %s field due to the following error:\n"%current_field + str(sys.exc_info()[1]))
+                criticalError += 1
 
             # ACYEAR
+            try:
+                current_field = 'ACYEAR'            
                 errorList = ["Error on OBJECTID %s: ACYEAR, if populated, must be greater than or equal to the plan start year when ACCESS is not EXISTING or REMOVE."%cursor[OBJECTID] for row in cursor
                                 if cursor[f.index('ACYEAR')] not in [0, None, '', ' ']
                                 if cursor[f.index('ACCESS')] not in ['EXISTING','REMOVE']
@@ -1938,8 +2279,14 @@ def run(gdb, summarytbl, year, fmpStartYear):  ## eg. summarytbl = {'MU110_17SAC
                     errorDetail[lyr].append(errorList)
                     criticalError += 1
                     recordValCom[lyr].append("Error on %s record(s): ACCESS must not be null if ACYEAR is populated."%len(errorList))
+            except ValueError:
+                recordValCom[lyr].append("***Unable to run full validation on %s field due to value error - most likely due to missing mandatory field(s)"%current_field)
+                arcpy.AddWarning("***Unable to run full validation on %s field due to the following error:\n"%current_field + str(sys.exc_info()[1]))
+                criticalError += 1
 
             # ACCESS
+            try:
+                current_field = 'ACCESS'            
                 errorList = ["Error on OBJECTID %s: ACCESS must follow the correct coding scheme if populated."%cursor[OBJECTID] for row in cursor
                                 if cursor[f.index('ACCESS')] not in vnull + ['APPLY','REMOVE','ADD','EXISTING','BOTH','ADDREMOVE']]
                 cursor.reset()
@@ -1978,8 +2325,14 @@ def run(gdb, summarytbl, year, fmpStartYear):  ## eg. summarytbl = {'MU110_17SAC
                         errorDetail[lyr].append(errorList)
                         minorError += 1
                         recordValCom[lyr].append("Warning on %s record(s): CONTROL2 should be null if ACCESS = REMOVE."%len(errorList))
+            except ValueError:
+                recordValCom[lyr].append("***Unable to run full validation on %s field due to value error - most likely due to missing mandatory field(s)"%current_field)
+                arcpy.AddWarning("***Unable to run full validation on %s field due to the following error:\n"%current_field + str(sys.exc_info()[1]))
+                criticalError += 1
 
             # DECOM, MAINTAIN, MONITOR, ACCESS
+            try:
+                current_field = 'DECOM, MAINTAIN, MONITOR and ACCESS'            
                 errorList = ["Error on OBJECTID %s: At least one of DECOM, MAINTAIN, MONITOR or ACCESS must occur."%cursor[OBJECTID] for row in cursor
                                 if cursor[f.index('DECOM')] in vnull
                                 if cursor[f.index('MAINTAIN')] != 'Y'
@@ -1990,8 +2343,14 @@ def run(gdb, summarytbl, year, fmpStartYear):  ## eg. summarytbl = {'MU110_17SAC
                     errorDetail[lyr].append(errorList)
                     criticalError += 1
                     recordValCom[lyr].append("Error on %s record(s): At least one of DECOM, MAINTAIN, MONITOR or ACCESS must occur."%len(errorList))
+            except ValueError:
+                recordValCom[lyr].append("***Unable to run full validation on %s field due to value error - most likely due to missing mandatory field(s)"%current_field)
+                arcpy.AddWarning("***Unable to run full validation on %s field due to the following error:\n"%current_field + str(sys.exc_info()[1]))
+                criticalError += 1
 
             # DECOM
+            try:
+                current_field = 'DECOM'            
                 errorList = ["Error on OBJECTID %s: DECOM must follow the correct coding scheme if populated."%cursor[OBJECTID] for row in cursor
                                 if cursor[f.index('DECOM')] not in vnull + ['BERM','SCAR','SLSH','WATX']]
                 cursor.reset()
@@ -1999,8 +2358,14 @@ def run(gdb, summarytbl, year, fmpStartYear):  ## eg. summarytbl = {'MU110_17SAC
                     errorDetail[lyr].append(errorList)
                     criticalError += 1
                     recordValCom[lyr].append("Error on %s record(s): DECOM must follow the correct coding scheme if populated."%len(errorList))
+            except ValueError:
+                recordValCom[lyr].append("***Unable to run full validation on %s field due to value error - most likely due to missing mandatory field(s)"%current_field)
+                arcpy.AddWarning("***Unable to run full validation on %s field due to the following error:\n"%current_field + str(sys.exc_info()[1]))
+                criticalError += 1
 
             # INTENT
+            try:
+                current_field = 'INTENT'            
                 errorList = ["Error on OBJECTID %s: INTENT must be populated if TRANS is not 0."%cursor[OBJECTID] for row in cursor
                                 if cursor[f.index('TRANS')] != 0
                                 if cursor[f.index('INTENT')] in vnull]
@@ -2009,8 +2374,14 @@ def run(gdb, summarytbl, year, fmpStartYear):  ## eg. summarytbl = {'MU110_17SAC
                     errorDetail[lyr].append(errorList)
                     criticalError += 1
                     recordValCom[lyr].append("Error on %s record(s): INTENT must be populated if TRANS is not 0."%len(errorList))
+            except ValueError:
+                recordValCom[lyr].append("***Unable to run full validation on %s field due to value error - most likely due to missing mandatory field(s)"%current_field)
+                arcpy.AddWarning("***Unable to run full validation on %s field due to the following error:\n"%current_field + str(sys.exc_info()[1]))
+                criticalError += 1
 
             # MAINTAIN
+            try:
+                current_field = 'MAINTAIN'            
                 errorList = ["Error on OBJECTID %s: MAINTAIN must be populated with Y or N."%cursor[OBJECTID] for row in cursor
                                 if cursor[f.index('MAINTAIN')] not in ['Y','N']]
                 cursor.reset()
@@ -2018,8 +2389,14 @@ def run(gdb, summarytbl, year, fmpStartYear):  ## eg. summarytbl = {'MU110_17SAC
                     errorDetail[lyr].append(errorList)
                     criticalError += 1
                     recordValCom[lyr].append("Error on %s record(s): MAINTAIN must be populated with Y or N."%len(errorList))
+            except ValueError:
+                recordValCom[lyr].append("***Unable to run full validation on %s field due to value error - most likely due to missing mandatory field(s)"%current_field)
+                arcpy.AddWarning("***Unable to run full validation on %s field due to the following error:\n"%current_field + str(sys.exc_info()[1]))
+                criticalError += 1
 
             # MONITOR
+            try:
+                current_field = 'MONITOR'   
                 errorList = ["Error on OBJECTID %s: MONITOR must be populated with Y or N."%cursor[OBJECTID] for row in cursor
                                 if cursor[f.index('MONITOR')] not in ['Y','N']]
                 cursor.reset()
@@ -2027,8 +2404,14 @@ def run(gdb, summarytbl, year, fmpStartYear):  ## eg. summarytbl = {'MU110_17SAC
                     errorDetail[lyr].append(errorList)
                     criticalError += 1
                     recordValCom[lyr].append("Error on %s record(s): MONITOR must be populated with Y or N."%len(errorList))
+            except ValueError:
+                recordValCom[lyr].append("***Unable to run full validation on %s field due to value error - most likely due to missing mandatory field(s)"%current_field)
+                arcpy.AddWarning("***Unable to run full validation on %s field due to the following error:\n"%current_field + str(sys.exc_info()[1]))
+                criticalError += 1
 
             # RESPONS
+            try:
+                current_field = 'RESPONS'            
                 errorList = ["Error on OBJECTID %s: RESPONS must be populated with the correct coding scheme."%cursor[OBJECTID] for row in cursor
                                 if cursor[f.index('RESPONS')] not in ['SFL','MNR','OTH']]
                 cursor.reset()
@@ -2042,8 +2425,14 @@ def run(gdb, summarytbl, year, fmpStartYear):  ## eg. summarytbl = {'MU110_17SAC
                 if len(respons_sfl_list) == 0:
                     minorError += 1
                     recordValCom[lyr].append("Warning: At least one record should have RESPONS = SFL (except for Crown managed units).")                
+            except ValueError:
+                recordValCom[lyr].append("***Unable to run full validation on %s field due to value error - most likely due to missing mandatory field(s)"%current_field)
+                arcpy.AddWarning("***Unable to run full validation on %s field due to the following error:\n"%current_field + str(sys.exc_info()[1]))
+                criticalError += 1
 
             # CONTROL1 and 2
+            try:
+                current_field = 'CONTROL1 and CONTROL2'            
                 errorList = ["Error on OBJECTID %s: CONTROL1 must follow the correct coding scheme if populated."%cursor[OBJECTID] for row in cursor
                                 if cursor[f.index('CONTROL1')] not in vnull + ['BERM','GATE','SCAR','SIGN','PRIV','SLSH','WATX']]
                 cursor.reset()
@@ -2051,7 +2440,6 @@ def run(gdb, summarytbl, year, fmpStartYear):  ## eg. summarytbl = {'MU110_17SAC
                     errorDetail[lyr].append(errorList)
                     criticalError += 1
                     recordValCom[lyr].append("Error on %s record(s): CONTROL1 must follow the correct coding scheme if populated."%len(errorList))
-
                 if "CONTROL2" in f:
                     errorList = ["Error on OBJECTID %s: CONTROL2 must follow the correct coding scheme if populated."%cursor[OBJECTID] for row in cursor
                                     if cursor[f.index('CONTROL2')] not in vnull + ['BERM','GATE','SCAR','SIGN','PRIV','SLSH','WATX']]
@@ -2060,20 +2448,19 @@ def run(gdb, summarytbl, year, fmpStartYear):  ## eg. summarytbl = {'MU110_17SAC
                         errorDetail[lyr].append(errorList)
                         criticalError += 1
                         recordValCom[lyr].append("Error on %s record(s): CONTROL2 must follow the correct coding scheme if populated."%len(errorList))
-
             except ValueError:
-                recordValCom[lyr].append("***Unable to run full validation on %s due to value error - most likely due to missing mandatory field(s)"%lyr)
-                arcpy.AddError("***Unable to run full validation on %s due to the following error:\n"%lyr + str(sys.exc_info()[1]))
+                recordValCom[lyr].append("***Unable to run full validation on %s field due to value error - most likely due to missing mandatory field(s)"%current_field)
+                arcpy.AddWarning("***Unable to run full validation on %s field due to the following error:\n"%current_field + str(sys.exc_info()[1]))
                 criticalError += 1
-
 
 
         ########################         Checking ORB        ########################
 
         if lyrAcro == "ORB":
-            try:
 
             # ORBID
+            try:
+                current_field = 'ORBID'            
                 errorList = ["Error on OBJECTID %s: ORBID must be populated."%cursor[OBJECTID] for row in cursor
                                 if cursor[f.index('ORBID')] in vnull]
                 cursor.reset()
@@ -2081,20 +2468,18 @@ def run(gdb, summarytbl, year, fmpStartYear):  ## eg. summarytbl = {'MU110_17SAC
                     errorDetail[lyr].append(errorList)
                     criticalError += 1
                     recordValCom[lyr].append("Error on %s record(s): ORBID must be populated."%len(errorList))
-
             except ValueError:
-                recordValCom[lyr].append("***Unable to run full validation on %s due to value error - most likely due to missing mandatory field(s)"%lyr)
-                arcpy.AddError("***Unable to run full validation on %s due to the following error:\n"%lyr + str(sys.exc_info()[1]))
+                recordValCom[lyr].append("***Unable to run full validation on %s field due to value error - most likely due to missing mandatory field(s)"%current_field)
+                arcpy.AddWarning("***Unable to run full validation on %s field due to the following error:\n"%current_field + str(sys.exc_info()[1]))
                 criticalError += 1
-
 
 
         ########################         Checking IMP        ########################
 
         if lyrAcro == "IMP":
-            try:
-
             # IMPROVE
+            try:
+                current_field = 'IMPROVE'            
                 errorList = ["Error on OBJECTID %s: IMPROVE must be populated with Y or N."%cursor[OBJECTID] for row in cursor
                                 if cursor[f.index('IMPROVE')] not in ['Y','N']]
                 cursor.reset()
@@ -2102,20 +2487,18 @@ def run(gdb, summarytbl, year, fmpStartYear):  ## eg. summarytbl = {'MU110_17SAC
                     errorDetail[lyr].append(errorList)
                     criticalError += 1
                     recordValCom[lyr].append("Error on %s record(s): IMPROVE must be populated with Y or N."%len(errorList))
-
             except ValueError:
-                recordValCom[lyr].append("***Unable to run full validation on %s due to value error - most likely due to missing mandatory field(s)"%lyr)
-                arcpy.AddError("***Unable to run full validation on %s due to the following error:\n"%lyr + str(sys.exc_info()[1]))
+                recordValCom[lyr].append("***Unable to run full validation on %s field due to value error - most likely due to missing mandatory field(s)"%current_field)
+                arcpy.AddWarning("***Unable to run full validation on %s field due to the following error:\n"%current_field + str(sys.exc_info()[1]))
                 criticalError += 1
-
 
 
         ########################         Checking PAG        ########################
 
         if lyrAcro == "PAG":
-            try:
-
             # AGAREAID
+            try:
+                current_field = 'AGAREAID'             
                 errorList = ["Error on OBJECTID %s: AGAREAID must be populated."%cursor[OBJECTID] for row in cursor
                                 if cursor[f.index('AGAREAID')] in vnull]
                 cursor.reset()
@@ -2123,10 +2506,9 @@ def run(gdb, summarytbl, year, fmpStartYear):  ## eg. summarytbl = {'MU110_17SAC
                     errorDetail[lyr].append(errorList)
                     criticalError += 1
                     recordValCom[lyr].append("Error on %s record(s): AGAREAID must be populated."%len(errorList))
-
             except ValueError:
-                recordValCom[lyr].append("***Unable to run full validation on %s due to value error - most likely due to missing mandatory field(s)"%lyr)
-                arcpy.AddError("***Unable to run full validation on %s due to the following error:\n"%lyr + str(sys.exc_info()[1]))
+                recordValCom[lyr].append("***Unable to run full validation on %s field due to value error - most likely due to missing mandatory field(s)"%current_field)
+                arcpy.AddWarning("***Unable to run full validation on %s field due to the following error:\n"%current_field + str(sys.exc_info()[1]))
                 criticalError += 1
 
 
@@ -2134,9 +2516,9 @@ def run(gdb, summarytbl, year, fmpStartYear):  ## eg. summarytbl = {'MU110_17SAC
         ########################         Checking PHR        ########################
 
         if lyrAcro == "PHR":
-            try:
-
             # BLOCKID
+            try:
+                current_field = 'BLOCKID'            
                 errorList = ["Error on OBJECTID %s: BLOCKID must be populated."%cursor[OBJECTID] for row in cursor
                                 if cursor[f.index('BLOCKID')] in vnull]
                 cursor.reset()
@@ -2144,8 +2526,14 @@ def run(gdb, summarytbl, year, fmpStartYear):  ## eg. summarytbl = {'MU110_17SAC
                     errorDetail[lyr].append(errorList)
                     criticalError += 1
                     recordValCom[lyr].append("Error on %s record(s): BLOCKID must be populated."%len(errorList))
+            except ValueError:
+                recordValCom[lyr].append("***Unable to run full validation on %s field due to value error - most likely due to missing mandatory field(s)"%current_field)
+                arcpy.AddWarning("***Unable to run full validation on %s field due to the following error:\n"%current_field + str(sys.exc_info()[1]))
+                criticalError += 1
 
             # SILVSYS
+            try:
+                current_field = 'SILVSYS'            
                 errorList = ["Error on OBJECTID %s: SILVSYS must be populated with CC, SE or SH."%cursor[OBJECTID] for row in cursor
                                 if cursor[f.index('SILVSYS')] not in ['CC','SE','SH']]
                 cursor.reset()
@@ -2162,8 +2550,14 @@ def run(gdb, summarytbl, year, fmpStartYear):  ## eg. summarytbl = {'MU110_17SAC
                     errorDetail[lyr].append(errorList)
                     criticalError += 1
                     recordValCom[lyr].append("Error on %s record(s): SILVSYS must be CC if HARVCAT = SCNDPASS."%len(errorList))
+            except ValueError:
+                recordValCom[lyr].append("***Unable to run full validation on %s field due to value error - most likely due to missing mandatory field(s)"%current_field)
+                arcpy.AddWarning("***Unable to run full validation on %s field due to the following error:\n"%current_field + str(sys.exc_info()[1]))
+                criticalError += 1
 
             # HARVCAT
+            try:
+                current_field = 'HARVCAT'            
                 errorList = ["Error on OBJECTID %s: HARVCAT must be populated with the correct coding scheme."%cursor[OBJECTID] for row in cursor
                                 if cursor[f.index('HARVCAT')] not in ['BRIDGING','CONTNGNT','REGULAR','SALVAGE','REDIRECT','ACCELER','SCNDPASS']]
                 cursor.reset()
@@ -2171,20 +2565,18 @@ def run(gdb, summarytbl, year, fmpStartYear):  ## eg. summarytbl = {'MU110_17SAC
                     errorDetail[lyr].append(errorList)
                     criticalError += 1
                     recordValCom[lyr].append("Error on %s record(s): HARVCAT must be populated with the correct coding scheme."%len(errorList))
-
             except ValueError:
-                recordValCom[lyr].append("***Unable to run full validation on %s due to value error - most likely due to missing mandatory field(s)"%lyr)
-                arcpy.AddError("***Unable to run full validation on %s due to the following error:\n"%lyr + str(sys.exc_info()[1]))
+                recordValCom[lyr].append("***Unable to run full validation on %s field due to value error - most likely due to missing mandatory field(s)"%current_field)
+                arcpy.AddWarning("***Unable to run full validation on %s field due to the following error:\n"%current_field + str(sys.exc_info()[1]))
                 criticalError += 1
-
 
 
         ########################         Checking PRC        ########################
 
         if lyrAcro == "PRC":
-            try: # need try and except block here for cases such as not having mandatory fields.
-
             # ROADID
+            try:
+                current_field = 'ROADID'            
                 errorList = ["Error on OBJECTID %s: ROADID must be populated."%cursor[OBJECTID] for row in cursor
                                 if cursor[f.index('ROADID')] in vnull]
                 cursor.reset()
@@ -2192,8 +2584,14 @@ def run(gdb, summarytbl, year, fmpStartYear):  ## eg. summarytbl = {'MU110_17SAC
                     errorDetail[lyr].append(errorList)
                     criticalError += 1
                     recordValCom[lyr].append("Error on %s record(s): ROADID must be populated."%len(errorList))
+            except ValueError:
+                recordValCom[lyr].append("***Unable to run full validation on %s field due to value error - most likely due to missing mandatory field(s)"%current_field)
+                arcpy.AddWarning("***Unable to run full validation on %s field due to the following error:\n"%current_field + str(sys.exc_info()[1]))
+                criticalError += 1
 
             # ROADCLAS
+            try:
+                current_field = 'ROADCLAS'            
                 errorList = ["Error on OBJECTID %s: ROADCLAS must be populated with P or B."%cursor[OBJECTID] for row in cursor
                                 if cursor[f.index('ROADCLAS')] not in ['P','B']]
                 cursor.reset()
@@ -2201,8 +2599,14 @@ def run(gdb, summarytbl, year, fmpStartYear):  ## eg. summarytbl = {'MU110_17SAC
                     errorDetail[lyr].append(errorList)
                     criticalError += 1
                     recordValCom[lyr].append("Error on %s record(s): ROADCLAS must be populated with P or B."%len(errorList))
+            except ValueError:
+                recordValCom[lyr].append("***Unable to run full validation on %s field due to value error - most likely due to missing mandatory field(s)"%current_field)
+                arcpy.AddWarning("***Unable to run full validation on %s field due to the following error:\n"%current_field + str(sys.exc_info()[1]))
+                criticalError += 1
 
             # TRANS
+            try:
+                current_field = 'TRANS'            
                 errorList = ["Error on OBJECTID %s: TRANS, if populated, must be greater than or equal to the plan start year."%cursor[OBJECTID] for row in cursor
                                 if cursor[f.index('TRANS')] not in [0, None, '', ' ']
                                 if cursor[f.index('TRANS')] < fmpStartYear]
@@ -2214,7 +2618,14 @@ def run(gdb, summarytbl, year, fmpStartYear):  ## eg. summarytbl = {'MU110_17SAC
 
                 # The following is a validation for INTENT: "If TRANS value does not equal zero (TRANS is not 0) then INTENT must be populated"
 
+            except ValueError:
+                recordValCom[lyr].append("***Unable to run full validation on %s field due to value error - most likely due to missing mandatory field(s)"%current_field)
+                arcpy.AddWarning("***Unable to run full validation on %s field due to the following error:\n"%current_field + str(sys.exc_info()[1]))
+                criticalError += 1
+
             # ACYEAR
+            try:
+                current_field = 'ACYEAR'            
                 errorList = ["Error on OBJECTID %s: ACYEAR, if populated, must be between plan start year and plan end year."%cursor[OBJECTID] for row in cursor
                                 if cursor[f.index('ACYEAR')] not in [0, None, '', ' ']
                                 if cursor[f.index('ACYEAR')] < fmpStartYear or cursor[f.index('ACYEAR')] > fmpStartYear + 10]
@@ -2233,8 +2644,15 @@ def run(gdb, summarytbl, year, fmpStartYear):  ## eg. summarytbl = {'MU110_17SAC
                     errorDetail[lyr].append(errorList)
                     criticalError += 1
                     recordValCom[lyr].append("Error on %s record(s): ACCESS must be APPLY, REMOVE or BOTH if ACYEAR is populated."%len(errorList))
+            except ValueError:
+                recordValCom[lyr].append("***Unable to run full validation on %s field due to value error - most likely due to missing mandatory field(s)"%current_field)
+                arcpy.AddWarning("***Unable to run full validation on %s field due to the following error:\n"%current_field + str(sys.exc_info()[1]))
+                criticalError += 1
+
 
             # ACCESS
+            try:
+                current_field = 'ACCESS'            
                 errorList = ["Error on OBJECTID %s: ACCESS must follow the correct coding scheme if populated."%cursor[OBJECTID] for row in cursor
                                 if cursor[f.index('ACCESS')] not in vnull + ['APPLY','REMOVE','BOTH']]
                 cursor.reset()
@@ -2243,6 +2661,10 @@ def run(gdb, summarytbl, year, fmpStartYear):  ## eg. summarytbl = {'MU110_17SAC
                     criticalError += 1
                     recordValCom[lyr].append("Error on %s record(s): ACCESS must follow the correct coding scheme if populated."%len(errorList))
 
+            except ValueError:
+                recordValCom[lyr].append("***Unable to run full validation on %s field due to value error - most likely due to missing mandatory field(s)"%current_field)
+                arcpy.AddWarning("***Unable to run full validation on %s field due to the following error:\n"%current_field + str(sys.exc_info()[1]))
+                criticalError += 1
 
                 # Ignoring the following validations due to validation conflicts:
                 # # this is checking CONTROL1
@@ -2267,6 +2689,8 @@ def run(gdb, summarytbl, year, fmpStartYear):  ## eg. summarytbl = {'MU110_17SAC
                 #         recordValCom[lyr].append("Warning on %s record(s): CONTROL2 should be null if ACCESS = REMOVE."%len(errorList))
 
             # DECOM, MAINTAIN, MONITOR, ACCESS
+            try:
+                current_field = 'DECOM, MAINTAIN, MONITOR and ACCESS'            
                 errorList = ["Error on OBJECTID %s: At least one of DECOM, MAINTAIN, MONITOR or ACCESS must occur."%cursor[OBJECTID] for row in cursor
                                 if cursor[f.index('DECOM')] in vnull
                                 if cursor[f.index('MAINTAIN')] != 'Y'
@@ -2281,7 +2705,15 @@ def run(gdb, summarytbl, year, fmpStartYear):  ## eg. summarytbl = {'MU110_17SAC
                 # Not checking the following validation statement because CONSTRCT field does not exist:
                 #   At a minimum, one of Construction, Decommissioning, Maintenance, Monitoring or Access Control must occur for each record (CONSTRCT = Y or DECOM IS NOT NULL or MAINTAIN = Y or MONITOR = Y or [ACCESS = APPLY or ACCESS = REMOVE OR ACCESS = BOTH])
 
+            except ValueError:
+                recordValCom[lyr].append("***Unable to run full validation on %s field due to value error - most likely due to missing mandatory field(s)"%current_field)
+                arcpy.AddWarning("***Unable to run full validation on %s field due to the following error:\n"%current_field + str(sys.exc_info()[1]))
+                criticalError += 1
+
+
             # DECOM
+            try:
+                current_field = 'DECOM'             
                 errorList = ["Error on OBJECTID %s: DECOM must follow the correct coding scheme if populated."%cursor[OBJECTID] for row in cursor
                                 if cursor[f.index('DECOM')] not in vnull + ['BERM','SCAR','SLSH','WATX']]
                 cursor.reset()
@@ -2289,8 +2721,14 @@ def run(gdb, summarytbl, year, fmpStartYear):  ## eg. summarytbl = {'MU110_17SAC
                     errorDetail[lyr].append(errorList)
                     criticalError += 1
                     recordValCom[lyr].append("Error on %s record(s): DECOM must follow the correct coding scheme if populated."%len(errorList))
+            except ValueError:
+                recordValCom[lyr].append("***Unable to run full validation on %s field due to value error - most likely due to missing mandatory field(s)"%current_field)
+                arcpy.AddWarning("***Unable to run full validation on %s field due to the following error:\n"%current_field + str(sys.exc_info()[1]))
+                criticalError += 1
 
             # INTENT
+            try:
+                current_field = 'INTENT'            
                 errorList = ["Error on OBJECTID %s: INTENT must be populated if TRANS is populated."%cursor[OBJECTID] for row in cursor
                                 if cursor[f.index('TRANS')] not in [0, None]
                                 if cursor[f.index('INTENT')] in vnull]
@@ -2299,8 +2737,14 @@ def run(gdb, summarytbl, year, fmpStartYear):  ## eg. summarytbl = {'MU110_17SAC
                     errorDetail[lyr].append(errorList)
                     criticalError += 1
                     recordValCom[lyr].append("Error on %s record(s): INTENT must be populated if TRANS is populated."%len(errorList))
+            except ValueError:
+                recordValCom[lyr].append("***Unable to run full validation on %s field due to value error - most likely due to missing mandatory field(s)"%current_field)
+                arcpy.AddWarning("***Unable to run full validation on %s field due to the following error:\n"%current_field + str(sys.exc_info()[1]))
+                criticalError += 1
 
             # MAINTAIN
+            try:
+                current_field = 'MAINTAIN'            
                 errorList = ["Error on OBJECTID %s: MAINTAIN must be populated with Y or N."%cursor[OBJECTID] for row in cursor
                                 if cursor[f.index('MAINTAIN')] not in ['Y','N']]
                 cursor.reset()
@@ -2308,8 +2752,14 @@ def run(gdb, summarytbl, year, fmpStartYear):  ## eg. summarytbl = {'MU110_17SAC
                     errorDetail[lyr].append(errorList)
                     criticalError += 1
                     recordValCom[lyr].append("Error on %s record(s): MAINTAIN must be populated with Y or N."%len(errorList))
+            except ValueError:
+                recordValCom[lyr].append("***Unable to run full validation on %s field due to value error - most likely due to missing mandatory field(s)"%current_field)
+                arcpy.AddWarning("***Unable to run full validation on %s field due to the following error:\n"%current_field + str(sys.exc_info()[1]))
+                criticalError += 1
 
             # MONITOR
+            try:
+                current_field = 'MONITOR'            
                 errorList = ["Error on OBJECTID %s: MONITOR must be populated with Y or N."%cursor[OBJECTID] for row in cursor
                                 if cursor[f.index('MONITOR')] not in ['Y','N']]
                 cursor.reset()
@@ -2317,9 +2767,14 @@ def run(gdb, summarytbl, year, fmpStartYear):  ## eg. summarytbl = {'MU110_17SAC
                     errorDetail[lyr].append(errorList)
                     criticalError += 1
                     recordValCom[lyr].append("Error on %s record(s): MONITOR must be populated with Y or N."%len(errorList))
-            
+            except ValueError:
+                recordValCom[lyr].append("***Unable to run full validation on %s field due to value error - most likely due to missing mandatory field(s)"%current_field)
+                arcpy.AddWarning("***Unable to run full validation on %s field due to the following error:\n"%current_field + str(sys.exc_info()[1]))
+                criticalError += 1            
 
             # CONTROL1 and 2
+            try:
+                current_field = 'CONTROL1 and CONTROL2'            
                 errorList = ["Error on OBJECTID %s: CONTROL1 must follow the correct coding scheme if populated."%cursor[OBJECTID] for row in cursor
                                 if cursor[f.index('CONTROL1')] not in vnull + ['BERM','GATE','SCAR','SIGN','PRIV','SLSH','WATX']]
                 cursor.reset()
@@ -2347,20 +2802,19 @@ def run(gdb, summarytbl, year, fmpStartYear):  ## eg. summarytbl = {'MU110_17SAC
                 #     criticalError += 1
                 #     recordValCom[lyr].append("Error on %s record(s): CONTROL1 must be populated with the correct coding scheme where ACCESS = BOTH or APPLY."%len(errorList))
 
-
             except ValueError:
-                recordValCom[lyr].append("***Unable to run full validation on %s due to value error - most likely due to missing mandatory field(s)"%lyr)
-                arcpy.AddError("***Unable to run full validation on %s due to the following error:\n"%lyr + str(sys.exc_info()[1]))
-                criticalError += 1
-
+                recordValCom[lyr].append("***Unable to run full validation on %s field due to value error - most likely due to missing mandatory field(s)"%current_field)
+                arcpy.AddWarning("***Unable to run full validation on %s field due to the following error:\n"%current_field + str(sys.exc_info()[1]))
+                criticalError += 1 
 
 
         ########################         Checking PRP        ########################
 
         if lyrAcro == "PRP":
-            try:
 
             # RESID
+            try:
+                current_field = 'RESID'             
                 errorList = ["Error on OBJECTID %s: RESID must be populated."%cursor[OBJECTID] for row in cursor
                                 if cursor[f.index('RESID')] in vnull]
                 cursor.reset()
@@ -2370,8 +2824,8 @@ def run(gdb, summarytbl, year, fmpStartYear):  ## eg. summarytbl = {'MU110_17SAC
                     recordValCom[lyr].append("Error on %s record(s): RESID must be populated."%len(errorList))
 
             except ValueError:
-                recordValCom[lyr].append("***Unable to run full validation on %s due to value error - most likely due to missing mandatory field(s)"%lyr)
-                arcpy.AddError("***Unable to run full validation on %s due to the following error:\n"%lyr + str(sys.exc_info()[1]))
+                recordValCom[lyr].append("***Unable to run full validation on %s field due to value error - most likely due to missing mandatory field(s)"%current_field)
+                arcpy.AddWarning("***Unable to run full validation on %s field due to the following error:\n"%current_field + str(sys.exc_info()[1]))
                 criticalError += 1
 
 
@@ -2382,6 +2836,8 @@ def run(gdb, summarytbl, year, fmpStartYear):  ## eg. summarytbl = {'MU110_17SAC
             try:
 
             # WATXID
+            try:
+                current_field = 'WATXID'            
                 errorList = ["Error on OBJECTID %s: WATXID must be populated."%cursor[OBJECTID] for row in cursor
                                 if cursor[f.index('WATXID')] in vnull]
                 cursor.reset()
@@ -2389,8 +2845,14 @@ def run(gdb, summarytbl, year, fmpStartYear):  ## eg. summarytbl = {'MU110_17SAC
                     errorDetail[lyr].append(errorList)
                     criticalError += 1
                     recordValCom[lyr].append("Error on %s record(s): WATXID must be populated."%len(errorList))
+            except ValueError:
+                recordValCom[lyr].append("***Unable to run full validation on %s field due to value error - most likely due to missing mandatory field(s)"%current_field)
+                arcpy.AddWarning("***Unable to run full validation on %s field due to the following error:\n"%current_field + str(sys.exc_info()[1]))
+                criticalError += 1
 
             # WATXTYPE
+            try:
+                current_field = 'WATXTYPE'            
                 errorList = ["Error on OBJECTID %s: WATXTYPE must be populated with the correct coding scheme."%cursor[OBJECTID] for row in cursor
                                 if cursor[f.index('WATXTYPE')] not in ['BRID','TEMP','CULV','MULTI','FORD','ICE','BOX','ARCH']]
                 cursor.reset()
@@ -2398,8 +2860,14 @@ def run(gdb, summarytbl, year, fmpStartYear):  ## eg. summarytbl = {'MU110_17SAC
                     errorDetail[lyr].append(errorList)
                     criticalError += 1
                     recordValCom[lyr].append("Error on %s record(s): WATXTYPE must be populated with the correct coding scheme."%len(errorList))
+            except ValueError:
+                recordValCom[lyr].append("***Unable to run full validation on %s field due to value error - most likely due to missing mandatory field(s)"%current_field)
+                arcpy.AddWarning("***Unable to run full validation on %s field due to the following error:\n"%current_field + str(sys.exc_info()[1]))
+                criticalError += 1
 
             # RESPONS
+            try:
+                current_field = 'RESPONS'            
                 errorList = ["Error on OBJECTID %s: RESPONS must be populated with the correct coding scheme."%cursor[OBJECTID] for row in cursor
                                 if cursor[f.index('RESPONS')] not in ['SFL','MNR','OTH']]
                 cursor.reset()
@@ -2413,8 +2881,14 @@ def run(gdb, summarytbl, year, fmpStartYear):  ## eg. summarytbl = {'MU110_17SAC
                 if len(respons_sfl_list) == 0:
                     minorError += 1
                     recordValCom[lyr].append("Warning: At least one record should have RESPONS = SFL (except for Crown managed units).")       
+            except ValueError:
+                recordValCom[lyr].append("***Unable to run full validation on %s field due to value error - most likely due to missing mandatory field(s)"%current_field)
+                arcpy.AddWarning("***Unable to run full validation on %s field due to the following error:\n"%current_field + str(sys.exc_info()[1]))
+                criticalError += 1
 
             # ROADID
+            try:
+                current_field = 'RESPONS'            
                 errorList = ["Error on OBJECTID %s: ROADID must be populated."%cursor[OBJECTID] for row in cursor
                                 if cursor[f.index('ROADID')] in vnull]
                 cursor.reset()
@@ -2422,16 +2896,10 @@ def run(gdb, summarytbl, year, fmpStartYear):  ## eg. summarytbl = {'MU110_17SAC
                     errorDetail[lyr].append(errorList)
                     criticalError += 1
                     recordValCom[lyr].append("Error on %s record(s): ROADID must be populated."%len(errorList))
-
             except ValueError:
-                recordValCom[lyr].append("***Unable to run full validation on %s due to value error - most likely due to missing mandatory field(s)"%lyr)
-                arcpy.AddError("***Unable to run full validation on %s due to the following error:\n"%lyr + str(sys.exc_info()[1]))
+                recordValCom[lyr].append("***Unable to run full validation on %s field due to value error - most likely due to missing mandatory field(s)"%current_field)
+                arcpy.AddWarning("***Unable to run full validation on %s field due to the following error:\n"%current_field + str(sys.exc_info()[1]))
                 criticalError += 1
-
-
-
-
-
 
 
 #    Still in the for loop: "for lyr in summarytbl.keys():"
@@ -2454,7 +2922,3 @@ def run(gdb, summarytbl, year, fmpStartYear):  ## eg. summarytbl = {'MU110_17SAC
 
     return [errorDetail, recordVal, recordValCom, fieldValUpdate, fieldValComUpdate]
 
-
-
-if __name__ == "__main__":
-    pass
