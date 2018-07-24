@@ -70,26 +70,12 @@ def run(gdb, summarytbl, year, fmpStartYear):  ## eg. summarytbl = {'MU615_15AGG
         cursor = arcpy.da.SearchCursor(lyr,f)
         recordCount = len(list(cursor))
         cursor.reset()
-
-        # Creating a new cursor. The new cursor has no artifact polygons created by donut holes in the coverages.
-        artifact_count = 0
-        # Do this only if the layer is polygon.
-        if lyrInfo[lyrAcro][2] == 'polygon':
-            result = R.create_cursor(lyr, summarytbl[lyr][3], f) # summarytbl[lyr][3] is the list of existing mandatory fields.
-            if result != None:
-                cursor2 = result
-                recordCount2 = len(list(cursor2))
-                cursor2.reset()
-                # if the record count by the new cursor is different from the original cursor, use the new cursor
-                if recordCount2 < recordCount:
-                    cursor = cursor2
-                    artifact_count = recordCount - recordCount2
-        arcpy.AddMessage("  Checking each record in %s (%s records, %s artifacts)..."%(lyr,recordCount, artifact_count))
-        recordValCom[lyr].append("Total %s records (with %s artifacts)."%(recordCount, artifact_count))
-
+        recordValCom[lyr].append("Total number of records checked: " + str(recordCount))
 
 
 #       ######### Going through each layer type in alphabetical order ##########
+
+        arcpy.AddMessage('\t\tChecking %s'%lyr)
 
 
         ###########################  Checking AGG   ############################

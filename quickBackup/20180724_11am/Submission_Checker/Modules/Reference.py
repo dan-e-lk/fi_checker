@@ -292,7 +292,7 @@ def create_cursor(lyr_path, emf, f):
         # example emf used: emf = ['HARVCAT','SILVSYS','ESTAREA','DSTBFU']
 
         # in the case of BMI/PCI/OPI, we don't need to test every field...
-        if len(emf) > 8:
+        if len(emf)>8:
             emf = emf[:8]
 
         sqldict = dict(zip(emf,[None for i in emf])) #eg. {'ESTAREA': None, 'DSTBFU': None, 'HARVCAT': None, 'SILVSYS': None}
@@ -315,7 +315,8 @@ def create_cursor(lyr_path, emf, f):
         newsql = newsql[:-4] # cut off the last "AND ".
         newsql += ')'
 
-        # arcpy.AddMessage("SELECT * FROM %s WHERE %s"%(lyr, newsql))
+        arcpy.AddMessage("SELECT * FROM %s WHERE %s"%(lyr, newsql))
+
         new_cursor = arcpy.da.SearchCursor(lyr,f,newsql)
         return new_cursor
     except:

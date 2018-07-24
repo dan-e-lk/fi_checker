@@ -1,6 +1,8 @@
 #-------------------------------------------------------------------------------
 # Name:        	checker_v2
-# Version:		2.3
+
+checker_version = '2.3.1'
+
 # Purpose:	   	This tool checks the FMP, AR or AWS submission (according to the 
 #				FIM Technical Specifications 2009 or 2017) and outputs a validation report 
 #				in html format.The report will be saved at the same folder level where your 
@@ -40,6 +42,8 @@ else:
 	error_limit = 999999 # need to have some upper limit due to the html file size limitation.
 
 from Modules.CheckAll import Check
-class_check = Check(plan,fmu,year,fmpStartYear,workspace, dataformat, tech_spec_version, error_limit, SubID)
-
-class_check.run()
+try:
+	class_check = Check(plan,fmu,year,fmpStartYear,workspace, dataformat, tech_spec_version, error_limit, checker_version, SubID)
+	class_check.run()
+finally:
+	arcpy.AddMessage("\nTool version: v%s"%checker_version)

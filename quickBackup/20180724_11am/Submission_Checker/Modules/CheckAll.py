@@ -411,11 +411,8 @@ class Check():
                 htmlstring += '<td>' + self.summarytbl[lyr][7] + '</td>' # Field Validation - regular font if anything else
 
             htmlstring += '<td><small>'
-            # Record Validation Comment - first line (Total 99 records with 9 artifacts)
-            htmlstring += '<div class="tooltip">- ' + self.summarytbl[lyr][8][0] + '<span class="tooltiptext">Artifacts are empty polygons populated in coverages to fill up the holes in polygons.</span></div><br>'
-            if len(self.summarytbl[lyr][8]) > 1:
-                for line in self.summarytbl[lyr][8][1:]: # Record Validation Comments - write each line separately
-                    htmlstring += '- ' + line + '<br>'
+            for line in self.summarytbl[lyr][8]: # Record Validation Comments - write each line separately
+                htmlstring += '- ' + line + '<br>'
             htmlstring += '</small></td>'
             htmlstring += '<td>' + self.summarytbl[lyr][9] + '</td>' # FIM Reference
             htmlstring += '</tr>' # End of line
