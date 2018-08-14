@@ -37,7 +37,7 @@ lyrInfo = {
 vnull = [None,'',' ']
 
 
-def run(gdb, summarytbl, year, fmpStartYear):  ## eg. summarytbl = {'MU615_15AGG00': ['AGG','Forestry Aggregate Pits','NAD 1983 Lambert Conformal Conic',['PIT_ID', 'REHABREQ', 'REHAB', 'TONNES'],['OBJECTID', 'SHAPE', 'MU615_15AGG00_', 'MU615_15AGG00_ID', 'PITCLOSE']],...}
+def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {'MU615_15AGG00': ['AGG','Forestry Aggregate Pits','NAD 1983 Lambert Conformal Conic',['PIT_ID', 'REHABREQ', 'REHAB', 'TONNES'],['OBJECTID', 'SHAPE', 'MU615_15AGG00_', 'MU615_15AGG00_ID', 'PITCLOSE']],...}
     lyrList = summarytbl.keys()
     fieldValUpdate = dict(zip(lyrList,['' for i in lyrList]))  ## if we find a record-value-based mandatory field, field validation status should be updated.
     fieldValComUpdate = dict(zip(lyrList,[[] for i in lyrList])) ## if we find a record-value-based mandatory field, field validation comments should be updated.
@@ -73,8 +73,8 @@ def run(gdb, summarytbl, year, fmpStartYear):  ## eg. summarytbl = {'MU615_15AGG
 
         # Creating a new cursor. The new cursor has no artifact polygons created by donut holes in the coverages.
         artifact_count = 0
-        # Do this only if the layer is polygon.
-        if lyrInfo[lyrAcro][2] == 'polygon':
+        # check for artifact polygons only if the data format is coverage, type is polygon, and if there's more than one mandatory field.
+        if lyrInfo[lyrAcro][2] == 'polygon' and dataformat == 'coverage' and len(summarytbl[lyr][3]) > 1: # *23403
             result = R.create_cursor(lyr, summarytbl[lyr][3], f) # summarytbl[lyr][3] is the list of existing mandatory fields.
             if result != None:
                 cursor2 = result

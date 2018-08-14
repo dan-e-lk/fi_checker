@@ -90,7 +90,7 @@ lyrInfo = {
 # vnull is used to check if an item is NULL or blank.
 vnull = [None,'',' ']
 
-def run(gdb, summarytbl, year, fmpStartYear):  ## eg. summarytbl = {'MU110_17SAC10': ['SAC', 'Scheduled Area Of Concern', 'NAD_1983_UTM_Zone_17N', ['AOCTYPE', 'AOCID'], ['OBJECTID', 'MU110_17SAC10_', 'MU110_17SAC10_ID']], 'MU110_17SAC11':...}
+def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {'MU110_17SAC10': ['SAC', 'Scheduled Area Of Concern', 'NAD_1983_UTM_Zone_17N', ['AOCTYPE', 'AOCID'], ['OBJECTID', 'MU110_17SAC10_', 'MU110_17SAC10_ID']], 'MU110_17SAC11':...}
 
     if verbose: print("%s\n%s\n%s\n%s"%(gdb, summarytbl, year, fmpStartYear))
 
@@ -106,7 +106,7 @@ def run(gdb, summarytbl, year, fmpStartYear):  ## eg. summarytbl = {'MU110_17SAC
         criticalError = 0
         minorError = 0
         systemError = False
-        # summarytbl[lry][3] is a list of existing mandatory fields and summarytbl[lry][4] is a list of existing other fields
+        # summarytbl[lyr][3] is a list of existing mandatory fields and summarytbl[lyr][4] is a list of existing other fields
         f = summarytbl[lyr][4] + summarytbl[lyr][3]  ## f is the list of all fields found in lyr. eg. ['FID', 'SHAPE','PIT_ID', 'PIT_OPEN', 'PITCLOSE', 'CAT9APP', ...]
         
         # feature classes have ObjectID, shapefiles and coverages have FID. Search for ObjectID's index value in f, if not possible, search for FID's index value in f. else use whatever field comes first as the ID field.
@@ -124,8 +124,8 @@ def run(gdb, summarytbl, year, fmpStartYear):  ## eg. summarytbl = {'MU110_17SAC
 
         # Creating a new cursor. The new cursor has no artifact polygons created by donut holes in the coverages.
         artifact_count = 0
-        # Do this only if the layer is polygon.
-        if lyrInfo[lyrAcro][2] == 'polygon':
+        # check for artifact polygons only if the data format is coverage, type is polygon, and if there's more than one mandatory field.
+        if lyrInfo[lyrAcro][2] == 'polygon' and dataformat == 'coverage' and len(summarytbl[lyr][3]) > 1: # *23403
             result = R.create_cursor(lyr, summarytbl[lyr][3], f) # summarytbl[lyr][3] is the list of existing mandatory fields.
             if result != None:
                 cursor2 = result
@@ -378,7 +378,7 @@ def run(gdb, summarytbl, year, fmpStartYear):  ## eg. summarytbl = {'MU110_17SAC
 
                 errorList = ["Warning on OBJECTID %s: YRDEP should be greater than or equal to 1900 where POLYTYPE = FOR (4.1.4 YRDEP)."%cursor[OBJECTID] for row in cursor
                                 if cursor[f.index('POLYTYPE')] == 'FOR'
-                                if cursor[f.index('YRDEP')] != None and cursor[f.index('YRDEP')] < 1900 ]
+                                if cursor[f.index('YRDEP')] not in [None,0] and cursor[f.index('YRDEP')] < 1900 ] # *23404
                 cursor.reset()
                 if len(errorList) > 0:
                     errorDetail[lyr].append(errorList)
@@ -668,7 +668,7 @@ def run(gdb, summarytbl, year, fmpStartYear):  ## eg. summarytbl = {'MU110_17SAC
 
                     errorList = ["Error on OBJECTID %s: OCCLO must be populated and must be between 0 and 100 (when POLYTYPE = FOR)."%cursor[OBJECTID] for row in cursor
                                     if cursor[f.index('POLYTYPE')] == 'FOR'
-                                    if cursor[f.index('OCCLO')] < 0 or cursor[f.index('OCCLO')] > 100] # surprisingly this will also catch nulls and empty spaces
+                                    if cursor[f.index('OCCLO')] == None or cursor[f.index('OCCLO')] < 0 or cursor[f.index('OCCLO')] > 100] # *23407
                     cursor.reset()
                     if len(errorList) > 0:
                         errorDetail[lyr].append(errorList)
@@ -749,20 +749,20 @@ def run(gdb, summarytbl, year, fmpStartYear):  ## eg. summarytbl = {'MU110_17SAC
 
             # OSC (PCI and BMI only)
             try:
-                current_field = 'OSTKG'            
+                current_field = 'OSC'            
                 if lyrAcro in ["PCI", "BMI"]:
-                    errorList = ["Error on OBJECTID %s: OSC must be zero when POLYTYPE is not FOR."%cursor[OBJECTID] for row in cursor
+                    errorList = ["Error on OBJECTID %s: OSC must be zero or null when POLYTYPE is not FOR."%cursor[OBJECTID] for row in cursor
                                     if cursor[f.index('POLYTYPE')] != 'FOR'
-                                    if cursor[f.index('OSC')] != 0]
+                                    if cursor[f.index('OSC')] not in [0,None]] # *23405
                     cursor.reset()
                     if len(errorList) > 0:
                         errorDetail[lyr].append(errorList)
                         criticalError += 1
-                        recordValCom[lyr].append("Error on %s record(s): OSC must be zero when POLYTYPE is not FOR."%len(errorList))
+                        recordValCom[lyr].append("Error on %s record(s): OSC must be zero or null when POLYTYPE is not FOR."%len(errorList))
 
                     errorList = ["Error on OBJECTID %s: OSC must be between 0 and 4 when POLYTYPE = FOR."%cursor[OBJECTID] for row in cursor
                                     if cursor[f.index('POLYTYPE')] == 'FOR'
-                                    if cursor[f.index('OSC')] < 0 or cursor[f.index('OSC')] > 4] # surprisingly this will also catch nulls and empty spaces
+                                    if cursor[f.index('OSC')] not in [0,1,2,3,4]] # *23405
                     cursor.reset()
                     if len(errorList) > 0:
                         errorDetail[lyr].append(errorList)
@@ -1078,23 +1078,33 @@ def run(gdb, summarytbl, year, fmpStartYear):  ## eg. summarytbl = {'MU110_17SAC
             try:
                 current_field = 'USC'            
                 if lyrAcro in ["PCI", "BMI"]:
-                    errorList = ["Error on OBJECTID %s: USC must be zero when POLYTYPE is not FOR or when DEVSTAGE is DEPHARV or DEPNAT."%cursor[OBJECTID] for row in cursor
-                                    if cursor[f.index('POLYTYPE')] != 'FOR' or cursor[f.index('DEVSTAGE')] in ['DEPHARV','DEPNAT']
-                                    if cursor[f.index('USC')] != 0]
+                    errorList = ["Error on OBJECTID %s: USC must be zero or null when POLYTYPE is not FOR."%cursor[OBJECTID] for row in cursor
+                                    if cursor[f.index('POLYTYPE')] != 'FOR'
+                                    if cursor[f.index('USC')] not in [0,None]] # *23405
                     cursor.reset()
                     if len(errorList) > 0:
                         errorDetail[lyr].append(errorList)
                         criticalError += 1
-                        recordValCom[lyr].append("Error on %s record(s): USC must be zero when POLYTYPE is not FOR or when DEVSTAGE is DEPHARV or DEPNAT."%len(errorList))
+                        recordValCom[lyr].append("Error on %s record(s): USC must be zero or null when POLYTYPE is not FOR."%len(errorList))
+
+                    errorList = ["Error on OBJECTID %s: USC must be zero when DEVSTAGE is DEPHARV or DEPNAT."%cursor[OBJECTID] for row in cursor
+                                    if cursor[f.index('DEVSTAGE')] in ['DEPHARV','DEPNAT']
+                                    if cursor[f.index('USC')] != 0] # *23405
+                    cursor.reset()
+                    if len(errorList) > 0:
+                        errorDetail[lyr].append(errorList)
+                        criticalError += 1
+                        recordValCom[lyr].append("Error on %s record(s): USC must be zero when DEVSTAGE is DEPHARV or DEPNAT."%len(errorList))
 
                     errorList = ["Error on OBJECTID %s: USC must be between 0 and 4 when POLYTYPE = FOR."%cursor[OBJECTID] for row in cursor
                                     if cursor[f.index('POLYTYPE')] == 'FOR'
-                                    if cursor[f.index('USC')] < 0 or cursor[f.index('USC')] > 4] # surprisingly this will also catch nulls and empty spaces
+                                    if cursor[f.index('USC')] not in [0,1,2,3,4]] # *23405
                     cursor.reset()
                     if len(errorList) > 0:
                         errorDetail[lyr].append(errorList)
                         criticalError += 1
                         recordValCom[lyr].append("Error on %s record(s): USC must be between 0 and 4 when POLYTYPE = FOR."%len(errorList))
+
             except ValueError:
                 recordValCom[lyr].append("***Unable to run full validation on %s field due to value error - most likely due to missing mandatory field(s)"%current_field)
                 arcpy.AddWarning("***Unable to run full validation on %s field due to the following error:\n"%current_field + str(sys.exc_info()[1]))
@@ -1275,7 +1285,7 @@ def run(gdb, summarytbl, year, fmpStartYear):  ## eg. summarytbl = {'MU110_17SAC
 
                     errorList = ["Error on OBJECTID %s: ACCESS1 must not be NON if ACCESS2 is not equal to NON (or blank)."%cursor[OBJECTID] for row in cursor
                                     if cursor[f.index('ACCESS2')] not in vnull + ['NON']
-                                    if cursor[f.index('ACCESS1')] == 'NON']
+                                    if cursor[f.index('ACCESS1')] == 'NON'] # *23401
                     cursor.reset()
                     if len(errorList) > 0:
                         errorDetail[lyr].append(errorList)
@@ -1379,15 +1389,15 @@ def run(gdb, summarytbl, year, fmpStartYear):  ## eg. summarytbl = {'MU110_17SAC
             try:
                 current_field = 'MGMTCON2 and MGMTCON3'            
                 if "MGMTCON2" in f:
-                    errorList = ["Error on OBJECTID %s: MGMTCON1 must not be 'NONE' if MGMTCON2 is not 'NONE'."%cursor[OBJECTID] for row in cursor
+                    errorList = ["Error on OBJECTID %s: MGMTCON1 must not be 'NONE' if MGMTCON2 has been populated with a value other than 'NONE'."%cursor[OBJECTID] for row in cursor
                                     if cursor[f.index('POLYTYPE')] == 'FOR'
-                                    if cursor[f.index('MGMTCON2')] != 'NONE'
-                                    if cursor[f.index('MGMTCON1')] == 'NONE']
+                                    if cursor[f.index('MGMTCON2')] not in vnull + ['NONE']
+                                    if cursor[f.index('MGMTCON1')] == 'NONE'] # *23402
                     cursor.reset()
                     if len(errorList) > 0:
                         errorDetail[lyr].append(errorList)
                         criticalError += 1
-                        recordValCom[lyr].append("Error on %s record(s): MGMTCON1 must not be 'NONE' if MGMTCON2 is not 'NONE'."%len(errorList))
+                        recordValCom[lyr].append("Error on %s record(s): MGMTCON1 must not be 'NONE' if MGMTCON2 has been populated with a value other than 'NONE'."%len(errorList))
 
                     errorList = ["Error on OBJECTID %s: MGMTCON2 must follow the correct coding scheme (if populated) when POLYTYPE is FOR."%cursor[OBJECTID] for row in cursor
                                     if cursor[f.index('POLYTYPE')] == 'FOR'
@@ -1409,15 +1419,15 @@ def run(gdb, summarytbl, year, fmpStartYear):  ## eg. summarytbl = {'MU110_17SAC
                         recordValCom[lyr].append("Error on %s record(s): MGMTCON3 must follow the correct coding scheme (if populated) when POLYTYPE is FOR."%len(errorList))
 
                 if "MGMTCON2" and "MGMTCON3" in f:
-                    errorList = ["Error on OBJECTID %s: MGMTCON1 and MGMTCON2 must not be 'NONE' if MGMTCON3 is not 'NONE'."%cursor[OBJECTID] for row in cursor
+                    errorList = ["Error on OBJECTID %s: MGMTCON1 and MGMTCON2 must not be 'NONE' (or null) if MGMTCON3 is not 'NONE'."%cursor[OBJECTID] for row in cursor
                                     if cursor[f.index('POLYTYPE')] == 'FOR'
-                                    if cursor[f.index('MGMTCON3')] != 'NONE'
-                                    if cursor[f.index('MGMTCON1')] == 'NONE' or cursor[f.index('MGMTCON2')] == 'NONE']
+                                    if cursor[f.index('MGMTCON3')] not in vnull + ['NONE']
+                                    if cursor[f.index('MGMTCON1')] == 'NONE' or cursor[f.index('MGMTCON2')] in vnull + ['NONE']] # *23402
                     cursor.reset()
                     if len(errorList) > 0:
                         errorDetail[lyr].append(errorList)
                         criticalError += 1
-                        recordValCom[lyr].append("Error on %s record(s): MGMTCON1 and MGMTCON2 must not be 'NONE' if MGMTCON3 is not 'NONE'."%len(errorList))
+                        recordValCom[lyr].append("Error on %s record(s): MGMTCON1 and MGMTCON2 must not be 'NONE' (or null) if MGMTCON3 is not 'NONE'."%len(errorList))
 
                 try:
                     # using try and except here because most of the times, MGMTCON2 and 3 exists
@@ -1823,18 +1833,18 @@ def run(gdb, summarytbl, year, fmpStartYear):  ## eg. summarytbl = {'MU110_17SAC
             try:
                 current_field = 'SC'            
                 if lyrAcro in ["BMI", "OPI"]:
-                    errorList = ["Error on OBJECTID %s: SC must be zero when POLYTYPE is not FOR."%cursor[OBJECTID] for row in cursor
+                    errorList = ["Error on OBJECTID %s: SC must be zero or null when POLYTYPE is not FOR."%cursor[OBJECTID] for row in cursor
                                     if cursor[f.index('POLYTYPE')] != 'FOR'
-                                    if cursor[f.index('SC')] != 0]
+                                    if cursor[f.index('SC')] not in [0,None]] # *23405
                     cursor.reset()
                     if len(errorList) > 0:
                         errorDetail[lyr].append(errorList)
                         criticalError += 1
-                        recordValCom[lyr].append("Error on %s record(s): SC must be zero when POLYTYPE is not FOR."%len(errorList))
+                        recordValCom[lyr].append("Error on %s record(s): SC must be zero or null when POLYTYPE is not FOR."%len(errorList))
 
                     errorList = ["Error on OBJECTID %s: SC must be between 0 and 4 when POLYTYPE = FOR."%cursor[OBJECTID] for row in cursor
                                     if cursor[f.index('POLYTYPE')] == 'FOR'
-                                    if cursor[f.index('SC')] < 0 or cursor[f.index('SC')] > 4] # this will also catch nulls and empty spaces
+                                    if cursor[f.index('SC')] not in [0,1,2,3,4]] # *23405
                     cursor.reset()
                     if len(errorList) > 0:
                         errorDetail[lyr].append(errorList)

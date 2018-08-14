@@ -323,7 +323,7 @@ class Check():
     def recordValidation(self):
         print("\nChecking each record...")
         arcpy.AddMessage("\nChecking each record...")
-        result = self.TechSpec.run(self.workspace, self.summarytbl, self.year, self.fmpStartYear)
+        result = self.TechSpec.run(self.workspace, self.summarytbl, self.year, self.fmpStartYear, self.dataformat) # *23403
 
         self.errorDetail = result[0] #eg. {'MU110_17AGP00': [['Error on OBJECTID 1: The population of PIT_OPEN is mandatory and the attribute must follow the correct coding scheme.', 'Error on OBJECTID 2:...]]}
 

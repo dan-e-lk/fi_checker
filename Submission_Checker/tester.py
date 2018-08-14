@@ -1,5 +1,5 @@
 ### This script is for testing only!!
-checker_version = '2.3.3'
+checker_version = '2.3.4'
 
 def test_all(parameters):
 	import traceback
