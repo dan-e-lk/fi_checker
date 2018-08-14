@@ -1,4 +1,5 @@
 When copying these files over to the deliverable folder, make sure to save the toolbox as ArcToolbox 10.1 version.
+Then make sure that the checker script is sourced properly (should source to deliverables/v2_x_x,  not InDevelopment folder).
 
 Also make sure to change the version numbers in the ArcToolbox (name of the toolbox and by going into the item description), 
 the arctool, and in the Checker_v2.py script.

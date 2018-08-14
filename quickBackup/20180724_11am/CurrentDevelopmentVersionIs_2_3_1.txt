@@ -1,9 +1,0 @@
-When copying these files over to the deliverable folder, make sure to save the toolbox as ArcToolbox 10.1 version.
-
-Also make sure to change the version numbers in the ArcToolbox (name of the toolbox and by going into the item description), 
-the arctool, and in the Checker_v2.py script.
-
-Change Checker_v2.py script to Checker_v2xy.py as we move on to the next version.
-
-Note that the details regarding the changes made to the checker tool can be found here:
-\\cihs.ad.gov.on.ca\mnrf\Groups\ROD\RODOpen\Forestry\Tools_and_Scripts\FI_Checker\ChangeLog

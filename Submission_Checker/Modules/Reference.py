@@ -292,8 +292,8 @@ def create_cursor(lyr_path, emf, f):
         # example emf used: emf = ['HARVCAT','SILVSYS','ESTAREA','DSTBFU']
 
         # in the case of BMI/PCI/OPI, we don't need to test every field...
-        if len(emf) > 8:
-            emf = emf[:8]
+        if len(emf) > 20:
+            emf = emf[:20]
 
         sqldict = dict(zip(emf,[None for i in emf])) #eg. {'ESTAREA': None, 'DSTBFU': None, 'HARVCAT': None, 'SILVSYS': None}
         cursor = arcpy.da.SearchCursor(lyr,emf)

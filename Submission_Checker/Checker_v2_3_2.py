@@ -1,7 +1,7 @@
 #-------------------------------------------------------------------------------
 # Name:        	checker_v2
 
-checker_version = '2.3.1'
+checker_version = '2.3.3'
 
 # Purpose:	   	This tool checks the FMP, AR or AWS submission (according to the 
 #				FIM Technical Specifications 2009 or 2017) and outputs a validation report 
@@ -47,3 +47,7 @@ try:
 	class_check.run()
 finally:
 	arcpy.AddMessage("\nTool version: v%s"%checker_version)
+
+
+
+

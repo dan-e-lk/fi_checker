@@ -34,6 +34,11 @@ class Check():
 
     # this method calls all other functions and methods. This method is the backbone of the checker program.
     def run(self):
+        """
+        This method is the backbone of the tool.
+        It initiates all the other modules and methods necessary to check the data based on the given input in the init method.
+        """
+
         importstr = "import TechSpec_" + self.plan + "_" + self.old_or_new + " as TechSpec" ## for example "import TechSpec_FMP_NEW as TechSpec"
         exec(importstr)
         self.TechSpec = TechSpec
