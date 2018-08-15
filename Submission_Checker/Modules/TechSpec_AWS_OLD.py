@@ -58,13 +58,8 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
         f = summarytbl[lyr][4] + summarytbl[lyr][3]  ## f is the list of all fields found in lyr. eg. ['FID', 'SHAPE','PIT_ID', 'PIT_OPEN', 'PITCLOSE', 'CAT9APP', ...]
         
         # feature classes have ObjectID, shapefiles and coverages have FID. Search for ObjectID's index value in f, if not possible, search for FID's index value in f. else use whatever field comes first as the ID field.
-        try:
-            OBJECTID = f.index('OBJECTID')
-        except:
-            try:
-                OBJECTID = f.index('FID')
-            except:
-                OBJECTID = 0
+        id_field = R.find_IdField(f, dataformat) # *23408  This will normally return OBJECTID for feature classes and FID for shapefile and coverage.
+        id_field_idx = f.index(id_field)
 
         cursor = arcpy.da.SearchCursor(lyr,f)
         recordCount = len(list(cursor))
@@ -95,7 +90,7 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
         if lyrAcro == "AGP":
             try: # need try and except block here for cases such as not having mandatory fields.
             # PIT_ID
-                errorList = ["Error on OBJECTID %s: The population of PIT_ID is mandatory."%cursor[OBJECTID] for row in cursor
+                errorList = ["Error on %s %s: The population of PIT_ID is mandatory."%(id_field, cursor[id_field_idx]) for row in cursor
                                 if cursor[f.index('PIT_ID')] in vnull]
                 cursor.reset()
                 if len(errorList) > 0:
@@ -104,7 +99,7 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
                     recordValCom[lyr].append("Error on %s record(s): The population of PIT_ID is mandatory (A1.14.1)."%len(errorList))
 
             # PIT_OPEN
-                errorList = ["Error on OBJECTID %s: The population of PIT_OPEN is mandatory and the attribute must follow the correct coding scheme."%cursor[OBJECTID] for row in cursor
+                errorList = ["Error on %s %s: The population of PIT_OPEN is mandatory and the attribute must follow the correct coding scheme."%(id_field, cursor[id_field_idx]) for row in cursor
                                 if R.fimdate(cursor[f.index('PIT_OPEN')]) is None]
                 cursor.reset()
                 if len(errorList) > 0:
@@ -113,7 +108,7 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
                     recordValCom[lyr].append("Error on %s record(s): The population of PIT_OPEN is mandatory and the attribute must follow the correct coding scheme (A1.14.2)."%len(errorList))
 
             # PITCLOSE
-                errorList = ["Error on OBJECTID %s: PITCLOSE must be either NULL or follow the correct coding scheme."%cursor[OBJECTID] for row in cursor
+                errorList = ["Error on %s %s: PITCLOSE must be either NULL or follow the correct coding scheme."%(id_field, cursor[id_field_idx]) for row in cursor
                                 if cursor[f.index('PITCLOSE')] not in vnull
                                 and R.fimdate(cursor[f.index('PITCLOSE')]) is None]
                 cursor.reset()
@@ -123,7 +118,7 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
                     recordValCom[lyr].append("Error on %s record(s): PITCLOSE must be either NULL or follow the correct coding scheme (A1.14.3)."%len(errorList))
 
 
-                errorList = ["Error on OBJECTID %s: The PITCLOSE date cannot be greater than 10 years from PIT_OPEN date."%cursor[OBJECTID] for row in cursor
+                errorList = ["Error on %s %s: The PITCLOSE date cannot be greater than 10 years from PIT_OPEN date."%(id_field, cursor[id_field_idx]) for row in cursor
                                 if R.fimdate(cursor[f.index('PITCLOSE')]) is not None
                                 and R.fimdate(cursor[f.index('PIT_OPEN')]) is not None
                                 and R.fimdate(cursor[f.index('PITCLOSE')]) > (R.fimdate(str(int(cursor[f.index('PIT_OPEN')][:4]) + 10) +  cursor[f.index('PIT_OPEN')][4:]))]
@@ -134,7 +129,7 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
                     recordValCom[lyr].append("Error on %s record(s): The date cannot be greater than 10 years from PIT_OPEN date (A1.14.3)."%len(errorList))
 
 
-                errorList = ["Error on OBJECTID %s: If PITCLOSE is not null, CAT9APP must be null. If PITCLOSE is null, CAT9APP cannot be null."%cursor[OBJECTID] for row in cursor
+                errorList = ["Error on %s %s: If PITCLOSE is not null, CAT9APP must be null. If PITCLOSE is null, CAT9APP cannot be null."%(id_field, cursor[id_field_idx]) for row in cursor
                                 if (cursor[f.index('PITCLOSE')] in vnull and cursor[f.index('CAT9APP')] in vnull)
                                 or (cursor[f.index('PITCLOSE')] not in vnull and cursor[f.index('CAT9APP')] not in vnull)]
                 cursor.reset()
@@ -144,7 +139,7 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
                     recordValCom[lyr].append("Error on %s record(s): If PITCLOSE is not null, CAT9APP must be null. If PITCLOSE is null, CAT9APP cannot be null (A1.14.3)."%len(errorList))
 
             # CAT9APP
-                errorList = ["Error on OBJECTID %s: CAT9APP must be either NULL or follow the correct coding scheme."%cursor[OBJECTID] for row in cursor
+                errorList = ["Error on %s %s: CAT9APP must be either NULL or follow the correct coding scheme."%(id_field, cursor[id_field_idx]) for row in cursor
                                 if cursor[f.index('CAT9APP')] not in vnull
                                 and R.fimdate(cursor[f.index('CAT9APP')]) is None]
                 cursor.reset()
@@ -154,7 +149,7 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
                     recordValCom[lyr].append("Error on %s record(s): CAT9APP must be either NULL or follow the correct coding scheme (A1.14.4)."%len(errorList))
 
 
-                errorList = ["Error on OBJECTID %s: The CAT9APP date cannot be greater than 10 years from PIT_OPEN date."%cursor[OBJECTID] for row in cursor
+                errorList = ["Error on %s %s: The CAT9APP date cannot be greater than 10 years from PIT_OPEN date."%(id_field, cursor[id_field_idx]) for row in cursor
                                 if R.fimdate(cursor[f.index('CAT9APP')]) is not None
                                 and R.fimdate(cursor[f.index('PIT_OPEN')]) is not None
                                 and R.fimdate(cursor[f.index('CAT9APP')]) > (R.fimdate(str(int(cursor[f.index('PIT_OPEN')][:4]) + 10) +  cursor[f.index('PIT_OPEN')][4:]))]
@@ -177,7 +172,7 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
         if lyrAcro == "SAC":
             try:
             # AOCID
-                errorList = ["Error on OBJECTID %s: The population of AOCID is mandatory."%cursor[OBJECTID] for row in cursor
+                errorList = ["Error on %s %s: The population of AOCID is mandatory."%(id_field, cursor[id_field_idx]) for row in cursor
                                 if cursor[f.index('AOCID')] in vnull]
                 cursor.reset()
                 if len(errorList) > 0:
@@ -186,7 +181,7 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
                     recordValCom[lyr].append("Error on %s record(s): The population of AOCID is mandatory (A1.2.1)."%len(errorList))
 
             # AOCTYPE
-                errorList = ["Error on OBJECTID %s: The population of AOCTYPE is mandatory and must follow the correct coding scheme."%cursor[OBJECTID] for row in cursor
+                errorList = ["Error on %s %s: The population of AOCTYPE is mandatory and must follow the correct coding scheme."%(id_field, cursor[id_field_idx]) for row in cursor
                                 if cursor[f.index('AOCTYPE')] not in ['M','R']]
                 cursor.reset()
                 if len(errorList) > 0:
@@ -206,7 +201,7 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
         if lyrAcro == "SAG":
             try:
             # AWS_YR
-                errorList = ["Error on OBJECTID %s: AWS_YR cannot be less than the FMP start year (except for 0 on areas not scheduled) or greater than the plan end year minus 1."%cursor[OBJECTID] for row in cursor
+                errorList = ["Error on %s %s: AWS_YR cannot be less than the FMP start year (except for 0 on areas not scheduled) or greater than the plan end year minus 1."%(id_field, cursor[id_field_idx]) for row in cursor
                                 if cursor[f.index('AWS_YR')] in vnull
                                 or (int(cursor[f.index('AWS_YR')]) !=0 and (int(cursor[f.index('AWS_YR')]) < fmpStartYear or int(cursor[f.index('AWS_YR')]) > (fmpStartYear + 9)))]
                 cursor.reset()
@@ -222,7 +217,7 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
                     recordValCom[lyr].append("Error on AWS_YR attributes: At least one feature must be populated with the AWS start year identified in the FI Portal submission record. (A1.9.1)")
 
             # AGAREAID
-                errorList = ["Error on OBJECTID %s: The population of AGAREAID is mandatory where AWS_YR equals the fiscal year to which the AWS applies."%cursor[OBJECTID] for row in cursor
+                errorList = ["Error on %s %s: The population of AGAREAID is mandatory where AWS_YR equals the fiscal year to which the AWS applies."%(id_field, cursor[id_field_idx]) for row in cursor
                                 if cursor[f.index('AWS_YR')] not in vnull and int(cursor[f.index('AWS_YR')]) == year
                                 if cursor[f.index('AGAREAID')] in vnull]
                 cursor.reset()
@@ -243,7 +238,7 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
         if lyrAcro == "SHR":
             try:
             # AWS_YR
-                errorList = ["Error on OBJECTID %s: AWS_YR cannot be less than the FMP start year (except for 0 on areas not scheduled) or greater than the plan end year minus 1."%cursor[OBJECTID] for row in cursor
+                errorList = ["Error on %s %s: AWS_YR cannot be less than the FMP start year (except for 0 on areas not scheduled) or greater than the plan end year minus 1."%(id_field, cursor[id_field_idx]) for row in cursor
                                 if cursor[f.index('AWS_YR')] in vnull
                                 or (int(cursor[f.index('AWS_YR')]) !=0 and (int(cursor[f.index('AWS_YR')]) < fmpStartYear or int(cursor[f.index('AWS_YR')]) > (fmpStartYear + 9)))]
                 cursor.reset()
@@ -259,7 +254,7 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
                     recordValCom[lyr].append("Error on AWS_YR attributes: At least one feature must be populated with the AWS start year identified in the FI Portal submission record. (A1.1.1)")
 
             # SILVSYS
-                errorList = ["Error on OBJECTID %s: The population of SILVSYS is mandatory and must follow the correct coding scheme where AWS_YR equals the fiscal year to which the AWS applies."%cursor[OBJECTID] for row in cursor
+                errorList = ["Error on %s %s: The population of SILVSYS is mandatory and must follow the correct coding scheme where AWS_YR equals the fiscal year to which the AWS applies."%(id_field, cursor[id_field_idx]) for row in cursor
                                 if cursor[f.index('AWS_YR')] not in vnull and int(cursor[f.index('AWS_YR')]) == year
                                 if cursor[f.index('SILVSYS')] not in ['CC','SE','SH']]
                 cursor.reset()
@@ -268,7 +263,7 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
                     criticalError += 1
                     recordValCom[lyr].append("Error on %s record(s): The population of SILVSYS is mandatory and must follow the correct coding scheme where AWS_YR equals the fiscal year to which the AWS applies (A1.1.2)."%len(errorList))
 
-                errorList = ["Error on OBJECTID %s: The attribute population of SILVSYS must follow the correct coding scheme (even if the AWS_YR doesn't equal the fiscal year)."%cursor[OBJECTID] for row in cursor
+                errorList = ["Error on %s %s: The attribute population of SILVSYS must follow the correct coding scheme (even if the AWS_YR doesn't equal the fiscal year)."%(id_field, cursor[id_field_idx]) for row in cursor
                                 if cursor[f.index('AWS_YR')] in vnull or int(cursor[f.index('AWS_YR')]) != year
                                 if cursor[f.index('SILVSYS')] not in vnull + ['CC','SE','SH']]
                 cursor.reset()
@@ -278,7 +273,7 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
                     recordValCom[lyr].append("Error on %s record(s): The attribute population of SILVSYS must follow the correct coding scheme (even if the AWS_YR doesn't equal the fiscal year) (A1.1.2)."%len(errorList))
 
             # HARVCAT
-                errorList = ["Error on OBJECTID %s: The population of HARVCAT is mandatory and must follow the correct coding scheme where AWS_YR equals the fiscal year to which the AWS applies."%cursor[OBJECTID] for row in cursor
+                errorList = ["Error on %s %s: The population of HARVCAT is mandatory and must follow the correct coding scheme where AWS_YR equals the fiscal year to which the AWS applies."%(id_field, cursor[id_field_idx]) for row in cursor
                                 if cursor[f.index('AWS_YR')] not in vnull and int(cursor[f.index('AWS_YR')]) == year
                                 if cursor[f.index('HARVCAT')] not in ['REGULAR','BRIDGING','REDIRECT','ACCELER','FRSTPASS','SCNDPASS','SALVAGE']]
                 cursor.reset()
@@ -287,7 +282,7 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
                     criticalError += 1
                     recordValCom[lyr].append("Error on %s record(s): The population of HARVCAT is mandatory and must follow the correct coding scheme where AWS_YR equals the fiscal year to which the AWS applies (A1.1.3)."%len(errorList))
 
-                errorList = ["Error on OBJECTID %s: The attribute population of HARVCAT must follow the correct coding scheme (even if the AWS_YR doesn't equal the fiscal year)."%cursor[OBJECTID] for row in cursor
+                errorList = ["Error on %s %s: The attribute population of HARVCAT must follow the correct coding scheme (even if the AWS_YR doesn't equal the fiscal year)."%(id_field, cursor[id_field_idx]) for row in cursor
                                 if cursor[f.index('AWS_YR')] in vnull or int(cursor[f.index('AWS_YR')]) != year
                                 if cursor[f.index('HARVCAT')] not in vnull + ['REGULAR','BRIDGING','REDIRECT','ACCELER','FRSTPASS','SCNDPASS','SALVAGE']]
                 cursor.reset()
@@ -296,7 +291,7 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
                     criticalError += 1
                     recordValCom[lyr].append("Error on %s record(s): The attribute population of HARVCAT must follow the correct coding scheme (even if the AWS_YR doesn't equal the fiscal year) (A1.1.3)."%len(errorList))
 
-                errorList = ["Error on OBJECTID %s: HARVCAT = BRIDGING is only available when the AWS start year is equal to the first year of the 10 year plan period."%cursor[OBJECTID] for row in cursor
+                errorList = ["Error on %s %s: HARVCAT = BRIDGING is only available when the AWS start year is equal to the first year of the 10 year plan period."%(id_field, cursor[id_field_idx]) for row in cursor
                                 if cursor[f.index('HARVCAT')] == 'BRIDGING'
                                 if year != fmpStartYear]
                 cursor.reset()
@@ -306,7 +301,7 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
                     recordValCom[lyr].append("Error on %s record(s): HARVCAT = BRIDGING is only available when the AWS start year is equal to the first year of the 10 year plan period (A1.1.3)."%len(errorList))
 
             # FUELWOOD
-                errorList = ["Error on OBJECTID %s: The population of FUELWOOD is mandatory and must follow the correct coding scheme where AWS_YR equals the fiscal year to which the AWS applies."%cursor[OBJECTID] for row in cursor
+                errorList = ["Error on %s %s: The population of FUELWOOD is mandatory and must follow the correct coding scheme where AWS_YR equals the fiscal year to which the AWS applies."%(id_field, cursor[id_field_idx]) for row in cursor
                                 if cursor[f.index('AWS_YR')] not in vnull and int(cursor[f.index('AWS_YR')]) == year
                                 if cursor[f.index('FUELWOOD')] not in ['Y','N']]
                 cursor.reset()
@@ -315,7 +310,7 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
                     criticalError += 1
                     recordValCom[lyr].append("Error on %s record(s): The population of FUELWOOD is mandatory and must follow the correct coding scheme where AWS_YR equals the fiscal year to which the AWS applies (A1.1.4)."%len(errorList))
 
-                errorList = ["Error on OBJECTID %s: The attribute population of FUELWOOD must follow the correct coding scheme (even if the AWS_YR doesn't equal the fiscal year)."%cursor[OBJECTID] for row in cursor
+                errorList = ["Error on %s %s: The attribute population of FUELWOOD must follow the correct coding scheme (even if the AWS_YR doesn't equal the fiscal year)."%(id_field, cursor[id_field_idx]) for row in cursor
                                 if cursor[f.index('AWS_YR')] in vnull or int(cursor[f.index('AWS_YR')]) != year
                                 if cursor[f.index('FUELWOOD')] not in vnull + ['Y','N']]
                 cursor.reset()
@@ -336,7 +331,7 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
         if lyrAcro == "SNW":
             try:
             # AWS_YR
-                errorList = ["Error on OBJECTID %s: AWS_YR cannot be less than the FMP start year (except for 0 on areas not scheduled) or greater than the plan end year minus 1."%cursor[OBJECTID] for row in cursor
+                errorList = ["Error on %s %s: AWS_YR cannot be less than the FMP start year (except for 0 on areas not scheduled) or greater than the plan end year minus 1."%(id_field, cursor[id_field_idx]) for row in cursor
                                 if cursor[f.index('AWS_YR')] in vnull
                                 or (int(cursor[f.index('AWS_YR')]) !=0 and (int(cursor[f.index('AWS_YR')]) < fmpStartYear or int(cursor[f.index('AWS_YR')]) > (fmpStartYear + 9)))]
                 cursor.reset()
@@ -352,7 +347,7 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
                     recordValCom[lyr].append("Error on AWS_YR attributes: At least one feature must be populated with the AWS start year identified in the FI Portal submission record. (A1.8.1)")
 
             # AOCXID
-                errorList = ["Error on OBJECTID %s: The population of AOCXID is mandatory and must follow the correct coding scheme where AWS_YR equals the fiscal year to which the AWS applies."%cursor[OBJECTID] for row in cursor
+                errorList = ["Error on %s %s: The population of AOCXID is mandatory and must follow the correct coding scheme where AWS_YR equals the fiscal year to which the AWS applies."%(id_field, cursor[id_field_idx]) for row in cursor
                                 if cursor[f.index('AWS_YR')] not in vnull and int(cursor[f.index('AWS_YR')]) == year
                                 if cursor[f.index('AOCXID')] in vnull]
                 cursor.reset()
@@ -362,7 +357,7 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
                     recordValCom[lyr].append("Error on %s record(s): The population of AOCXID is mandatory where AWS_YR equals the fiscal year to which the AWS applies (A1.8.2)."%len(errorList))
 
             # ROADID
-                errorList = ["Error on OBJECTID %s: The population of ROADID is mandatory and must follow the correct coding scheme where AWS_YR equals the fiscal year to which the AWS applies."%cursor[OBJECTID] for row in cursor
+                errorList = ["Error on %s %s: The population of ROADID is mandatory and must follow the correct coding scheme where AWS_YR equals the fiscal year to which the AWS applies."%(id_field, cursor[id_field_idx]) for row in cursor
                                 if cursor[f.index('AWS_YR')] not in vnull and int(cursor[f.index('AWS_YR')]) == year
                                 if cursor[f.index('ROADID')] in vnull]
                 cursor.reset()
@@ -383,7 +378,7 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
         if lyrAcro == "SOR":
             try:
             # AWS_YR
-                errorList = ["Error on OBJECTID %s: AWS_YR cannot be less than the FMP start year (except for 0 on areas not scheduled) or greater than the plan end year minus 1."%cursor[OBJECTID] for row in cursor
+                errorList = ["Error on %s %s: AWS_YR cannot be less than the FMP start year (except for 0 on areas not scheduled) or greater than the plan end year minus 1."%(id_field, cursor[id_field_idx]) for row in cursor
                                 if cursor[f.index('AWS_YR')] in vnull
                                 or (int(cursor[f.index('AWS_YR')]) !=0 and (int(cursor[f.index('AWS_YR')]) < fmpStartYear or int(cursor[f.index('AWS_YR')]) > (fmpStartYear + 9)))]
                 cursor.reset()
@@ -399,7 +394,7 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
                     recordValCom[lyr].append("Error on AWS_YR attributes: At least one feature must be populated with the AWS start year identified in the FI Portal submission record. (A1.5.1)")
 
             # ORBID
-                errorList = ["Error on OBJECTID %s: The population of ORBID is mandatory where AWS_YR equals the fiscal year to which the AWS applies."%cursor[OBJECTID] for row in cursor
+                errorList = ["Error on %s %s: The population of ORBID is mandatory where AWS_YR equals the fiscal year to which the AWS applies."%(id_field, cursor[id_field_idx]) for row in cursor
                                 if cursor[f.index('AWS_YR')] not in vnull and int(cursor[f.index('AWS_YR')]) == year
                                 if cursor[f.index('ORBID')] in vnull]
                 cursor.reset()
@@ -421,7 +416,7 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
         if lyrAcro == "SPT":
             try:
             # AWS_YR
-                errorList = ["Error on OBJECTID %s: AWS_YR cannot be less than the FMP start year (except for 0 on areas not scheduled) or greater than the plan end year minus 1."%cursor[OBJECTID] for row in cursor
+                errorList = ["Error on %s %s: AWS_YR cannot be less than the FMP start year (except for 0 on areas not scheduled) or greater than the plan end year minus 1."%(id_field, cursor[id_field_idx]) for row in cursor
                                 if cursor[f.index('AWS_YR')] in vnull
                                 or (int(cursor[f.index('AWS_YR')]) !=0 and (int(cursor[f.index('AWS_YR')]) < fmpStartYear or int(cursor[f.index('AWS_YR')]) > (fmpStartYear + 9)))]
                 cursor.reset()
@@ -437,7 +432,7 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
                     recordValCom[lyr].append("Error on AWS_YR attributes: At least one feature must be populated with the AWS start year identified in the FI Portal submission record. (A1.13.1)")
 
             # TRTMTHD1
-                errorList = ["Error on OBJECTID %s: The population of TRTMTHD1 is mandatory and must follow the correct coding scheme where AWS_YR equals the fiscal year to which the AWS applies."%cursor[OBJECTID] for row in cursor
+                errorList = ["Error on %s %s: The population of TRTMTHD1 is mandatory and must follow the correct coding scheme where AWS_YR equals the fiscal year to which the AWS applies."%(id_field, cursor[id_field_idx]) for row in cursor
                                 if cursor[f.index('AWS_YR')] not in vnull and int(cursor[f.index('AWS_YR')]) == year
                                 if cursor[f.index('TRTMTHD1')] not in ['PCHEMA','PCHEMG','PMANUAL']]
                 cursor.reset()
@@ -446,7 +441,7 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
                     criticalError += 1
                     recordValCom[lyr].append("Error on %s record(s): The population of TRTMTHD1 is mandatory and must follow the correct coding scheme where AWS_YR equals the fiscal year to which the AWS applies. (A1.13.2)."%len(errorList))
 
-                errorList = ["Error on OBJECTID %s: The attribute population of TRTMTHD1 must follow the correct coding scheme (even if the AWS_YR doesn't equal the fiscal year)."%cursor[OBJECTID] for row in cursor
+                errorList = ["Error on %s %s: The attribute population of TRTMTHD1 must follow the correct coding scheme (even if the AWS_YR doesn't equal the fiscal year)."%(id_field, cursor[id_field_idx]) for row in cursor
                                 if cursor[f.index('AWS_YR')] in vnull or int(cursor[f.index('AWS_YR')]) != year
                                 if cursor[f.index('TRTMTHD1')] not in vnull + ['PCHEMA','PCHEMG','PMANUAL']]
                 cursor.reset()
@@ -457,7 +452,7 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
 
             # TRTMTHD2
                 if 'TRTMTHD2' in f:
-                    errorList = ["Error on OBJECTID %s: If TRTMTHD2 is populated then TRTMTHD1 must also be populated and TRTMTHD2 must follow the correct coding scheme."%cursor[OBJECTID] for row in cursor
+                    errorList = ["Error on %s %s: If TRTMTHD2 is populated then TRTMTHD1 must also be populated and TRTMTHD2 must follow the correct coding scheme."%(id_field, cursor[id_field_idx]) for row in cursor
                                     if (cursor[f.index('TRTMTHD1')] in vnull and cursor[f.index('TRTMTHD2')] not in vnull)
                                     or cursor[f.index('TRTMTHD2')] not in vnull + ['PCHEMA','PCHEMG','PMANUAL']]
                     cursor.reset()
@@ -469,7 +464,7 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
             # TRTMTHD3
                 if 'TRTMTHD3' in f:
                     if 'TRTMTHD2' in f:
-                        errorList = ["Error on OBJECTID %s: If TRTMTHD3 is populated then TRTMTHD1 and TRTMTHD2 must also be populated and TRTMTHD3 must follow the correct coding scheme."%cursor[OBJECTID] for row in cursor
+                        errorList = ["Error on %s %s: If TRTMTHD3 is populated then TRTMTHD1 and TRTMTHD2 must also be populated and TRTMTHD3 must follow the correct coding scheme."%(id_field, cursor[id_field_idx]) for row in cursor
                                         if ((cursor[f.index('TRTMTHD1')] in vnull or cursor[f.index('TRTMTHD2')] in vnull) and cursor[f.index('TRTMTHD3')] not in vnull)
                                         or cursor[f.index('TRTMTHD3')] not in vnull + ['PCHEMA','PCHEMG','PMANUAL']]
                         cursor.reset()
@@ -493,7 +488,7 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
         if lyrAcro == "SRA":
             try:
             # AWS_YR
-                errorList = ["Error on OBJECTID %s: AWS_YR cannot be less than the FMP start year (except for 0 on areas not scheduled) or greater than the plan end year minus 1."%cursor[OBJECTID] for row in cursor
+                errorList = ["Error on %s %s: AWS_YR cannot be less than the FMP start year (except for 0 on areas not scheduled) or greater than the plan end year minus 1."%(id_field, cursor[id_field_idx]) for row in cursor
                                 if cursor[f.index('AWS_YR')] in vnull
                                 or (int(cursor[f.index('AWS_YR')]) !=0 and (int(cursor[f.index('AWS_YR')]) < fmpStartYear or int(cursor[f.index('AWS_YR')]) > (fmpStartYear + 9)))]
                 cursor.reset()
@@ -509,7 +504,7 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
                     recordValCom[lyr].append("Error on AWS_YR attributes: At least one feature must be populated with the AWS start year identified in the FI Portal submission record. (A1.6.1)")
 
             # ROADID
-                errorList = ["Error on OBJECTID %s: The population of ROADID is mandatory and must follow the correct coding scheme where AWS_YR equals the fiscal year to which the AWS applies."%cursor[OBJECTID] for row in cursor
+                errorList = ["Error on %s %s: The population of ROADID is mandatory and must follow the correct coding scheme where AWS_YR equals the fiscal year to which the AWS applies."%(id_field, cursor[id_field_idx]) for row in cursor
                                 if cursor[f.index('AWS_YR')] not in vnull and int(cursor[f.index('AWS_YR')]) == year
                                 if cursor[f.index('ROADID')] in vnull]
                 cursor.reset()
@@ -519,7 +514,7 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
                     recordValCom[lyr].append("Error on %s record(s): The population of ROADID is mandatory where AWS_YR equals the fiscal year to which the AWS applies. (A1.6.2)."%len(errorList))
 
             # ROADCLAS
-                errorList = ["Error on OBJECTID %s: The population of ROADCLAS is mandatory and must follow the correct coding scheme where AWS_YR equals the fiscal year to which the AWS applies."%cursor[OBJECTID] for row in cursor
+                errorList = ["Error on %s %s: The population of ROADCLAS is mandatory and must follow the correct coding scheme where AWS_YR equals the fiscal year to which the AWS applies."%(id_field, cursor[id_field_idx]) for row in cursor
                                 if cursor[f.index('AWS_YR')] not in vnull and int(cursor[f.index('AWS_YR')]) == year
                                 if cursor[f.index('ROADCLAS')] not in ['P','B','O']]
                 cursor.reset()
@@ -528,7 +523,7 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
                     criticalError += 1
                     recordValCom[lyr].append("Error on %s record(s): The population of ROADCLAS is mandatory and must follow the correct coding scheme where AWS_YR equals the fiscal year to which the AWS applies (A1.6.3)."%len(errorList))
 
-                errorList = ["Error on OBJECTID %s: The attribute population of ROADCLAS must follow the correct coding scheme (even if the AWS_YR doesn't equal the fiscal year)."%cursor[OBJECTID] for row in cursor
+                errorList = ["Error on %s %s: The attribute population of ROADCLAS must follow the correct coding scheme (even if the AWS_YR doesn't equal the fiscal year)."%(id_field, cursor[id_field_idx]) for row in cursor
                                 if cursor[f.index('AWS_YR')] in vnull or int(cursor[f.index('AWS_YR')]) != year
                                 if cursor[f.index('ROADCLAS')] not in vnull + ['P','B','O']]
                 cursor.reset()
@@ -539,7 +534,7 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
 
             # ACCESS
                 if 'ACCESS' in f:
-                    errorList = ["Error on OBJECTID %s: The population of ACCESS must follow the correct coding scheme where AWS_YR equals the fiscal year to which the AWS applies."%cursor[OBJECTID] for row in cursor
+                    errorList = ["Error on %s %s: The population of ACCESS must follow the correct coding scheme where AWS_YR equals the fiscal year to which the AWS applies."%(id_field, cursor[id_field_idx]) for row in cursor
                                     if cursor[f.index('AWS_YR')] not in vnull and int(cursor[f.index('AWS_YR')]) == year
                                     if cursor[f.index('ACCESS')] not in ['Y','N']]
                     cursor.reset()
@@ -558,7 +553,7 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
 
             # DECOM
                 if 'DECOM' in f:
-                    errorList = ["Error on OBJECTID %s: The population of DECOM must follow the correct coding scheme where AWS_YR equals the fiscal year to which the AWS applies."%cursor[OBJECTID] for row in cursor
+                    errorList = ["Error on %s %s: The population of DECOM must follow the correct coding scheme where AWS_YR equals the fiscal year to which the AWS applies."%(id_field, cursor[id_field_idx]) for row in cursor
                                     if cursor[f.index('AWS_YR')] not in vnull and int(cursor[f.index('AWS_YR')]) == year
                                     if cursor[f.index('DECOM')] not in ['Y','N']]
                     cursor.reset()
@@ -569,7 +564,7 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
 
             # ACCESS and DECOM can't both be Y
                 if 'ACCESS' in f and 'DECOM' in f:
-                    errorList = ["Error on OBJECTID %s: If DECOM = Y, then ACCESS must be N (if present) and vice versa. "%cursor[OBJECTID] for row in cursor
+                    errorList = ["Error on %s %s: If DECOM = Y, then ACCESS must be N (if present) and vice versa. "%(id_field, cursor[id_field_idx]) for row in cursor
                                     if (cursor[f.index('ACCESS')] =='Y' and cursor[f.index('DECOM')] =='Y')]
                     cursor.reset()
                     if len(errorList) > 0:
@@ -579,7 +574,7 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
 
             # MAINTAIN
                 if 'MAINTAIN' in f:
-                    errorList = ["Error on OBJECTID %s: The population of MAINTAIN must follow the correct coding scheme where AWS_YR equals the fiscal year to which the AWS applies."%cursor[OBJECTID] for row in cursor
+                    errorList = ["Error on %s %s: The population of MAINTAIN must follow the correct coding scheme where AWS_YR equals the fiscal year to which the AWS applies."%(id_field, cursor[id_field_idx]) for row in cursor
                                     if cursor[f.index('AWS_YR')] not in vnull and int(cursor[f.index('AWS_YR')]) == year
                                     if cursor[f.index('MAINTAIN')] not in ['Y','N']]
                     cursor.reset()
@@ -590,7 +585,7 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
 
             # MONITOR
                 if 'MONITOR' in f:
-                    errorList = ["Error on OBJECTID %s: The population of MONITOR must follow the correct coding scheme where AWS_YR equals the fiscal year to which the AWS applies."%cursor[OBJECTID] for row in cursor
+                    errorList = ["Error on %s %s: The population of MONITOR must follow the correct coding scheme where AWS_YR equals the fiscal year to which the AWS applies."%(id_field, cursor[id_field_idx]) for row in cursor
                                     if cursor[f.index('AWS_YR')] not in vnull and int(cursor[f.index('AWS_YR')]) == year
                                     if cursor[f.index('MONITOR')] not in ['Y','N']]
                     cursor.reset()
@@ -607,7 +602,7 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
                    fieldValComUpdate[lyr].append("At a minimum, one of DECOM, MAINTAIN, MONITOR, ACCESS must occur. (A1.6.4)")
                    fieldValUpdate[lyr] = 'Invalid'
                 else:
-                    command = """errorList = ["Error on OBJECTID %s: At a minimum, one of Decommissioning, Maintenance, Monitoring or Access Control must occur for each record where AWS_YR equals the fiscal year to which the AWS applies."%cursor[OBJECTID] for row in cursor
+                    command = """errorList = ["Error on %s %s: At a minimum, one of Decommissioning, Maintenance, Monitoring or Access Control must occur for each record where AWS_YR equals the fiscal year to which the AWS applies."%(id_field, cursor[id_field_idx]) for row in cursor
                                         if cursor[f.index('AWS_YR')] not in vnull and int(cursor[f.index('AWS_YR')]) == year
                                         if cursor[f.index('""" + matchingField[0] + """')] != 'Y' """
 
@@ -625,7 +620,7 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
 
             # CONTROL1
                 if 'ACCESS' in f and 'CONTROL1' in f:
-                    errorList = ["Error on OBJECTID %s: The population of CONTROL1 is mandatory and must follow the correct coding scheme where ACCESS = Y."%cursor[OBJECTID] for row in cursor
+                    errorList = ["Error on %s %s: The population of CONTROL1 is mandatory and must follow the correct coding scheme where ACCESS = Y."%(id_field, cursor[id_field_idx]) for row in cursor
                                     if cursor[f.index('ACCESS')] =='Y'
                                     if cursor[f.index('CONTROL1')] not in ['BERM','GATE','SCAR','SIGN','PRIV','SLSH','WATX']]
                     cursor.reset()
@@ -635,7 +630,7 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
                         recordValCom[lyr].append("Error on %s record(s): The population of CONTROL1 is mandatory and must follow the correct coding scheme where ACCESS = Y (A1.6.8)."%len(errorList))
 
                 if 'CONTROL1' in f:
-                    errorList = ["Error on OBJECTID %s: The population of CONTROL1 must follow the correct coding scheme (even when ACCESS is not Y)."%cursor[OBJECTID] for row in cursor
+                    errorList = ["Error on %s %s: The population of CONTROL1 must follow the correct coding scheme (even when ACCESS is not Y)."%(id_field, cursor[id_field_idx]) for row in cursor
                                     if cursor[f.index('CONTROL1')] not in vnull + ['BERM','GATE','SCAR','SIGN','PRIV','SLSH','WATX']]
                     cursor.reset()
                     if len(errorList) > 0:
@@ -644,7 +639,7 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
                         recordValCom[lyr].append("Error on %s record(s): The population of CONTROL1 must follow the correct coding scheme (even when ACCESS is not Y) (A1.6.8)."%len(errorList))
             # CONTROL2
                 if 'CONTROL1' in f and 'CONTROL2' in f:
-                    errorList = ["Error on OBJECTID %s: CONTROL2 must only have a control type when CONTROL1 has a control type."%cursor[OBJECTID] for row in cursor
+                    errorList = ["Error on %s %s: CONTROL2 must only have a control type when CONTROL1 has a control type."%(id_field, cursor[id_field_idx]) for row in cursor
                                     if cursor[f.index('CONTROL1')] in vnull
                                     if cursor[f.index('CONTROL2')] not in vnull]
                     cursor.reset()
@@ -654,7 +649,7 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
                         recordValCom[lyr].append("Error on %s record(s): CONTROL2 must only have a control type when CONTROL1 has a control type (A1.6.8)."%len(errorList))
 
                 if 'CONTROL2' in f:
-                    errorList = ["Error on OBJECTID %s: The population of CONTROL2 must follow the correct coding scheme."%cursor[OBJECTID] for row in cursor
+                    errorList = ["Error on %s %s: The population of CONTROL2 must follow the correct coding scheme."%(id_field, cursor[id_field_idx]) for row in cursor
                                     if cursor[f.index('CONTROL2')] not in vnull + ['BERM','GATE','SCAR','SIGN','PRIV','SLSH','WATX']]
                     cursor.reset()
                     if len(errorList) > 0:
@@ -674,7 +669,7 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
         if lyrAcro == "SRC":
             try:
             # AWS_YR
-                errorList = ["Error on OBJECTID %s: AWS_YR cannot be less than the FMP start year (except for 0 on areas not scheduled) or greater than the plan end year minus 1."%cursor[OBJECTID] for row in cursor
+                errorList = ["Error on %s %s: AWS_YR cannot be less than the FMP start year (except for 0 on areas not scheduled) or greater than the plan end year minus 1."%(id_field, cursor[id_field_idx]) for row in cursor
                                 if cursor[f.index('AWS_YR')] in vnull
                                 or (int(cursor[f.index('AWS_YR')]) !=0 and (int(cursor[f.index('AWS_YR')]) < fmpStartYear or int(cursor[f.index('AWS_YR')]) > (fmpStartYear + 9)))]
                 cursor.reset()
@@ -690,7 +685,7 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
                     recordValCom[lyr].append("Error on AWS_YR attributes: At least one feature must be populated with the AWS start year identified in the FI Portal submission record. (A1.4.1)")
 
             # ROADID
-                errorList = ["Error on OBJECTID %s: The population of ROADID is mandatory and must follow the correct coding scheme where AWS_YR equals the fiscal year to which the AWS applies."%cursor[OBJECTID] for row in cursor
+                errorList = ["Error on %s %s: The population of ROADID is mandatory and must follow the correct coding scheme where AWS_YR equals the fiscal year to which the AWS applies."%(id_field, cursor[id_field_idx]) for row in cursor
                                 if cursor[f.index('AWS_YR')] not in vnull and int(cursor[f.index('AWS_YR')]) == year
                                 if cursor[f.index('ROADID')] in vnull]
                 cursor.reset()
@@ -700,7 +695,7 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
                     recordValCom[lyr].append("Error on %s record(s): The population of ROADID is mandatory where AWS_YR equals the fiscal year to which the AWS applies. (A1.4.2)."%len(errorList))
 
             # ROADCLAS - note that in SRC, "O" is not an option.
-                errorList = ["Error on OBJECTID %s: The population of ROADCLAS is mandatory and must follow the correct coding scheme where AWS_YR equals the fiscal year to which the AWS applies."%cursor[OBJECTID] for row in cursor
+                errorList = ["Error on %s %s: The population of ROADCLAS is mandatory and must follow the correct coding scheme where AWS_YR equals the fiscal year to which the AWS applies."%(id_field, cursor[id_field_idx]) for row in cursor
                                 if cursor[f.index('AWS_YR')] not in vnull and int(cursor[f.index('AWS_YR')]) == year
                                 if cursor[f.index('ROADCLAS')] not in ['P','B']]
                 cursor.reset()
@@ -709,7 +704,7 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
                     criticalError += 1
                     recordValCom[lyr].append("Error on %s record(s): The population of ROADCLAS is mandatory and must follow the correct coding scheme where AWS_YR equals the fiscal year to which the AWS applies (A1.4.3)."%len(errorList))
 
-                errorList = ["Error on OBJECTID %s: The attribute population of ROADCLAS must follow the correct coding scheme (even if the AWS_YR doesn't equal the fiscal year)."%cursor[OBJECTID] for row in cursor
+                errorList = ["Error on %s %s: The attribute population of ROADCLAS must follow the correct coding scheme (even if the AWS_YR doesn't equal the fiscal year)."%(id_field, cursor[id_field_idx]) for row in cursor
                                 if cursor[f.index('AWS_YR')] in vnull or int(cursor[f.index('AWS_YR')]) != year
                                 if cursor[f.index('ROADCLAS')] not in vnull + ['P','B']]
                 cursor.reset()
@@ -722,7 +717,7 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
 
             # ACCESS
                 if 'ACCESS' in f:
-                    errorList = ["Error on OBJECTID %s: The population of ACCESS must follow the correct coding scheme where AWS_YR equals the fiscal year to which the AWS applies."%cursor[OBJECTID] for row in cursor
+                    errorList = ["Error on %s %s: The population of ACCESS must follow the correct coding scheme where AWS_YR equals the fiscal year to which the AWS applies."%(id_field, cursor[id_field_idx]) for row in cursor
                                     if cursor[f.index('AWS_YR')] not in vnull and int(cursor[f.index('AWS_YR')]) == year
                                     if cursor[f.index('ACCESS')] not in ['Y','N']]
                     cursor.reset()
@@ -741,7 +736,7 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
 
             # DECOM
                 if 'DECOM' in f:
-                    errorList = ["Error on OBJECTID %s: The population of DECOM must follow the correct coding scheme where AWS_YR equals the fiscal year to which the AWS applies."%cursor[OBJECTID] for row in cursor
+                    errorList = ["Error on %s %s: The population of DECOM must follow the correct coding scheme where AWS_YR equals the fiscal year to which the AWS applies."%(id_field, cursor[id_field_idx]) for row in cursor
                                     if cursor[f.index('AWS_YR')] not in vnull and int(cursor[f.index('AWS_YR')]) == year
                                     if cursor[f.index('DECOM')] not in ['Y','N']]
                     cursor.reset()
@@ -752,7 +747,7 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
 
             # ACCESS and DECOM can't both be Y
                 if 'ACCESS' in f and 'DECOM' in f:
-                    errorList = ["Error on OBJECTID %s: If DECOM = Y, then ACCESS must be N (if present) and vice versa. "%cursor[OBJECTID] for row in cursor
+                    errorList = ["Error on %s %s: If DECOM = Y, then ACCESS must be N (if present) and vice versa. "%(id_field, cursor[id_field_idx]) for row in cursor
                                     if (cursor[f.index('ACCESS')] =='Y' and cursor[f.index('DECOM')] =='Y')]
                     cursor.reset()
                     if len(errorList) > 0:
@@ -762,7 +757,7 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
 
             # CONTROL1
                 if 'ACCESS' in f and 'CONTROL1' in f:
-                    errorList = ["Error on OBJECTID %s: The population of CONTROL1 is mandatory and must follow the correct coding scheme where ACCESS = Y."%cursor[OBJECTID] for row in cursor
+                    errorList = ["Error on %s %s: The population of CONTROL1 is mandatory and must follow the correct coding scheme where ACCESS = Y."%(id_field, cursor[id_field_idx]) for row in cursor
                                     if cursor[f.index('ACCESS')] =='Y'
                                     if cursor[f.index('CONTROL1')] not in ['BERM','GATE','SCAR','SIGN','PRIV','SLSH','WATX']]
                     cursor.reset()
@@ -772,7 +767,7 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
                         recordValCom[lyr].append("Error on %s record(s): The population of CONTROL1 is mandatory and must follow the correct coding scheme where ACCESS = Y (A1.4.8)."%len(errorList))
 
                 if 'CONTROL1' in f:
-                    errorList = ["Error on OBJECTID %s: The population of CONTROL1 must follow the correct coding scheme (even when ACCESS is not Y)."%cursor[OBJECTID] for row in cursor
+                    errorList = ["Error on %s %s: The population of CONTROL1 must follow the correct coding scheme (even when ACCESS is not Y)."%(id_field, cursor[id_field_idx]) for row in cursor
                                     if cursor[f.index('CONTROL1')] not in vnull + ['BERM','GATE','SCAR','SIGN','PRIV','SLSH','WATX']]
                     cursor.reset()
                     if len(errorList) > 0:
@@ -781,7 +776,7 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
                         recordValCom[lyr].append("Error on %s record(s): The population of CONTROL1 must follow the correct coding scheme (even when ACCESS is not Y) (A1.4.8)."%len(errorList))
             # CONTROL2
                 if 'CONTROL1' in f and 'CONTROL2' in f:
-                    errorList = ["Error on OBJECTID %s: CONTROL2 must only have a control type when CONTROL1 has a control type."%cursor[OBJECTID] for row in cursor
+                    errorList = ["Error on %s %s: CONTROL2 must only have a control type when CONTROL1 has a control type."%(id_field, cursor[id_field_idx]) for row in cursor
                                     if cursor[f.index('CONTROL1')] in vnull
                                     if cursor[f.index('CONTROL2')] not in vnull]
                     cursor.reset()
@@ -791,7 +786,7 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
                         recordValCom[lyr].append("Error on %s record(s): CONTROL2 must only have a control type when CONTROL1 has a control type (A1.4.8)."%len(errorList))
 
                 if 'CONTROL2' in f:
-                    errorList = ["Error on OBJECTID %s: The population of CONTROL2 must follow the correct coding scheme."%cursor[OBJECTID] for row in cursor
+                    errorList = ["Error on %s %s: The population of CONTROL2 must follow the correct coding scheme."%(id_field, cursor[id_field_idx]) for row in cursor
                                     if cursor[f.index('CONTROL2')] not in vnull + ['BERM','GATE','SCAR','SIGN','PRIV','SLSH','WATX']]
                     cursor.reset()
                     if len(errorList) > 0:
@@ -811,7 +806,7 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
         if lyrAcro == "SRG":
             try:
             # AWS_YR
-                errorList = ["Error on OBJECTID %s: AWS_YR cannot be less than the FMP start year (except for 0 on areas not scheduled) or greater than the plan end year minus 1."%cursor[OBJECTID] for row in cursor
+                errorList = ["Error on %s %s: AWS_YR cannot be less than the FMP start year (except for 0 on areas not scheduled) or greater than the plan end year minus 1."%(id_field, cursor[id_field_idx]) for row in cursor
                                 if cursor[f.index('AWS_YR')] in vnull
                                 or (int(cursor[f.index('AWS_YR')]) !=0 and (int(cursor[f.index('AWS_YR')]) < fmpStartYear or int(cursor[f.index('AWS_YR')]) > (fmpStartYear + 9)))]
                 cursor.reset()
@@ -827,7 +822,7 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
                     recordValCom[lyr].append("Error on AWS_YR attributes: At least one feature must be populated with the AWS start year identified in the FI Portal submission record. (A1.11.1)")
 
             # TRTMTHD1
-                errorList = ["Error on OBJECTID %s: The population of TRTMTHD1 is mandatory and must follow the correct coding scheme where AWS_YR equals the fiscal year to which the AWS applies."%cursor[OBJECTID] for row in cursor
+                errorList = ["Error on %s %s: The population of TRTMTHD1 is mandatory and must follow the correct coding scheme where AWS_YR equals the fiscal year to which the AWS applies."%(id_field, cursor[id_field_idx]) for row in cursor
                                 if cursor[f.index('AWS_YR')] not in vnull and int(cursor[f.index('AWS_YR')]) == year
                                 if cursor[f.index('TRTMTHD1')] not in ['PLANT','SCARIFY','SEED','SEEDSIP']]
                 cursor.reset()
@@ -836,7 +831,7 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
                     criticalError += 1
                     recordValCom[lyr].append("Error on %s record(s): The population of TRTMTHD1 is mandatory and must follow the correct coding scheme where AWS_YR equals the fiscal year to which the AWS applies. (A1.11.2)."%len(errorList))
 
-                errorList = ["Error on OBJECTID %s: The attribute population of TRTMTHD1 must follow the correct coding scheme (even if the AWS_YR doesn't equal the fiscal year)."%cursor[OBJECTID] for row in cursor
+                errorList = ["Error on %s %s: The attribute population of TRTMTHD1 must follow the correct coding scheme (even if the AWS_YR doesn't equal the fiscal year)."%(id_field, cursor[id_field_idx]) for row in cursor
                                 if cursor[f.index('AWS_YR')] in vnull or int(cursor[f.index('AWS_YR')]) != year
                                 if cursor[f.index('TRTMTHD1')] not in vnull + ['PLANT','SCARIFY','SEED','SEEDSIP']]
                 cursor.reset()
@@ -847,7 +842,7 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
 
             # TRTMTHD2
                 if 'TRTMTHD2' in f:
-                    errorList = ["Error on OBJECTID %s: If TRTMTHD2 is populated then TRTMTHD1 must also be populated and TRTMTHD2 must follow the correct coding scheme."%cursor[OBJECTID] for row in cursor
+                    errorList = ["Error on %s %s: If TRTMTHD2 is populated then TRTMTHD1 must also be populated and TRTMTHD2 must follow the correct coding scheme."%(id_field, cursor[id_field_idx]) for row in cursor
                                     if (cursor[f.index('TRTMTHD1')] in vnull and cursor[f.index('TRTMTHD2')] not in vnull)
                                     or cursor[f.index('TRTMTHD2')] not in vnull + ['PLANT','SCARIFY','SEED','SEEDSIP']]
                     cursor.reset()
@@ -859,7 +854,7 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
             # TRTMTHD3
                 if 'TRTMTHD3' in f:
                     if 'TRTMTHD2' in f:
-                        errorList = ["Error on OBJECTID %s: If TRTMTHD3 is populated then TRTMTHD1 and TRTMTHD2 must also be populated and TRTMTHD3 must follow the correct coding scheme."%cursor[OBJECTID] for row in cursor
+                        errorList = ["Error on %s %s: If TRTMTHD3 is populated then TRTMTHD1 and TRTMTHD2 must also be populated and TRTMTHD3 must follow the correct coding scheme."%(id_field, cursor[id_field_idx]) for row in cursor
                                         if ((cursor[f.index('TRTMTHD1')] in vnull or cursor[f.index('TRTMTHD2')] in vnull) and cursor[f.index('TRTMTHD3')] not in vnull)
                                         or cursor[f.index('TRTMTHD3')] not in vnull + ['PLANT','SCARIFY','SEED','SEEDSIP']]
                         cursor.reset()
@@ -883,7 +878,7 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
         if lyrAcro == "SRP":
             try:
             # AWS_YR
-                errorList = ["Error on OBJECTID %s: AWS_YR cannot be less than the FMP start year (except for 0 on areas not scheduled) or greater than the plan end year minus 1."%cursor[OBJECTID] for row in cursor
+                errorList = ["Error on %s %s: AWS_YR cannot be less than the FMP start year (except for 0 on areas not scheduled) or greater than the plan end year minus 1."%(id_field, cursor[id_field_idx]) for row in cursor
                                 if cursor[f.index('AWS_YR')] in vnull
                                 or (int(cursor[f.index('AWS_YR')]) !=0 and (int(cursor[f.index('AWS_YR')]) < fmpStartYear or int(cursor[f.index('AWS_YR')]) > (fmpStartYear + 9)))]
                 cursor.reset()
@@ -899,7 +894,7 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
                     recordValCom[lyr].append("Error on AWS_YR attributes: At least one feature must be populated with the AWS start year identified in the FI Portal submission record. (A1.3.1)")
 
             # RESID
-                errorList = ["Error on OBJECTID %s: The population of RESID is mandatory and must follow the correct coding scheme where AWS_YR equals the fiscal year to which the AWS applies."%cursor[OBJECTID] for row in cursor
+                errorList = ["Error on %s %s: The population of RESID is mandatory and must follow the correct coding scheme where AWS_YR equals the fiscal year to which the AWS applies."%(id_field, cursor[id_field_idx]) for row in cursor
                                 if cursor[f.index('AWS_YR')] not in vnull and int(cursor[f.index('AWS_YR')]) == year
                                 if cursor[f.index('RESID')] in vnull]
                 cursor.reset()
@@ -920,7 +915,7 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
         if lyrAcro == "SSP":
             try:
             # AWS_YR
-                errorList = ["Error on OBJECTID %s: AWS_YR cannot be less than the FMP start year (except for 0 on areas not scheduled) or greater than the plan end year minus 1."%cursor[OBJECTID] for row in cursor
+                errorList = ["Error on %s %s: AWS_YR cannot be less than the FMP start year (except for 0 on areas not scheduled) or greater than the plan end year minus 1."%(id_field, cursor[id_field_idx]) for row in cursor
                                 if cursor[f.index('AWS_YR')] in vnull
                                 or (int(cursor[f.index('AWS_YR')]) !=0 and (int(cursor[f.index('AWS_YR')]) < fmpStartYear or int(cursor[f.index('AWS_YR')]) > (fmpStartYear + 9)))]
                 cursor.reset()
@@ -936,7 +931,7 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
                     recordValCom[lyr].append("Error on AWS_YR attributes: At least one feature must be populated with the AWS start year identified in the FI Portal submission record. (A1.10.1)")
 
             # TRTMTHD1
-                errorList = ["Error on OBJECTID %s: The population of TRTMTHD1 is mandatory and must follow the correct coding scheme where AWS_YR equals the fiscal year to which the AWS applies."%cursor[OBJECTID] for row in cursor
+                errorList = ["Error on %s %s: The population of TRTMTHD1 is mandatory and must follow the correct coding scheme where AWS_YR equals the fiscal year to which the AWS applies."%(id_field, cursor[id_field_idx]) for row in cursor
                                 if cursor[f.index('AWS_YR')] not in vnull and int(cursor[f.index('AWS_YR')]) == year
                                 if cursor[f.index('TRTMTHD1')] not in ['SIPMECH','SIPCHEMA','SIPCHEMG','SIPPB']]
                 cursor.reset()
@@ -945,7 +940,7 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
                     criticalError += 1
                     recordValCom[lyr].append("Error on %s record(s): The population of TRTMTHD1 is mandatory and must follow the correct coding scheme where AWS_YR equals the fiscal year to which the AWS applies. (A1.10.2)."%len(errorList))
 
-                errorList = ["Error on OBJECTID %s: The attribute population of TRTMTHD1 must follow the correct coding scheme (even if the AWS_YR doesn't equal the fiscal year)."%cursor[OBJECTID] for row in cursor
+                errorList = ["Error on %s %s: The attribute population of TRTMTHD1 must follow the correct coding scheme (even if the AWS_YR doesn't equal the fiscal year)."%(id_field, cursor[id_field_idx]) for row in cursor
                                 if cursor[f.index('AWS_YR')] in vnull or int(cursor[f.index('AWS_YR')]) != year
                                 if cursor[f.index('TRTMTHD1')] not in vnull + ['SIPMECH','SIPCHEMA','SIPCHEMG','SIPPB']]
                 cursor.reset()
@@ -956,7 +951,7 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
 
             # TRTMTHD2
                 if 'TRTMTHD2' in f:
-                    errorList = ["Error on OBJECTID %s: If TRTMTHD2 is populated then TRTMTHD1 must also be populated and TRTMTHD2 must follow the correct coding scheme."%cursor[OBJECTID] for row in cursor
+                    errorList = ["Error on %s %s: If TRTMTHD2 is populated then TRTMTHD1 must also be populated and TRTMTHD2 must follow the correct coding scheme."%(id_field, cursor[id_field_idx]) for row in cursor
                                     if (cursor[f.index('TRTMTHD1')] in vnull and cursor[f.index('TRTMTHD2')] not in vnull)
                                     or cursor[f.index('TRTMTHD2')] not in vnull + ['SIPMECH','SIPCHEMA','SIPCHEMG','SIPPB']]
                     cursor.reset()
@@ -968,7 +963,7 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
             # TRTMTHD3
                 if 'TRTMTHD3' in f:
                     if 'TRTMTHD2' in f:
-                        errorList = ["Error on OBJECTID %s: If TRTMTHD3 is populated then TRTMTHD1 and TRTMTHD2 must also be populated and TRTMTHD3 must follow the correct coding scheme."%cursor[OBJECTID] for row in cursor
+                        errorList = ["Error on %s %s: If TRTMTHD3 is populated then TRTMTHD1 and TRTMTHD2 must also be populated and TRTMTHD3 must follow the correct coding scheme."%(id_field, cursor[id_field_idx]) for row in cursor
                                         if ((cursor[f.index('TRTMTHD1')] in vnull or cursor[f.index('TRTMTHD2')] in vnull) and cursor[f.index('TRTMTHD3')] not in vnull)
                                         or cursor[f.index('TRTMTHD3')] not in vnull + ['SIPMECH','SIPCHEMA','SIPCHEMG','SIPPB']]
                         cursor.reset()
@@ -992,7 +987,7 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
         if lyrAcro == "STT":
             try:
             # AWS_YR
-                errorList = ["Error on OBJECTID %s: AWS_YR cannot be less than the FMP start year (except for 0 on areas not scheduled) or greater than the plan end year minus 1."%cursor[OBJECTID] for row in cursor
+                errorList = ["Error on %s %s: AWS_YR cannot be less than the FMP start year (except for 0 on areas not scheduled) or greater than the plan end year minus 1."%(id_field, cursor[id_field_idx]) for row in cursor
                                 if cursor[f.index('AWS_YR')] in vnull
                                 or (int(cursor[f.index('AWS_YR')]) !=0 and (int(cursor[f.index('AWS_YR')]) < fmpStartYear or int(cursor[f.index('AWS_YR')]) > (fmpStartYear + 9)))]
                 cursor.reset()
@@ -1008,7 +1003,7 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
                     recordValCom[lyr].append("Error on AWS_YR attributes: At least one feature must be populated with the AWS start year identified in the FI Portal submission record. (A1.12.1)")
 
             # TRTMTHD1
-                errorList = ["Error on OBJECTID %s: The population of TRTMTHD1 is mandatory and must follow the correct coding scheme where AWS_YR equals the fiscal year to which the AWS applies."%cursor[OBJECTID] for row in cursor
+                errorList = ["Error on %s %s: The population of TRTMTHD1 is mandatory and must follow the correct coding scheme where AWS_YR equals the fiscal year to which the AWS applies."%(id_field, cursor[id_field_idx]) for row in cursor
                                 if cursor[f.index('AWS_YR')] not in vnull and int(cursor[f.index('AWS_YR')]) == year
                                 if cursor[f.index('TRTMTHD1')] not in ['CLCHEMA','CLCHEMG','CLMANUAL','CLMECH','CLPB','IMPROVE','THINPRE','CULTIVAT','PRUNE']]
                 cursor.reset()
@@ -1017,7 +1012,7 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
                     criticalError += 1
                     recordValCom[lyr].append("Error on %s record(s): The population of TRTMTHD1 is mandatory and must follow the correct coding scheme where AWS_YR equals the fiscal year to which the AWS applies. (A1.12.2)."%len(errorList))
 
-                errorList = ["Error on OBJECTID %s: The attribute population of TRTMTHD1 must follow the correct coding scheme (even if the AWS_YR doesn't equal the fiscal year)."%cursor[OBJECTID] for row in cursor
+                errorList = ["Error on %s %s: The attribute population of TRTMTHD1 must follow the correct coding scheme (even if the AWS_YR doesn't equal the fiscal year)."%(id_field, cursor[id_field_idx]) for row in cursor
                                 if cursor[f.index('AWS_YR')] in vnull or int(cursor[f.index('AWS_YR')]) != year
                                 if cursor[f.index('TRTMTHD1')] not in vnull + ['CLCHEMA','CLCHEMG','CLMANUAL','CLMECH','CLPB','IMPROVE','THINPRE','CULTIVAT','PRUNE']]
                 cursor.reset()
@@ -1028,7 +1023,7 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
 
             # TRTMTHD2
                 if 'TRTMTHD2' in f:
-                    errorList = ["Error on OBJECTID %s: If TRTMTHD2 is populated then TRTMTHD1 must also be populated and TRTMTHD2 must follow the correct coding scheme."%cursor[OBJECTID] for row in cursor
+                    errorList = ["Error on %s %s: If TRTMTHD2 is populated then TRTMTHD1 must also be populated and TRTMTHD2 must follow the correct coding scheme."%(id_field, cursor[id_field_idx]) for row in cursor
                                     if (cursor[f.index('TRTMTHD1')] in vnull and cursor[f.index('TRTMTHD2')] not in vnull)
                                     or cursor[f.index('TRTMTHD2')] not in vnull + ['CLCHEMA','CLCHEMG','CLMANUAL','CLMECH','CLPB','IMPROVE','THINPRE','CULTIVAT','PRUNE']]
                     cursor.reset()
@@ -1040,7 +1035,7 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
             # TRTMTHD3
                 if 'TRTMTHD3' in f:
                     if 'TRTMTHD2' in f:
-                        errorList = ["Error on OBJECTID %s: If TRTMTHD3 is populated then TRTMTHD1 and TRTMTHD2 must also be populated and TRTMTHD3 must follow the correct coding scheme."%cursor[OBJECTID] for row in cursor
+                        errorList = ["Error on %s %s: If TRTMTHD3 is populated then TRTMTHD1 and TRTMTHD2 must also be populated and TRTMTHD3 must follow the correct coding scheme."%(id_field, cursor[id_field_idx]) for row in cursor
                                         if ((cursor[f.index('TRTMTHD1')] in vnull or cursor[f.index('TRTMTHD2')] in vnull) and cursor[f.index('TRTMTHD3')] not in vnull)
                                         or cursor[f.index('TRTMTHD3')] not in vnull + ['CLCHEMA','CLCHEMG','CLMANUAL','CLMECH','CLPB','IMPROVE','THINPRE','CULTIVAT','PRUNE']]
                         cursor.reset()
@@ -1064,7 +1059,7 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
         if lyrAcro == "SWC":
             try:
             # AWS_YR
-                errorList = ["Error on OBJECTID %s: AWS_YR cannot be less than the FMP start year (except for 0 on areas not scheduled) or greater than the plan end year minus 1."%cursor[OBJECTID] for row in cursor
+                errorList = ["Error on %s %s: AWS_YR cannot be less than the FMP start year (except for 0 on areas not scheduled) or greater than the plan end year minus 1."%(id_field, cursor[id_field_idx]) for row in cursor
                                 if cursor[f.index('AWS_YR')] in vnull
                                 or (int(cursor[f.index('AWS_YR')]) !=0 and (int(cursor[f.index('AWS_YR')]) < fmpStartYear or int(cursor[f.index('AWS_YR')]) > (fmpStartYear + 9)))]
                 cursor.reset()
@@ -1080,7 +1075,7 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
                     recordValCom[lyr].append("Error on AWS_YR attributes: At least one feature must be populated with the AWS start year identified in the FI Portal submission record. (A1.7.1)")
 
             # WATXID
-                errorList = ["Error on OBJECTID %s: The population of WATXID is mandatory."%cursor[OBJECTID] for row in cursor
+                errorList = ["Error on %s %s: The population of WATXID is mandatory."%(id_field, cursor[id_field_idx]) for row in cursor
                                 if cursor[f.index('WATXID')] in vnull]
                 cursor.reset()
                 if len(errorList) > 0:
@@ -1089,7 +1084,7 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
                     recordValCom[lyr].append("Error on %s record(s): The population of WATXID is mandatory (A1.7.2)."%len(errorList))
 
             # WATXTYPE
-                errorList = ["Error on OBJECTID %s: The population of WATXTYPE is mandatory and must follow the correct coding scheme."%cursor[OBJECTID] for row in cursor
+                errorList = ["Error on %s %s: The population of WATXTYPE is mandatory and must follow the correct coding scheme."%(id_field, cursor[id_field_idx]) for row in cursor
                                 if cursor[f.index('WATXTYPE')] not in ['BRID','CULV','FORD','ICE']]
                 cursor.reset()
                 if len(errorList) > 0:
@@ -1099,7 +1094,7 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
 
             # CONSTRCT
                 if 'CONSTRCT' in f:
-                    errorList = ["Error on OBJECTID %s: The population of CONSTRCT must follow the correct coding scheme where AWS_YR equals the fiscal year to which the AWS applies."%cursor[OBJECTID] for row in cursor
+                    errorList = ["Error on %s %s: The population of CONSTRCT must follow the correct coding scheme where AWS_YR equals the fiscal year to which the AWS applies."%(id_field, cursor[id_field_idx]) for row in cursor
                                     if cursor[f.index('AWS_YR')] not in vnull and int(cursor[f.index('AWS_YR')]) == year
                                     if cursor[f.index('CONSTRCT')] not in ['Y','N']]
                     cursor.reset()
@@ -1110,7 +1105,7 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
 
             # MONITOR
                 if 'MONITOR' in f:
-                    errorList = ["Error on OBJECTID %s: The population of MONITOR must follow the correct coding scheme where AWS_YR equals the fiscal year to which the AWS applies."%cursor[OBJECTID] for row in cursor
+                    errorList = ["Error on %s %s: The population of MONITOR must follow the correct coding scheme where AWS_YR equals the fiscal year to which the AWS applies."%(id_field, cursor[id_field_idx]) for row in cursor
                                     if cursor[f.index('AWS_YR')] not in vnull and int(cursor[f.index('AWS_YR')]) == year
                                     if cursor[f.index('MONITOR')] not in ['Y','N']]
                     cursor.reset()
@@ -1121,7 +1116,7 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
 
             # REMOVE
                 if 'REMOVE' in f:
-                    errorList = ["Error on OBJECTID %s: The population of REMOVE must follow the correct coding scheme where AWS_YR equals the fiscal year to which the AWS applies."%cursor[OBJECTID] for row in cursor
+                    errorList = ["Error on %s %s: The population of REMOVE must follow the correct coding scheme where AWS_YR equals the fiscal year to which the AWS applies."%(id_field, cursor[id_field_idx]) for row in cursor
                                     if cursor[f.index('AWS_YR')] not in vnull and int(cursor[f.index('AWS_YR')]) == year
                                     if cursor[f.index('REMOVE')] not in ['Y','N']]
                     cursor.reset()
@@ -1132,7 +1127,7 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
 
             # REPLACE
                 if 'REPLACE' in f:
-                    errorList = ["Error on OBJECTID %s: The population of REPLACE must follow the correct coding scheme where AWS_YR equals the fiscal year to which the AWS applies."%cursor[OBJECTID] for row in cursor
+                    errorList = ["Error on %s %s: The population of REPLACE must follow the correct coding scheme where AWS_YR equals the fiscal year to which the AWS applies."%(id_field, cursor[id_field_idx]) for row in cursor
                                     if cursor[f.index('AWS_YR')] not in vnull and int(cursor[f.index('AWS_YR')]) == year
                                     if cursor[f.index('REPLACE')] not in ['Y','N']]
                     cursor.reset()
@@ -1148,7 +1143,7 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
                    fieldValComUpdate[lyr].append("At a minimum, one of CONSTRCT, MONITOR, REMOVE or REPLACE must occur. (A1.7.4)")
                    fieldValUpdate[lyr] = 'Invalid'
                 else:
-                    command = """errorList = ["Error on OBJECTID %s: At a minimum, one of Construction, Monitoring, Remove or Replace must occur for each record where AWS_YR equals the fiscal year to which the AWS applies."%cursor[OBJECTID] for row in cursor
+                    command = """errorList = ["Error on %s %s: At a minimum, one of Construction, Monitoring, Remove or Replace must occur for each record where AWS_YR equals the fiscal year to which the AWS applies."%(id_field, cursor[id_field_idx]) for row in cursor
                                         if cursor[f.index('AWS_YR')] not in vnull and int(cursor[f.index('AWS_YR')]) == year
                                         if cursor[f.index('""" + matchingField[0] + """')] != 'Y' """
 
@@ -1165,7 +1160,7 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
                         recordValCom[lyr].append("Error on %s record(s): At a minimum, one of Construction, Monitoring, Remove or Replace must occur for each record where AWS_YR equals the fiscal year to which the AWS applies (A1.7.4)."%len(errorList))
 
             # ROADID
-                errorList = ["Error on OBJECTID %s: The population of ROADID is mandatory and must follow the correct coding scheme where AWS_YR equals the fiscal year to which the AWS applies."%cursor[OBJECTID] for row in cursor
+                errorList = ["Error on %s %s: The population of ROADID is mandatory and must follow the correct coding scheme where AWS_YR equals the fiscal year to which the AWS applies."%(id_field, cursor[id_field_idx]) for row in cursor
                                 if cursor[f.index('AWS_YR')] not in vnull and int(cursor[f.index('AWS_YR')]) == year
                                 if cursor[f.index('ROADID')] in vnull]
                 cursor.reset()

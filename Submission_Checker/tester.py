@@ -5,6 +5,10 @@ def test_all(parameters):
 	import traceback
 	print('importing arcpy...')
 	from Modules.CheckAll import Check
+	
+	num_of_tests = len(parameters)
+	fails = []
+
 	for k,v in parameters.items():
 		try:
 			print('\n**********************   Running test %s   ************************\n'%k)
@@ -15,18 +19,25 @@ def test_all(parameters):
 			var = traceback.format_exc()
 			print(var)
 			print('\n!!!!!!!!   Failed to run test %s   !!!!!!!!!*\n'%k)
+			fails.append(k)
 
+	if len(fails) > 0:
+		print('\nFailed to run the following tests:\n%s'%fails)
+
+	num_of_success = num_of_tests - len(fails)
+	print('\n\n%s out of %s ran successfully'%(num_of_success, num_of_tests))
 
 
 if __name__ == '__main__':
 	parameters = {
-	'FMP_NEW_COV': 	['fmp',	'Dog_River_Matawin', 	2019, 	2019, 	r'C:\testers\FMP_NEW_COV\Dog_River_Mat_DraftPlan_2019_no_inventories', 		'coverage', 		'2017', 	"Limit to 50 errors per error type", 	checker_version, 	'test'],
-	'FMP_NEW_GDB_AE':['fmp','Dog_River_Matawin', 	2020, 	2020, 	r'C:\testers\FMP_NEW_GDB_AllError\mu999_2020.gdb', 							'feature classes', 	'2017', 	"Limit to 50 errors per error type", 	checker_version, 	'test'],
-	'FMP_NEW_GDB_BMI':['fmp','Gordon_Cosens', 		2020, 	2020, 	r'C:\testers\FMP_NEW_GDB_BMI_PCI\Gordon_Cosens_BMI_PCI.gdb', 				'feature classes', 	'2017', 	"Limit to 50 errors per error type", 	checker_version, 	'test'],
-	'FMP_NEW_GDB_noBMI':['fmp','Romeo_Malette',		2019, 	2019, 	r'C:\testers\FMP_NEW_GDB_Except_BMI_PCI\Romeo_DraftPlan2019_Shortened.gdb',	'feature classes', 	'2017', 	"Limit to 50 errors per error type", 	checker_version, 	'test'],	
-	'FMP_NEW_SHP':	['fmp','Hearst',				2019, 	2019, 	r'C:\testers\FMP_NEW_SHP\Hearst_DraftPlan_2019_shortened',					'shapefile', 	'2017', 	"Limit to 50 errors per error type", 	checker_version, 	'test'],
-	'AWS_NEW_COV':	['aws','Algoma',				2018, 	2009, 	r'C:\testers\AWS_NEW_COV\Algoma_AWS_2018',									'coverage', 	'2017', 	"Limit to 50 errors per error type", 	checker_version, 	'test'],
-	'AWS_NEW_GDB':	['aws','Hearst',				2018, 	2009, 	r'C:\testers\AWS_NEW_GDB\Hearst_AWS2018.gdb',								'feature classes', 	'2017', 	"Limit to 50 errors per error type", 	checker_version, 	'test'],
+	# 'FMP_NEW_COV': 	['fmp',	'Dog_River_Matawin', 	2019, 	2019, 	r'C:\testers\FMP_NEW_COV\Dog_River_Mat_DraftPlan_2019_no_inventories', 		'coverage', 		'2017', 	50, 	checker_version, 	'test'],
+	'FMP_NEW_GDB_AE':['fmp','Dog_River_Matawin', 	2020, 	2020, 	r'C:\testers\FMP_NEW_GDB_AllError\mu999_2020.gdb', 							'feature classes', 	'2017', 	50, 	checker_version, 	'test'],
+	# 'FMP_NEW_GDB_BMI':['fmp','Gordon_Cosens', 		2020, 	2020, 	r'C:\testers\FMP_NEW_GDB_BMI_PCI\Gordon_Cosens_BMI_PCI.gdb', 				'feature classes', 	'2017', 	50, 	checker_version, 	'test'],
+	# 'FMP_NEW_GDB_noBMI':['fmp','Romeo_Malette',		2019, 	2019, 	r'C:\testers\FMP_NEW_GDB_Except_BMI_PCI\Romeo_DraftPlan2019_Shortened.gdb',	'feature classes', 	'2017', 	50, 	checker_version, 	'test'],	
+	# 'FMP_NEW_SHP':	['fmp','Hearst',				2019, 	2019, 	r'C:\testers\FMP_NEW_SHP\Hearst_DraftPlan_2019_shortened',					'shapefile', 	'2017', 	50, 	checker_version, 	'test'],
+	# 'AWS_NEW_COV':	['aws','Algoma',				2018, 	2009, 	r'C:\testers\AWS_NEW_COV\Algoma_AWS_2018',									'coverage', 	'2017', 	50, 	checker_version, 	'test'],
+	# 'AWS_NEW_GDB':	['aws','Hearst',				2018, 	2009, 	r'C:\testers\AWS_NEW_GDB\Hearst_AWS2018.gdb',								'feature classes', 	'2017', 	50, 	checker_version, 	'test'],
+
 	}
 
 

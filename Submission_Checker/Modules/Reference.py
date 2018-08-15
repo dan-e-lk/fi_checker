@@ -323,6 +323,33 @@ def create_cursor(lyr_path, emf, f):
         pass
 
 
+def find_IdField(f, dataformat):
+    """
+    this function returns the name of the most suitable id field for that dataformat.
+    if the data doesn't have its typical id field, it will look for some other id field.
+    f is the list of all existing fields
+    dataformat is either 'coverage', 'feature classes' or 'shapefile'
+    """
+    if dataformat == 'feature classes':
+        if 'OBJECTID' in f:
+            return 'OBJECTID'
+        elif 'OBJECTID_1' in f:
+            return 'OBJECTID_1'            
+        elif 'FID' in f:
+            return 'FID'
+        else:
+            return f[0]
+    else:
+        if 'FID' in f:
+            return 'FID'
+        elif 'FID_1' in f:
+            return 'FID_1'              
+        elif 'OBJECTID' in f:
+            return 'OBJECTID'            
+        else:
+            return f[0]
+
+
 
 if __name__ == '__main__':
 

@@ -62,13 +62,8 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
         f = summarytbl[lyr][4] + summarytbl[lyr][3]  ## f is the list of all fields found in lyr. eg. ['FID', 'SHAPE','PIT_ID', 'PIT_OPEN', 'PITCLOSE', 'CAT9APP', ...]
 
         # feature classes have ObjectID, shapefiles and coverages have FID. Search for ObjectID's index value in f, if not possible, search for FID's index value in f. else use whatever field comes first as the ID field.
-        try:
-            OBJECTID = f.index('OBJECTID')
-        except:
-            try:
-                OBJECTID = f.index('FID')
-            except:
-                OBJECTID = 0
+        id_field = R.find_IdField(f, dataformat) # *23408  This will normally return OBJECTID for feature classes and FID for shapefile and coverage.
+        id_field_idx = f.index(id_field)
         
         cursor = arcpy.da.SearchCursor(lyr,f)
         recordCount = len(list(cursor))
@@ -95,8 +90,8 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
         #ref-AWS_YR
         if lyrAcro in ['SAG','SEA','SHR','SOR','SPT','SRA','SRC','SRG','SSP','STT','SWC']:
             try:
-                errorList = ["Error on OBJECTID %s: AWS_YR cannot be less than the FMP start year (except for 0 on areas not scheduled) or greater than the plan end year minus 1. *AWS_YR = [%s]"
-                                %(cursor[OBJECTID],cursor[f.index('AWS_YR')]) for row in cursor
+                errorList = ["Error on %s %s: AWS_YR cannot be less than the FMP start year (except for 0 on areas not scheduled) or greater than the plan end year minus 1. *AWS_YR = [%s]"
+                                %(id_field, cursor[id_field_idx],cursor[f.index('AWS_YR')]) for row in cursor
                                 if cursor[f.index('AWS_YR')] in vnull
                                 or (int(cursor[f.index('AWS_YR')]) !=0 and (int(cursor[f.index('AWS_YR')]) < fmpStartYear or int(cursor[f.index('AWS_YR')]) > (fmpStartYear + 9)))]
                 cursor.reset()
@@ -127,7 +122,7 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
         if lyrAcro == "AGP":
             try: # need try and except block here for instances such as not having mandatory fields.
             # PITID
-                errorList = ["Error on OBJECTID %s: PITID must be populated."%cursor[OBJECTID] for row in cursor
+                errorList = ["Error on %s %s: PITID must be populated."%(id_field, cursor[id_field_idx]) for row in cursor
                                 if cursor[f.index('PITID')] in vnull]
                 cursor.reset()
                 if len(errorList) > 0:
@@ -136,8 +131,8 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
                     recordValCom[lyr].append("Error on %s record(s): PITID must be populated."%len(errorList))
 
             # PITOPEN
-                errorList = ["Error on OBJECTID %s: PITOPEN must be populated with the correct coding scheme. *PITOPEN = [%s]"
-                                %(cursor[OBJECTID],cursor[f.index('PITOPEN')]) for row in cursor
+                errorList = ["Error on %s %s: PITOPEN must be populated with the correct coding scheme. *PITOPEN = [%s]"
+                                %(id_field, cursor[id_field_idx],cursor[f.index('PITOPEN')]) for row in cursor
                                 if R.fimdate(cursor[f.index('PITOPEN')]) is None]
                 cursor.reset()
                 if len(errorList) > 0:
@@ -146,8 +141,8 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
                     recordValCom[lyr].append("Error on %s record(s): PITOPEN must be populated with the correct coding scheme."%len(errorList))
 
             # PITCLOSE
-                errorList = ["Error on OBJECTID %s: PITCLOSE must be Y or N if populated. *PITCLOSE = [%s]"
-                                %(cursor[OBJECTID],cursor[f.index('PITCLOSE')]) for row in cursor
+                errorList = ["Error on %s %s: PITCLOSE must be Y or N if populated. *PITCLOSE = [%s]"
+                                %(id_field, cursor[id_field_idx],cursor[f.index('PITCLOSE')]) for row in cursor
                                 if cursor[f.index('PITCLOSE')] not in vnull + ['Y','N']]
                 cursor.reset()
                 if len(errorList) > 0:
@@ -155,8 +150,8 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
                     criticalError += 1
                     recordValCom[lyr].append("Error on %s record(s): PITCLOSE must be Y or N if populated."%len(errorList))
 
-                errorList = ["Error on OBJECTID %s: PITCLOSE must be N if CAT9APP is not NULL. *PITCLOSE = [%s]  *CAT9APP = [%s]"
-                                %(cursor[OBJECTID],cursor[f.index('PITCLOSE')],cursor[f.index('CAT9APP')]) for row in cursor
+                errorList = ["Error on %s %s: PITCLOSE must be N if CAT9APP is not NULL. *PITCLOSE = [%s]  *CAT9APP = [%s]"
+                                %(id_field, cursor[id_field_idx],cursor[f.index('PITCLOSE')],cursor[f.index('CAT9APP')]) for row in cursor
                                 if  cursor[f.index('CAT9APP')] not in vnull
                                 and cursor[f.index('PITCLOSE')] != 'N']
                 cursor.reset()
@@ -166,8 +161,8 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
                     recordValCom[lyr].append("Error on %s record(s): PITCLOSE must be N if CAT9APP is not NULL."%len(errorList))
 
             # CAT9APP
-                errorList = ["Error on OBJECTID %s: CAT9APP must be either NULL or follow the correct coding scheme. *CAT9APP = [%s]"
-                                %(cursor[OBJECTID],cursor[f.index('CAT9APP')]) for row in cursor
+                errorList = ["Error on %s %s: CAT9APP must be either NULL or follow the correct coding scheme. *CAT9APP = [%s]"
+                                %(id_field, cursor[id_field_idx],cursor[f.index('CAT9APP')]) for row in cursor
                                 if cursor[f.index('CAT9APP')] not in vnull
                                 and R.fimdate(cursor[f.index('CAT9APP')]) is None]
                 cursor.reset()
@@ -177,8 +172,8 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
                     recordValCom[lyr].append("Error on %s record(s): CAT9APP must be either NULL or follow the correct coding scheme."%len(errorList))
 
 
-                errorList = ["Error on OBJECTID %s: CAT9APP date cannot be greater than 10 years from PITOPEN date.  *CAT9APP = [%s] *PITOPEN = [%s]"
-                                %(cursor[OBJECTID],cursor[f.index('CAT9APP')],cursor[f.index('PITOPEN')]) for row in cursor
+                errorList = ["Error on %s %s: CAT9APP date cannot be greater than 10 years from PITOPEN date.  *CAT9APP = [%s] *PITOPEN = [%s]"
+                                %(id_field, cursor[id_field_idx],cursor[f.index('CAT9APP')],cursor[f.index('PITOPEN')]) for row in cursor
                                 if R.fimdate(cursor[f.index('CAT9APP')]) is not None
                                 and R.fimdate(cursor[f.index('PITOPEN')]) is not None
                                 and R.fimdate(cursor[f.index('CAT9APP')]) > (R.fimdate(str(int(cursor[f.index('PITOPEN')][:4]) + 10) +  cursor[f.index('PITOPEN')][4:]))]
@@ -188,8 +183,8 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
                     criticalError += 1
                     recordValCom[lyr].append("Error on %s record(s): The CAT9APP date cannot be greater than 10 years from PITOPEN date."%len(errorList))
 
-                errorList = ["Error on OBJECTID %s: CAT9APP must be NULL if PITCLOSE is Y.  *PITCLOSE = [%s]  *CAT9APP = [%s]"
-                                %(cursor[OBJECTID],cursor[f.index('PITCLOSE')],cursor[f.index('CAT9APP')]) for row in cursor
+                errorList = ["Error on %s %s: CAT9APP must be NULL if PITCLOSE is Y.  *PITCLOSE = [%s]  *CAT9APP = [%s]"
+                                %(id_field, cursor[id_field_idx],cursor[f.index('PITCLOSE')],cursor[f.index('CAT9APP')]) for row in cursor
                                 if cursor[f.index('PITCLOSE')] == 'Y'
                                 and cursor[f.index('CAT9APP')] not in vnull]
                 cursor.reset()
@@ -211,7 +206,7 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
         if lyrAcro == "SAC":
             try:
             # AOCID
-                errorList = ["Error on OBJECTID %s: AOCID must be populated."%cursor[OBJECTID] for row in cursor
+                errorList = ["Error on %s %s: AOCID must be populated."%(id_field, cursor[id_field_idx]) for row in cursor
                                 if cursor[f.index('AOCID')] in vnull]
                 cursor.reset()
                 if len(errorList) > 0:
@@ -220,8 +215,8 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
                     recordValCom[lyr].append("Error on %s record(s): AOCID must be populated."%len(errorList))
 
             # AOCTYPE
-                errorList = ["Error on OBJECTID %s: AOCTYPE must be populated with the correct coding scheme. *AOCTYPE = [%s]"
-                                %(cursor[OBJECTID],cursor[f.index('AOCTYPE')]) for row in cursor
+                errorList = ["Error on %s %s: AOCTYPE must be populated with the correct coding scheme. *AOCTYPE = [%s]"
+                                %(id_field, cursor[id_field_idx],cursor[f.index('AOCTYPE')]) for row in cursor
                                 if cursor[f.index('AOCTYPE')] not in ['M','R']]
                 cursor.reset()
                 if len(errorList) > 0:
@@ -258,8 +253,8 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
                 # To find this code block, search this script for #ref-AWS_YR
 
             # YRDEP
-                errorList = ["Error on OBJECTID %s: YRDEP must be populated with the correct format and zero or null is not a valid value.  *YRDEP = [%s]"
-                                %(cursor[OBJECTID],cursor[f.index('YRDEP')]) for row in cursor
+                errorList = ["Error on %s %s: YRDEP must be populated with the correct format and zero or null is not a valid value.  *YRDEP = [%s]"
+                                %(id_field, cursor[id_field_idx],cursor[f.index('YRDEP')]) for row in cursor
                                 if int(cursor[f.index('YRDEP')] or 0) < 1000 or cursor[f.index('YRDEP')] > year] # year of last disturbance shouldn't be a future year.
                 cursor.reset()
                 if len(errorList) > 0:
@@ -268,7 +263,7 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
                     recordValCom[lyr].append("Error on %s record(s): YRDEP must be populated with the correct format and zero or null is not a valid value."%len(errorList))
 
             # TARGETFU
-                errorList = ["Error on OBJECTID %s: TARGETFU must be populated."%cursor[OBJECTID] for row in cursor
+                errorList = ["Error on %s %s: TARGETFU must be populated."%(id_field, cursor[id_field_idx]) for row in cursor
                                 if cursor[f.index('TARGETFU')] in vnull]
                 cursor.reset()
                 if len(errorList) > 0:
@@ -277,7 +272,7 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
                     recordValCom[lyr].append("Error on %s record(s): TARGETFU must be populated."%len(errorList))
 
             # TARGETYD
-                errorList = ["Error on OBJECTID %s: TARGETYD must be populated."%cursor[OBJECTID] for row in cursor
+                errorList = ["Error on %s %s: TARGETYD must be populated."%(id_field, cursor[id_field_idx]) for row in cursor
                                 if cursor[f.index('TARGETYD')] in vnull]
                 cursor.reset()
                 if len(errorList) > 0:
@@ -302,8 +297,8 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
                 # To find this code block, search this script for #ref-AWS_YR
 
             # BLOCKID
-                errorList = ["Error on OBJECTID %s: The population of BLOCKID is mandatory where plan start year is greater than or equal to 2019."
-                                %cursor[OBJECTID] for row in cursor
+                errorList = ["Error on %s %s: The population of BLOCKID is mandatory where plan start year is greater than or equal to 2019."
+                                %(id_field, cursor[id_field_idx]) for row in cursor
                                 if fmpStartYear >= 2019 and cursor[f.index('BLOCKID')]]
                 cursor.reset()
                 if len(errorList) > 0:
@@ -312,8 +307,8 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
                     recordValCom[lyr].append("Error on %s record(s): The population of BLOCKID is mandatory where plan start year is greater than or equal to 2019."%len(errorList))            
 
             # SILVSYS
-                errorList = ["Error on OBJECTID %s: SILVSYS must follow the correct coding scheme if populated.  *SILVSYS = [%s]"
-                                %(cursor[OBJECTID],cursor[f.index('SILVSYS')]) for row in cursor
+                errorList = ["Error on %s %s: SILVSYS must follow the correct coding scheme if populated.  *SILVSYS = [%s]"
+                                %(id_field, cursor[id_field_idx],cursor[f.index('SILVSYS')]) for row in cursor
                                 if cursor[f.index('SILVSYS')] not in vnull + ['CC','SE','SH']]
                 cursor.reset()
                 if len(errorList) > 0:
@@ -322,8 +317,8 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
                     recordValCom[lyr].append("Error on %s record(s): SILVSYS must follow the correct coding scheme if populated."%len(errorList))
 
                 ## If the FUELWOOD attribute is Y then the SILVSYS and HARVCAT attributes can be null
-                errorList = ["Error on OBJECTID %s: SILVSYS must be populated if FUELWOOD is not Y.  *SILVSYS = [%s] *FUELWOOD = [%s]"
-                                %(cursor[OBJECTID],cursor[f.index('SILVSYS')],cursor[f.index('FUELWOOD')]) for row in cursor
+                errorList = ["Error on %s %s: SILVSYS must be populated if FUELWOOD is not Y.  *SILVSYS = [%s] *FUELWOOD = [%s]"
+                                %(id_field, cursor[id_field_idx],cursor[f.index('SILVSYS')],cursor[f.index('FUELWOOD')]) for row in cursor
                                 if cursor[f.index('FUELWOOD')] != 'Y' and cursor[f.index('SILVSYS')] in vnull]
                 cursor.reset()
                 if len(errorList) > 0:
@@ -332,8 +327,8 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
                     recordValCom[lyr].append("Error on %s record(s): SILVSYS must be populated if FUELWOOD is not Y."%len(errorList))
 
                 ## If the harvest category is second pass, then the silvicultural system must be clearcut.
-                errorList = ["Error on OBJECTID %s: SILVSYS must be CC when HARVCAT = SCNDPASS.  *SILVSYS = [%s] *HARVCAT = [%s]"
-                                %(cursor[OBJECTID],cursor[f.index('SILVSYS')],cursor[f.index('HARVCAT')]) for row in cursor
+                errorList = ["Error on %s %s: SILVSYS must be CC when HARVCAT = SCNDPASS.  *SILVSYS = [%s] *HARVCAT = [%s]"
+                                %(id_field, cursor[id_field_idx],cursor[f.index('SILVSYS')],cursor[f.index('HARVCAT')]) for row in cursor
                                 if cursor[f.index('HARVCAT')] == 'SCNDPASS' and cursor[f.index('SILVSYS')] != 'CC']
                 cursor.reset()
                 if len(errorList) > 0:
@@ -342,8 +337,8 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
                     recordValCom[lyr].append("Error on %s record(s): SILVSYS must be CC when HARVCAT = SCNDPASS."%len(errorList))                    
 
             # HARVCAT
-                errorList = ["Error on OBJECTID %s: HARVCAT must follow the correct coding scheme if populated.  *HARVCAT = [%s]"
-                                %(cursor[OBJECTID],cursor[f.index('HARVCAT')]) for row in cursor
+                errorList = ["Error on %s %s: HARVCAT must follow the correct coding scheme if populated.  *HARVCAT = [%s]"
+                                %(id_field, cursor[id_field_idx],cursor[f.index('HARVCAT')]) for row in cursor
                                 if cursor[f.index('HARVCAT')] not in vnull + ['REGULAR','BRIDGING','CONTNGNT','REDIRECT','ACCELER','FRSTPASS','SCNDPASS','SALVAGE']]
                 cursor.reset()
                 if len(errorList) > 0:
@@ -352,8 +347,8 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
                     recordValCom[lyr].append("Error on %s record(s): HARVCAT must follow the correct coding scheme if populated."%len(errorList))
 
 
-                errorList = ["Error on OBJECTID %s: The population of HARVCAT is mandatory except when FUELWOOD = Y.  *HARVCAT = [%s] *FUELWOOD = [%s]"
-                                %(cursor[OBJECTID],cursor[f.index('HARVCAT')],cursor[f.index('FUELWOOD')]) for row in cursor
+                errorList = ["Error on %s %s: The population of HARVCAT is mandatory except when FUELWOOD = Y.  *HARVCAT = [%s] *FUELWOOD = [%s]"
+                                %(id_field, cursor[id_field_idx],cursor[f.index('HARVCAT')],cursor[f.index('FUELWOOD')]) for row in cursor
                                 if cursor[f.index('HARVCAT')] in vnull and cursor[f.index('FUELWOOD')] != 'Y']
                 cursor.reset()
                 if len(errorList) > 0:
@@ -362,8 +357,8 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
                     recordValCom[lyr].append("Error on %s record(s): The population of HARVCAT is mandatory except when FUELWOOD = Y."%len(errorList))
 
 
-                errorList = ["Error on OBJECTID %s: HARVCAT = BRIDGING is only available when the AWS start year is equal to the first year of the plan period."
-                                %cursor[OBJECTID] for row in cursor
+                errorList = ["Error on %s %s: HARVCAT = BRIDGING is only available when the AWS start year is equal to the first year of the plan period."
+                                %(id_field, cursor[id_field_idx]) for row in cursor
                                 if cursor[f.index('HARVCAT')] == 'BRIDGING'
                                 if year != fmpStartYear]
                 cursor.reset()
@@ -373,8 +368,8 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
                     recordValCom[lyr].append("Error on %s record(s): HARVCAT = BRIDGING is only available when the AWS start year is equal to the first year of the plan period."%len(errorList))
 
             # FUELWOOD
-                errorList = ["Error on OBJECTID %s: The population of FUELWOOD is mandatory and must follow the correct coding scheme.  *FUELWOOD = [%s]"
-                                %(cursor[OBJECTID],cursor[f.index('FUELWOOD')]) for row in cursor
+                errorList = ["Error on %s %s: The population of FUELWOOD is mandatory and must follow the correct coding scheme.  *FUELWOOD = [%s]"
+                                %(id_field, cursor[id_field_idx],cursor[f.index('FUELWOOD')]) for row in cursor
                                 if cursor[f.index('FUELWOOD')] not in ['Y','N']]
                 cursor.reset()
                 if len(errorList) > 0:
@@ -400,7 +395,7 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
                 # To find this code block, search this script for #ref-AWS_YR
 
             # ORBID
-                errorList = ["Error on OBJECTID %s: ORBID must be populated."%cursor[OBJECTID] for row in cursor
+                errorList = ["Error on %s %s: ORBID must be populated."%(id_field, cursor[id_field_idx]) for row in cursor
                                 if cursor[f.index('ORBID')] in vnull]
                 cursor.reset()
                 if len(errorList) > 0:
@@ -439,8 +434,8 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
                     t3check1 = " and cursor[f.index('TRTMTHD3')] not in " + codingScheme
                     t3check2 = " or cursor[f.index('TRTMTHD3')] not in " + codingScheme + " + vnull "                    
 
-                command = """errorList = ["Error on OBJECTID %s: The population of TRTMTHD1, 2 or 3 is mandatory and must follow the correct coding scheme where AWS_YR equals the fiscal year to which the AWS applies."
-                                %cursor[OBJECTID] for row in cursor
+                command = """errorList = ["Error on %s %s: The population of TRTMTHD1, 2 or 3 is mandatory and must follow the correct coding scheme where AWS_YR equals the fiscal year to which the AWS applies."
+                                %(id_field, cursor[id_field_idx]) for row in cursor
                                 if cursor[f.index('AWS_YR')] == year
                                 if cursor[f.index('TRTMTHD1')] not in """ + codingScheme + t2check1 + t3check1 + "or (cursor[f.index('TRTMTHD1')] not in " + codingScheme + " + vnull " + t2check2 + t3check2 + ")]"     
                                 # The first half of the last line checkes if at least one of the 3 fields have been populated with the coding scheme
@@ -471,7 +466,7 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
                 # To find this code block, search this script for #ref-AWS_YR
 
             # ROADID
-                errorList = ["Error on OBJECTID %s: ROADID must be populated."%cursor[OBJECTID] for row in cursor
+                errorList = ["Error on %s %s: ROADID must be populated."%(id_field, cursor[id_field_idx]) for row in cursor
                                 if cursor[f.index('ROADID')] in vnull]
                 cursor.reset()
                 if len(errorList) > 0:
@@ -480,8 +475,8 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
                     recordValCom[lyr].append("Error on %s record(s): ROADID must be populated."%len(errorList))
 
             # ROADCLAS
-                errorList = ["Error on OBJECTID %s: ROADCLAS must be populated with the correct coding scheme. *ROADCLAS = [%s]"
-                                %(cursor[OBJECTID],cursor[f.index('ROADCLAS')]) for row in cursor
+                errorList = ["Error on %s %s: ROADCLAS must be populated with the correct coding scheme. *ROADCLAS = [%s]"
+                                %(id_field, cursor[id_field_idx],cursor[f.index('ROADCLAS')]) for row in cursor
                                 if cursor[f.index('ROADCLAS')] not in ['P','B','O']]
                 cursor.reset()
                 if len(errorList) > 0:
@@ -490,8 +485,8 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
                     recordValCom[lyr].append("Error on %s record(s): ROADCLAS must be populated with the correct coding scheme."%len(errorList))
 
             # TRANS
-                errorList = ["Error on OBJECTID %s: TRANS must be populated with the correct coding scheme.  *TRANS = [%s]"
-                                %(cursor[OBJECTID],cursor[f.index('TRANS')]) for row in cursor
+                errorList = ["Error on %s %s: TRANS must be populated with the correct coding scheme.  *TRANS = [%s]"
+                                %(id_field, cursor[id_field_idx],cursor[f.index('TRANS')]) for row in cursor
                                 if cursor[f.index('TRANS')] not in ['Y','N']]
                 cursor.reset()
                 if len(errorList) > 0:
@@ -500,8 +495,8 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
                     recordValCom[lyr].append("Error on %s record(s): TRANS must be populated with the correct coding scheme."%len(errorList))
 
             # ACCESS        # big change in v2017 spec
-                errorList = ["Error on OBJECTID %s: ACCESS must follow the correct coding scheme if populated.  *ACCESS = [%s]"
-                                %(cursor[OBJECTID],cursor[f.index('ACCESS')]) for row in cursor
+                errorList = ["Error on %s %s: ACCESS must follow the correct coding scheme if populated.  *ACCESS = [%s]"
+                                %(id_field, cursor[id_field_idx],cursor[f.index('ACCESS')]) for row in cursor
                                 if cursor[f.index('ACCESS')] not in vnull + ['APPLY','REMOVE','ADD','EXISTING','BOTH','ADDREMOVE']]
                 cursor.reset()
                 if len(errorList) > 0:
@@ -511,8 +506,8 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
 
             # DECOM         # big change in v2017 spec
                 if 'DECOM' in f:
-                    errorList = ["Error on OBJECTID %s: DECOM must follow the correct coding scheme if populated.  *DECOM = [%s]"
-                                    %(cursor[OBJECTID],cursor[f.index('DECOM')]) for row in cursor
+                    errorList = ["Error on %s %s: DECOM must follow the correct coding scheme if populated.  *DECOM = [%s]"
+                                    %(id_field, cursor[id_field_idx],cursor[f.index('DECOM')]) for row in cursor
                                     if cursor[f.index('DECOM')] not in vnull + ['BERM','SCAR','SLSH','WATX']]
                     cursor.reset()
                     if len(errorList) > 0:
@@ -522,7 +517,7 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
 
             # MAINTAIN
                 if 'MAINTAIN' in f:
-                    errorList = ["Error on OBJECTID %s: MAINTAIN must be populated with the correct coding scheme (Y or N)."%cursor[OBJECTID] for row in cursor
+                    errorList = ["Error on %s %s: MAINTAIN must be populated with the correct coding scheme (Y or N)."%(id_field, cursor[id_field_idx]) for row in cursor
                                     if cursor[f.index('MAINTAIN')] not in ['Y','N']]
                     cursor.reset()
                     if len(errorList) > 0:
@@ -532,7 +527,7 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
 
             # MONITOR
                 if 'MONITOR' in f:
-                    errorList = ["Error on OBJECTID %s: MONITOR must be populated with the correct coding scheme (Y or N)."%cursor[OBJECTID] for row in cursor
+                    errorList = ["Error on %s %s: MONITOR must be populated with the correct coding scheme (Y or N)."%(id_field, cursor[id_field_idx]) for row in cursor
                                     if cursor[f.index('MONITOR')] not in ['Y','N']]
                     cursor.reset()
                     if len(errorList) > 0:
@@ -544,7 +539,7 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
             # Checking "At a minimum, one of Decommissioning, Maintenance, Monitoring or Access Control must occur for each record (DECOM = Y or MAINTAIN = Y or MONITOR = Y or ACCESS = Y) where AWS_YR equals the fiscal year to which the AWS applies."
                 optField = ['MAINTAIN','MONITOR']
                 matchingField = list(set(optField) & set(f))
-                command = """errorList = ["Error on OBJECTID %s: At a minimum, one of Decommissioning, Maintenance, Monitoring or Access Control must occur."%cursor[OBJECTID] for row in cursor
+                command = """errorList = ["Error on %s %s: At a minimum, one of Decommissioning, Maintenance, Monitoring or Access Control must occur."%(id_field, cursor[id_field_idx]) for row in cursor
                                     if cursor[f.index('ACCESS')] in vnull and cursor[f.index('DECOM')] in vnull """
 
                 if len(matchingField) > 0:
@@ -560,8 +555,8 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
                     recordValCom[lyr].append("Error on %s record(s): At a minimum, one of Decommissioning, Maintenance, Monitoring or Access Control must occur."%len(errorList))
 
             # CONTROL1
-                errorList = ["Error on OBJECTID %s: CONTROL1 must be populated with the correct coding scheme where ACCESS is APPLY, ADD, BOTH or REMOVE.  *CONTROL1 = [%s]"
-                                %(cursor[OBJECTID],cursor[f.index('CONTROL1')]) for row in cursor
+                errorList = ["Error on %s %s: CONTROL1 must be populated with the correct coding scheme where ACCESS is APPLY, ADD, BOTH or REMOVE.  *CONTROL1 = [%s]"
+                                %(id_field, cursor[id_field_idx],cursor[f.index('CONTROL1')]) for row in cursor
                                 if cursor[f.index('ACCESS')] in ['APPLY','ADD','BOTH','REMOVE']
                                 if cursor[f.index('CONTROL1')] not in ['BERM','GATE','SCAR','SIGN','PRIV','SLSH','WATX']]
                 cursor.reset()
@@ -570,8 +565,8 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
                     criticalError += 1
                     recordValCom[lyr].append("Error on %s record(s): CONTROL1 must be populated with the correct coding scheme where ACCESS is APPLY, ADD, BOTH or REMOVE."%len(errorList))
 
-                errorList = ["Error on OBJECTID %s: CONTROL1 must follow the correct coding scheme if pouplated.  *CONTROL1 = [%s]"
-                                %(cursor[OBJECTID],cursor[f.index('CONTROL1')]) for row in cursor
+                errorList = ["Error on %s %s: CONTROL1 must follow the correct coding scheme if pouplated.  *CONTROL1 = [%s]"
+                                %(id_field, cursor[id_field_idx],cursor[f.index('CONTROL1')]) for row in cursor
                                 if cursor[f.index('CONTROL1')] not in vnull + ['BERM','GATE','SCAR','SIGN','PRIV','SLSH','WATX']]
                 cursor.reset()
                 if len(errorList) > 0:
@@ -581,8 +576,8 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
 
             # CONTROL2
                 if 'CONTROL2' in f:
-                    errorList = ["Error on OBJECTID %s: CONTROL2 must follow the correct coding scheme if pouplated.  *CONTROL2 = [%s]"
-                                %(cursor[OBJECTID],cursor[f.index('CONTROL2')]) for row in cursor
+                    errorList = ["Error on %s %s: CONTROL2 must follow the correct coding scheme if pouplated.  *CONTROL2 = [%s]"
+                                %(id_field, cursor[id_field_idx],cursor[f.index('CONTROL2')]) for row in cursor
                                     if cursor[f.index('CONTROL2')] not in vnull + ['BERM','GATE','SCAR','SIGN','PRIV','SLSH','WATX']]
                     cursor.reset()
                     if len(errorList) > 0:
@@ -591,7 +586,7 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
                         recordValCom[lyr].append("Error on %s record(s): CONTROL2 must follow the correct coding scheme if pouplated."%len(errorList))
 
             # CONTROL1 and 2 both should be null if ACCESS = REMOVE
-                command = """errorList = ["Warning on OBJECTID %s: Both CONTROL1 and 2 should be null if ACCESS = REMOVE."%cursor[OBJECTID] for row in cursor
+                command = """errorList = ["Warning on %s %s: Both CONTROL1 and 2 should be null if ACCESS = REMOVE."%(id_field, cursor[id_field_idx]) for row in cursor
                                     if cursor[f.index('ACCESS')] == 'REMOVE'
                                     if cursor[f.index('CONTROL1')] not in vnull """
 
@@ -624,7 +619,7 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
                 # To find this code block, search this script for #ref-AWS_YR
 
             # ROADID
-                errorList = ["Error on OBJECTID %s: ROADID must be populated."%cursor[OBJECTID] for row in cursor
+                errorList = ["Error on %s %s: ROADID must be populated."%(id_field, cursor[id_field_idx]) for row in cursor
                                 if cursor[f.index('ROADID')] in vnull]
                 cursor.reset()
                 if len(errorList) > 0:
@@ -633,8 +628,8 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
                     recordValCom[lyr].append("Error on %s record(s): ROADID must be populated."%len(errorList))
 
             # ROADCLAS
-                errorList = ["Error on OBJECTID %s: ROADCLAS must be populated with the correct coding scheme. *ROADCLAS = [%s]"
-                                %(cursor[OBJECTID],cursor[f.index('ROADCLAS')]) for row in cursor
+                errorList = ["Error on %s %s: ROADCLAS must be populated with the correct coding scheme. *ROADCLAS = [%s]"
+                                %(id_field, cursor[id_field_idx],cursor[f.index('ROADCLAS')]) for row in cursor
                                 if cursor[f.index('ROADCLAS')] not in ['P','B']]
                 cursor.reset()
                 if len(errorList) > 0:
@@ -643,8 +638,8 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
                     recordValCom[lyr].append("Error on %s record(s): ROADCLAS must be populated with the correct coding scheme."%len(errorList))
 
             # TRANS
-                errorList = ["Error on OBJECTID %s: TRANS must be greater than or equal to plan start year, if populated.  *TRANS = [%s]"
-                                %(cursor[OBJECTID],cursor[f.index('TRANS')]) for row in cursor
+                errorList = ["Error on %s %s: TRANS must be greater than or equal to plan start year, if populated.  *TRANS = [%s]"
+                                %(id_field, cursor[id_field_idx],cursor[f.index('TRANS')]) for row in cursor
                                 if int(cursor[f.index('TRANS')] or 9999) < fmpStartYear]  # 'or 9999' - this will avoid flagging Null values
                 cursor.reset()
                 if len(errorList) > 0:
@@ -653,8 +648,8 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
                     recordValCom[lyr].append("Error on %s record(s): TRANS must be greater than or equal to plan start year, if populated."%len(errorList))
 
             # ACYEAR
-                errorList = ["Error on OBJECTID %s: ACYEAR must be greater than or equal to plan start year and less than or equal to plan end year, if populated.  *ACYEAR = [%s]"
-                                %(cursor[OBJECTID],cursor[f.index('ACYEAR')]) for row in cursor
+                errorList = ["Error on %s %s: ACYEAR must be greater than or equal to plan start year and less than or equal to plan end year, if populated.  *ACYEAR = [%s]"
+                                %(id_field, cursor[id_field_idx],cursor[f.index('ACYEAR')]) for row in cursor
                                 if int(cursor[f.index('ACYEAR')] or fmpStartYear) not in range(fmpStartYear, fmpStartYear + 11)] # 'or fmpStartYear' - this will avoid flagging Null values
                 cursor.reset()
                 if len(errorList) > 0:
@@ -662,8 +657,8 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
                     criticalError += 1
                     recordValCom[lyr].append("Error on %s record(s): ACYEAR must be greater than or equal to plan start year and less than or equal to plan end year, if populated."%len(errorList))
 
-                errorList = ["Error on OBJECTID %s: ACCESS must be populated if ACYEAR is populated.  *ACYEAR = [%s] *ACCESS = [%s]"
-                                %(cursor[OBJECTID],cursor[f.index('ACYEAR')],cursor[f.index('ACCESS')]) for row in cursor
+                errorList = ["Error on %s %s: ACCESS must be populated if ACYEAR is populated.  *ACYEAR = [%s] *ACCESS = [%s]"
+                                %(id_field, cursor[id_field_idx],cursor[f.index('ACYEAR')],cursor[f.index('ACCESS')]) for row in cursor
                                 if cursor[f.index('ACCESS')] in vnull
                                 if int(cursor[f.index('ACYEAR')] or 0) in range(fmpStartYear, fmpStartYear + 11)]
                 cursor.reset()
@@ -673,8 +668,8 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
                     recordValCom[lyr].append("Error on %s record(s): ACCESS must be populated if ACYEAR is populated."%len(errorList))
 
             # ACCESS        # big change in v2017 spec
-                errorList = ["Error on OBJECTID %s: ACCESS must follow the correct coding scheme if populated.  *ACCESS = [%s]"
-                                %(cursor[OBJECTID],cursor[f.index('ACCESS')]) for row in cursor
+                errorList = ["Error on %s %s: ACCESS must follow the correct coding scheme if populated.  *ACCESS = [%s]"
+                                %(id_field, cursor[id_field_idx],cursor[f.index('ACCESS')]) for row in cursor
                                 if cursor[f.index('ACCESS')] not in vnull + ['APPLY','REMOVE','BOTH']]
                 cursor.reset()
                 if len(errorList) > 0:
@@ -683,8 +678,8 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
                     recordValCom[lyr].append("Error on %s record(s): ACCESS must follow the correct coding scheme if populated."%len(errorList))
 
             # ACCESS & CONTROL1
-                errorList = ["Error on OBJECTID %s: CONTROL1 must be populated with the correct coding scheme where ACCESS is APPLY or BOTH.  *ACCESS = [%s] *CONTROL1 = [%s]"
-                                %(cursor[OBJECTID],cursor[f.index('ACCESS')],cursor[f.index('CONTROL1')]) for row in cursor
+                errorList = ["Error on %s %s: CONTROL1 must be populated with the correct coding scheme where ACCESS is APPLY or BOTH.  *ACCESS = [%s] *CONTROL1 = [%s]"
+                                %(id_field, cursor[id_field_idx],cursor[f.index('ACCESS')],cursor[f.index('CONTROL1')]) for row in cursor
                                 if cursor[f.index('ACCESS')] in ['APPLY','BOTH']
                                 if cursor[f.index('CONTROL1')] not in ['BERM','GATE','SCAR','SIGN','PRIV','SLSH','WATX']]
                 cursor.reset()
@@ -694,8 +689,8 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
                     recordValCom[lyr].append("Error on %s record(s):  CONTROL1 must be populated with the correct coding scheme where ACCESS is APPLY or BOTH."%len(errorList))
 
             # DECOM         # big change in v2017 spec
-                errorList = ["Error on OBJECTID %s: DECOM must follow the correct coding scheme if populated.  *DECOM = [%s]"
-                                %(cursor[OBJECTID],cursor[f.index('DECOM')]) for row in cursor
+                errorList = ["Error on %s %s: DECOM must follow the correct coding scheme if populated.  *DECOM = [%s]"
+                                %(id_field, cursor[id_field_idx],cursor[f.index('DECOM')]) for row in cursor
                                 if cursor[f.index('DECOM')] not in vnull + ['BERM','SCAR','SLSH','WATX']]
                 cursor.reset()
                 if len(errorList) > 0:
@@ -704,7 +699,7 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
                     recordValCom[lyr].append("Error on %s record(s): DECOM must follow the correct coding scheme if populated."%len(errorList))
 
             # MAINTAIN
-                errorList = ["Error on OBJECTID %s: MAINTAIN must be populated with the correct coding scheme (Y or N)."%cursor[OBJECTID] for row in cursor
+                errorList = ["Error on %s %s: MAINTAIN must be populated with the correct coding scheme (Y or N)."%(id_field, cursor[id_field_idx]) for row in cursor
                                 if cursor[f.index('MAINTAIN')] not in ['Y','N']]
                 cursor.reset()
                 if len(errorList) > 0:
@@ -713,7 +708,7 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
                     recordValCom[lyr].append("Error on %s record(s): MAINTAIN must be populated with the correct coding scheme (Y or N)."%len(errorList))
 
             # MONITOR
-                errorList = ["Error on OBJECTID %s: MONITOR must be populated with the correct coding scheme (Y or N)."%cursor[OBJECTID] for row in cursor
+                errorList = ["Error on %s %s: MONITOR must be populated with the correct coding scheme (Y or N)."%(id_field, cursor[id_field_idx]) for row in cursor
                                 if cursor[f.index('MONITOR')] not in ['Y','N']]
                 cursor.reset()
                 if len(errorList) > 0:
@@ -722,8 +717,8 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
                     recordValCom[lyr].append("Error on %s record(s): MONITOR must be populated with the correct coding scheme (Y or N)."%len(errorList))                                        
 
             # ACCESS, DECOM, MAINTAIN & MONITOR
-                errorList = ["Error on OBJECTID %s: One of DECOM, MAINTAIN, MONITOR or ACCESS must occur for each record. *DECOM = [%s] *MAINTAIN = [%s] *MONITOR = [%s] *ACCESS = [%s]"
-                                %(cursor[OBJECTID],cursor[f.index('DECOM')],cursor[f.index('MAINTAIN')],cursor[f.index('MONITOR')],cursor[f.index('ACCESS')]) for row in cursor
+                errorList = ["Error on %s %s: One of DECOM, MAINTAIN, MONITOR or ACCESS must occur for each record. *DECOM = [%s] *MAINTAIN = [%s] *MONITOR = [%s] *ACCESS = [%s]"
+                                %(id_field, cursor[id_field_idx],cursor[f.index('DECOM')],cursor[f.index('MAINTAIN')],cursor[f.index('MONITOR')],cursor[f.index('ACCESS')]) for row in cursor
                                 if cursor[f.index('MAINTAIN')] != 'Y' and cursor[f.index('MONITOR')] != 'Y'
                                 if cursor[f.index('ACCESS')] not in ['APPLY','REMOVE','BOTH']
                                 if cursor[f.index('DECOM')] not in ['BERM','SCAR','SLSH','WATX']]
@@ -734,7 +729,7 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
                     recordValCom[lyr].append("Error on %s record(s):  One of DECOM, MAINTAIN, MONITOR or ACCESS must occur for each record.."%len(errorList))
 
             # INTENT & TRANS
-                errorList = ["Error on OBJECTID %s: INTENT must be populated if TRANS value is populated."%cursor[OBJECTID] for row in cursor
+                errorList = ["Error on %s %s: INTENT must be populated if TRANS value is populated."%(id_field, cursor[id_field_idx]) for row in cursor
                                 if int(cursor[f.index('TRANS')] or 0) >= fmpStartYear
                                 if cursor[f.index('INTENT')] in vnull]
                 cursor.reset()
@@ -744,8 +739,8 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
                     recordValCom[lyr].append("Error on %s record(s): INTENT must be populated if TRANS value is populated."%len(errorList))
 
             # CONTROL1
-                errorList = ["Error on OBJECTID %s: CONTROL1 must follow the correct coding scheme if populated.  *CONTROL1 = [%s]"
-                                %(cursor[OBJECTID],cursor[f.index('CONTROL1')]) for row in cursor
+                errorList = ["Error on %s %s: CONTROL1 must follow the correct coding scheme if populated.  *CONTROL1 = [%s]"
+                                %(id_field, cursor[id_field_idx],cursor[f.index('CONTROL1')]) for row in cursor
                                 if cursor[f.index('CONTROL1')] not in vnull + ['BERM','GATE','SCAR','SIGN','PRIV','SLSH','WATX']]
                 cursor.reset()
                 if len(errorList) > 0:
@@ -755,8 +750,8 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
 
             # CONTROL2
                 if 'CONTROL2' in f:
-                    errorList = ["Error on OBJECTID %s: CONTROL2 must follow the correct coding scheme if populated.  *CONTROL2 = [%s]"
-                                    %(cursor[OBJECTID],cursor[f.index('CONTROL2')]) for row in cursor
+                    errorList = ["Error on %s %s: CONTROL2 must follow the correct coding scheme if populated.  *CONTROL2 = [%s]"
+                                    %(id_field, cursor[id_field_idx],cursor[f.index('CONTROL2')]) for row in cursor
                                     if cursor[f.index('CONTROL2')] not in vnull + ['BERM','GATE','SCAR','SIGN','PRIV','SLSH','WATX']]
                     cursor.reset()
                     if len(errorList) > 0:
@@ -765,7 +760,7 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
                         recordValCom[lyr].append("Error on %s record(s): CONTROL2 must follow the correct coding scheme if populated."%len(errorList))
 
             # CONTROL1 or 2 must be populated if ACCESS = BOTH or APPLY
-                command = """errorList = ["Warning on OBJECTID %s: CONTROL1 or 2 must be populated if ACCESS = BOTH or APPLY."%cursor[OBJECTID] for row in cursor
+                command = """errorList = ["Warning on %s %s: CONTROL1 or 2 must be populated if ACCESS = BOTH or APPLY."%(id_field, cursor[id_field_idx]) for row in cursor
                                     if cursor[f.index('ACCESS')] in ['BOTH','APPLY']
                                     if cursor[f.index('CONTROL1')] in vnull """
 
@@ -781,7 +776,7 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
                     recordValCom[lyr].append("Warning on %s record(s): CONTROL1 or 2 must be populated if ACCESS = BOTH or APPLY."%len(errorList)) 
 
             # CONTROL1 and 2 both should be null if ACCESS = REMOVE
-                command = """errorList = ["Warning on OBJECTID %s: Both CONTROL1 and 2 should be null if ACCESS = REMOVE."%cursor[OBJECTID] for row in cursor
+                command = """errorList = ["Warning on %s %s: Both CONTROL1 and 2 should be null if ACCESS = REMOVE."%(id_field, cursor[id_field_idx]) for row in cursor
                                     if cursor[f.index('ACCESS')] == 'REMOVE'
                                     if cursor[f.index('CONTROL1')] not in vnull """
 
@@ -828,8 +823,8 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
                     t3check1 = " and cursor[f.index('TRTMTHD3')] not in " + codingScheme
                     t3check2 = " or cursor[f.index('TRTMTHD3')] not in " + codingScheme + " + vnull "                    
 
-                command = """errorList = ["Error on OBJECTID %s: The population of TRTMTHD1, 2 or 3 is mandatory and must follow the correct coding scheme where AWS_YR equals the fiscal year to which the AWS applies."
-                                %cursor[OBJECTID] for row in cursor
+                command = """errorList = ["Error on %s %s: The population of TRTMTHD1, 2 or 3 is mandatory and must follow the correct coding scheme where AWS_YR equals the fiscal year to which the AWS applies."
+                                %(id_field, cursor[id_field_idx]) for row in cursor
                                 if cursor[f.index('AWS_YR')] == year
                                 if cursor[f.index('TRTMTHD1')] not in """ + codingScheme + t2check1 + t3check1 + "or (cursor[f.index('TRTMTHD1')] not in " + codingScheme + " + vnull " + t2check2 + t3check2 + ")]"     
                                 # The first half of the last line checkes if at least one of the 3 fields have been populated with the coding scheme
@@ -856,7 +851,7 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
         if lyrAcro == "SRP":
             try:
             # RESID
-                errorList = ["Error on OBJECTID %s: RESID must be populated."%cursor[OBJECTID] for row in cursor
+                errorList = ["Error on %s %s: RESID must be populated."%(id_field, cursor[id_field_idx]) for row in cursor
                                 if cursor[f.index('RESID')] in vnull]
                 cursor.reset()
                 if len(errorList) > 0:
@@ -895,8 +890,8 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
                     t3check1 = " and cursor[f.index('TRTMTHD3')] not in " + codingScheme
                     t3check2 = " or cursor[f.index('TRTMTHD3')] not in " + codingScheme + " + vnull "                    
 
-                command = """errorList = ["Error on OBJECTID %s: The population of TRTMTHD1, 2 or 3 is mandatory and must follow the correct coding scheme where AWS_YR equals the fiscal year to which the AWS applies."
-                                %cursor[OBJECTID] for row in cursor
+                command = """errorList = ["Error on %s %s: The population of TRTMTHD1, 2 or 3 is mandatory and must follow the correct coding scheme where AWS_YR equals the fiscal year to which the AWS applies."
+                                %(id_field, cursor[id_field_idx]) for row in cursor
                                 if cursor[f.index('AWS_YR')] == year
                                 if cursor[f.index('TRTMTHD1')] not in """ + codingScheme + t2check1 + t3check1 + "or (cursor[f.index('TRTMTHD1')] not in " + codingScheme + " + vnull " + t2check2 + t3check2 + ")]"     
                                 # The first half of the last line checkes if at least one of the 3 fields have been populated with the coding scheme
@@ -941,8 +936,8 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
                     t3check1 = " and cursor[f.index('TRTMTHD3')] not in " + codingScheme
                     t3check2 = " or cursor[f.index('TRTMTHD3')] not in " + codingScheme + " + vnull "                    
 
-                command = """errorList = ["Error on OBJECTID %s: The population of TRTMTHD1, 2 or 3 is mandatory and must follow the correct coding scheme where AWS_YR equals the fiscal year to which the AWS applies."
-                                %cursor[OBJECTID] for row in cursor
+                command = """errorList = ["Error on %s %s: The population of TRTMTHD1, 2 or 3 is mandatory and must follow the correct coding scheme where AWS_YR equals the fiscal year to which the AWS applies."
+                                %(id_field, cursor[id_field_idx]) for row in cursor
                                 if cursor[f.index('AWS_YR')] == year
                                 if cursor[f.index('TRTMTHD1')] not in """ + codingScheme + t2check1 + t3check1 + "or (cursor[f.index('TRTMTHD1')] not in " + codingScheme + " + vnull " + t2check2 + t3check2 + ")]"     
                                 # The first half of the last line checkes if at least one of the 3 fields have been populated with the coding scheme
@@ -973,7 +968,7 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
                 # To find this code block, search this script for #ref-AWS_YR
 
             # WATXID
-                errorList = ["Error on OBJECTID %s: WATXID must be populated."%cursor[OBJECTID] for row in cursor
+                errorList = ["Error on %s %s: WATXID must be populated."%(id_field, cursor[id_field_idx]) for row in cursor
                                 if cursor[f.index('WATXID')] in vnull]
                 cursor.reset()
                 if len(errorList) > 0:
@@ -982,8 +977,8 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
                     recordValCom[lyr].append("Error on %s record(s): WATXID must be populated."%len(errorList))
 
             # WATXTYPE
-                errorList = ["Error on OBJECTID %s: WATXTYPE must be populated with the correct coding scheme.  *WATXTYPE = [%s]"
-                                %(cursor[OBJECTID],cursor[f.index('WATXTYPE')]) for row in cursor
+                errorList = ["Error on %s %s: WATXTYPE must be populated with the correct coding scheme.  *WATXTYPE = [%s]"
+                                %(id_field, cursor[id_field_idx],cursor[f.index('WATXTYPE')]) for row in cursor
                                 if cursor[f.index('WATXTYPE')] not in ['BRID','TEMP','CULV','MULTI','FORD','ICE','BOX','ARCH']]
                 cursor.reset()
                 if len(errorList) > 0:
@@ -992,8 +987,8 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
                     recordValCom[lyr].append("Error on %s record(s): WATXTYPE must be populated with the correct coding scheme.."%len(errorList))
 
             # TRANS
-                errorList = ["Error on OBJECTID %s: TRANS must be populated with the correct coding scheme.  *TRANS = [%s]"
-                                %(cursor[OBJECTID],cursor[f.index('TRANS')]) for row in cursor
+                errorList = ["Error on %s %s: TRANS must be populated with the correct coding scheme.  *TRANS = [%s]"
+                                %(id_field, cursor[id_field_idx],cursor[f.index('TRANS')]) for row in cursor
                                 if cursor[f.index('TRANS')] not in ['Y','N']]
                 cursor.reset()
                 if len(errorList) > 0:
@@ -1003,8 +998,8 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
 
             # CONSTRCT
                 if 'CONSTRCT' in f:
-                    errorList = ["Error on OBJECTID %s: CONSTRCT must follow the correct coding scheme where AWS_YR equals the start year of the AWS or the following year.  *CONSTRCT = [%s]"
-                                    %(cursor[OBJECTID],cursor[f.index('CONSTRCT')]) for row in cursor
+                    errorList = ["Error on %s %s: CONSTRCT must follow the correct coding scheme where AWS_YR equals the start year of the AWS or the following year.  *CONSTRCT = [%s]"
+                                    %(id_field, cursor[id_field_idx],cursor[f.index('CONSTRCT')]) for row in cursor
                                     if int(cursor[f.index('AWS_YR')] or 0) in [year,year+1] 
                                     if cursor[f.index('CONSTRCT')] not in ['Y','N']]
                     cursor.reset()
@@ -1015,8 +1010,8 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
 
             # MONITOR
                 if 'MONITOR' in f:
-                    errorList = ["Error on OBJECTID %s: MONITOR must follow the correct coding scheme where AWS_YR equals the start year of the AWS or the following year.  *MONITOR = [%s]"
-                                    %(cursor[OBJECTID],cursor[f.index('MONITOR')]) for row in cursor
+                    errorList = ["Error on %s %s: MONITOR must follow the correct coding scheme where AWS_YR equals the start year of the AWS or the following year.  *MONITOR = [%s]"
+                                    %(id_field, cursor[id_field_idx],cursor[f.index('MONITOR')]) for row in cursor
                                     if int(cursor[f.index('AWS_YR')] or 0) in [year,year+1] 
                                     if cursor[f.index('MONITOR')] not in ['Y','N']]
                     cursor.reset()
@@ -1027,8 +1022,8 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
 
             # REMOVE
                 if 'REMOVE' in f:
-                    errorList = ["Error on OBJECTID %s: REMOVE must follow the correct coding scheme where AWS_YR equals the start year of the AWS or the following year.  *REMOVE = [%s]"
-                                    %(cursor[OBJECTID],cursor[f.index('REMOVE')]) for row in cursor
+                    errorList = ["Error on %s %s: REMOVE must follow the correct coding scheme where AWS_YR equals the start year of the AWS or the following year.  *REMOVE = [%s]"
+                                    %(id_field, cursor[id_field_idx],cursor[f.index('REMOVE')]) for row in cursor
                                     if int(cursor[f.index('AWS_YR')] or 0) in [year,year+1] 
                                     if cursor[f.index('REMOVE')] not in ['Y','N']]
                     cursor.reset()
@@ -1039,8 +1034,8 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
 
             # REPLACE
                 if 'REPLACE' in f:
-                    errorList = ["Error on OBJECTID %s: REPLACE must follow the correct coding scheme where AWS_YR equals the start year of the AWS or the following year.  *REPLACE = [%s]"
-                                    %(cursor[OBJECTID],cursor[f.index('REPLACE')]) for row in cursor
+                    errorList = ["Error on %s %s: REPLACE must follow the correct coding scheme where AWS_YR equals the start year of the AWS or the following year.  *REPLACE = [%s]"
+                                    %(id_field, cursor[id_field_idx],cursor[f.index('REPLACE')]) for row in cursor
                                     if int(cursor[f.index('AWS_YR')] or 0) in [year,year+1] 
                                     if cursor[f.index('REPLACE')] not in ['Y','N']]
                     cursor.reset()
@@ -1056,7 +1051,7 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
                    fieldValComUpdate[lyr].append("At a minimum, one of CONSTRCT, MONITOR, REMOVE or REPLACE must occur.")
                    fieldValUpdate[lyr] = 'Invalid'
                 else:
-                    command = """errorList = ["Error on OBJECTID %s: One of CONSTRCT, MONITOR, REMOVE or REPLACE must occur for each record where AWS_YR equals the start year of the AWS or the following year."%cursor[OBJECTID] for row in cursor
+                    command = """errorList = ["Error on %s %s: One of CONSTRCT, MONITOR, REMOVE or REPLACE must occur for each record where AWS_YR equals the start year of the AWS or the following year."%(id_field, cursor[id_field_idx]) for row in cursor
                                         if int(cursor[f.index('AWS_YR')] or 0) in [year,year+1] 
                                         if cursor[f.index('""" + matchingField[0] + """')] != 'Y' """
 
@@ -1073,7 +1068,7 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
                         recordValCom[lyr].append("Error on %s record(s): One of CONSTRCT, MONITOR, REMOVE or REPLACE must occur for each record where AWS_YR equals the start year of the AWS or the following year."%len(errorList))
 
             # ROADID
-                errorList = ["Error on OBJECTID %s: ROADID must be populated."%cursor[OBJECTID] for row in cursor
+                errorList = ["Error on %s %s: ROADID must be populated."%(id_field, cursor[id_field_idx]) for row in cursor
                                 if cursor[f.index('ROADID')] in vnull]
                 cursor.reset()
                 if len(errorList) > 0:
