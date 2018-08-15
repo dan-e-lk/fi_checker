@@ -65,10 +65,6 @@ class Check():
         rep = open(self.htmlfile,'w')
         # Add Style
         rep.write(htmlstyle.htmlStyle)
-        # Start Body
-        rep.write('<body>')
-        # Add Header
-        rep.write('<h1>%s Tech Spec Validation Report on %s</h1>'%(self.plan,self.workspace))
         # Add Report Summary info
         rep.write(self.htmlReportSummary1())
 
@@ -114,8 +110,12 @@ class Check():
 
 
     def htmlReportSummary1(self):
-        htmlstring ='<h2>Report Summary</h2>'
+
+        htmlstring = '<body>'
+        htmlstring +='\n<img src="' + Reference.getOntarioLogo() + '">'        
+        htmlstring +='\n<h1>%s Tech Spec Validation Report</h1>'%self.plan
         htmlstring += '''
+            <h2>Report Summary</h2>
             <table id="t01">
               <tr><td>Submission Type:</td> <td>%s</td>             </tr>
               <tr><td>Submission Year:</td> <td>%s</td>             </tr>
@@ -125,9 +125,10 @@ class Check():
               <tr><td>MU Number:</td>       <td>%s</td>             </tr>
               <tr><td>Date Reviewed:</td>   <td>%s</td>             </tr>
               <tr><td>Tech Spec Used:</td>  <td>%s version</td>     </tr>
-              <tr><td>Data Format:</td>     <td>%s</td>             </tr>              
+              <tr><td>Data Format:</td>     <td>%s</td>             </tr>
+              <tr><td>Data Location:</td>   <td>%s</td>             </tr>
             </table> <br>
-            '''%(self.plan,self.year,self.fmu,self.subID,self.fmpStartYear, self.MUNumber,self.today,self.tech_spec_version, self.dataformat)
+            '''%(self.plan,self.year,self.fmu,self.subID,self.fmpStartYear, self.MUNumber,self.today,self.tech_spec_version, self.dataformat, self.workspace)
         return htmlstring
 
 
@@ -372,7 +373,6 @@ class Check():
             <table id="t02">
               <tr>
                 <th>Layer File Name</th>
-                <th>Layer Name</th>
                 <th>Existing Mandatory Fields</th>
                 <th>Additional Fields</th>
                 <th>Field Validation</th>
@@ -382,47 +382,49 @@ class Check():
                 <th><small>Reference</small></th>
               </tr>'''
         for lyr in self.lyrs:
-            htmlstring += '<tr>'
+            htmlstring += '\n<tr>'
 
             # Layer File Name
             if self.dataformat == 'coverage':
                 filename = os.path.split(os.path.split(lyr)[0])[1]
-                htmlstring += '<td><div class="tooltip">' + filename + '<span class="tooltiptext">Projection: ' + self.summarytbl[lyr][2] + '</span></div></td>' # Layer File Name + projection when hovering over.
             else:
-                htmlstring += '<td><div class="tooltip">' + lyr + '<span class="tooltiptext">Projection: ' + self.summarytbl[lyr][2] + '</span></div></td>'
+                filename = lyr
+            # layer_file_name - an example: MU999_20AOC00<br><small>(Area of Concern)</small>
+            layer_file_name = filename + '<br><small>(' + self.summarytbl[lyr][1] + ')</small>' # self.summarytbl[lyr][1] is the layer common-name such as "Area of Concern"
+            htmlstring += '\n<td><div class="tooltip">' + layer_file_name + '<span class="tooltiptext">Projection: ' + self.summarytbl[lyr][2] + '</span></div></td>'
 
-            htmlstring += '<td><small>' + self.summarytbl[lyr][1] + '</small></td>' # Layer Name
-            # htmlstring += '<td><small>' + self.summarytbl[lyr][2] + '</small></td>' # Projection # now the projection is viewed by hovering over the file name.
-            htmlstring += '<td><small>' + Reference.shortenList(self.summarytbl[lyr][3]) + '</small></td>' # Existing Mandatory Fields
-            htmlstring += '<td><small>' + Reference.shortenList(self.summarytbl[lyr][4]) + '</small></td>' # Additional Fields
+            # Existing Mandatory Fields
+            htmlstring += '\n<td><small>' + Reference.shortenList(self.summarytbl[lyr][3]) + '</small></td>'
+            # Additional Fields
+            htmlstring += '\n<td><small>' + Reference.shortenList(self.summarytbl[lyr][4]) + '</small></td>' 
             if self.summarytbl[lyr][5] == 'Invalid':
-                htmlstring += '<td><p id="p03">' +self.summarytbl[lyr][5] + '</p></td>' # Field Validation - red if invalid
+                htmlstring += '\n<td><p id="p03">' +self.summarytbl[lyr][5] + '</p></td>' # Field Validation - red if invalid
             else:
-                htmlstring += '<td><p id="p01">' +self.summarytbl[lyr][5] + '</p></td>' # Field Validation - green if invalid
+                htmlstring += '\n<td><p id="p01">' +self.summarytbl[lyr][5] + '</p></td>' # Field Validation - green if invalid
             if len(self.summarytbl[lyr][6]) == 0:
-                htmlstring += '<td>N/A</td>' # Field Definition Comments - N/A if there isn't any.
+                htmlstring += '\n<td>N/A</td>' # Field Definition Comments - N/A if there isn't any.
             else:
-                htmlstring += '<td><small>'
+                htmlstring += '\n<td><small>'
                 for line in self.summarytbl[lyr][6]: # Field Definition Comments - if there's one or more, write each line separately
-                    htmlstring += '- ' + line + '<br>'
+                    htmlstring += '\n- ' + line + '<br>'
                 htmlstring += '</small></td>'
             if self.summarytbl[lyr][7] == 'Invalid-Critical':
-                htmlstring += '<td><p id="p03">' +self.summarytbl[lyr][7] + '</p></td>' # Field Validation - red if invalid critical
+                htmlstring += '\n<td><p id="p03">' +self.summarytbl[lyr][7] + '</p></td>' # Field Validation - red if invalid critical
             elif self.summarytbl[lyr][7] == 'Invalid-Minor':
-                htmlstring += '<td><p id="p02">' +self.summarytbl[lyr][7] + '</p></td>' # Field Validation - orange if invalid minor
+                htmlstring += '\n<td><p id="p02">' +self.summarytbl[lyr][7] + '</p></td>' # Field Validation - orange if invalid minor
             elif self.summarytbl[lyr][7] == 'Valid':
-                htmlstring += '<td><p id="p01">' +self.summarytbl[lyr][7] + '</p></td>' # Field Validation - green if valid
+                htmlstring += '\n<td><p id="p01">' +self.summarytbl[lyr][7] + '</p></td>' # Field Validation - green if valid
             else:
-                htmlstring += '<td>' + self.summarytbl[lyr][7] + '</td>' # Field Validation - regular font if anything else
+                htmlstring += '\n<td>' + self.summarytbl[lyr][7] + '</td>' # Field Validation - regular font if anything else
 
-            htmlstring += '<td><small>'
+            htmlstring += '\n<td><small>'
             # Record Validation Comment - first line (Total 99 records with 9 artifacts)
-            htmlstring += '<div class="tooltip">- ' + self.summarytbl[lyr][8][0] + '<span class="tooltiptext">Artifacts are empty polygons populated in coverages to fill up the holes in polygons.</span></div><br>'
+            htmlstring += '\n<div class="tooltip">- ' + self.summarytbl[lyr][8][0] + '<span class="tooltiptext">Artifacts are empty polygons populated in coverages to fill up the holes in polygons.</span></div><br>'
             if len(self.summarytbl[lyr][8]) > 1:
                 for line in self.summarytbl[lyr][8][1:]: # Record Validation Comments - write each line separately
-                    htmlstring += '- ' + line + '<br>'
+                    htmlstring += '\n- ' + line + '<br>'
             htmlstring += '</small></td>'
-            htmlstring += '<td>' + self.summarytbl[lyr][9] + '</td>' # FIM Reference
+            htmlstring += '\n<td>' + self.summarytbl[lyr][9] + '</td>' # FIM Reference
             htmlstring += '</tr>' # End of line
 
         htmlstring += '</table>'
@@ -430,41 +432,41 @@ class Check():
         if len(self.strAdditionalLayers ) > 0: htmlstring += '<br>' + self.strAdditionalLayers + '<br>'
 
         if self.num_of_proj_used == 1:
-            htmlstring += '<br>' + self.strProjectionCheck + '<br>' # All layers are using the same projection
+            htmlstring += '\n<br>' + self.strProjectionCheck + '<br>' # All layers are using the same projection
         elif self.num_of_proj_used > 1:
-            htmlstring += '<br><p id="p03">' + self.strProjectionCheck + ' - Hover over each layer name to check the projection.</p>' # Not all layers are using the same projection.
+            htmlstring += '\n<br><p id="p03">' + self.strProjectionCheck + ' - Hover over each layer name to check the projection.</p>' # Not all layers are using the same projection.
 
-        htmlstring += '<br>'
+        htmlstring += '\n<br>'
         return htmlstring
 
     def htmlErrorDetail(self):
-        htmlstring = '''<h2>Error Detail</h2>'''
+        htmlstring = '''\n<h2>Error Detail</h2>'''
         errors = 0
         for lyr in self.lyrs:
             if len(self.errorDetail[lyr]) > 0: ## if there are errors...
                 errorDetailListList = Reference.sortError(self.errorDetail[lyr],self.error_limit) # *************************** This is where you change the number of same errors appear on error detail section.
                 errors += 1
-                htmlstring += '<h3>' + lyr + '</h3>'
-                htmlstring += '<p><small>'
+                htmlstring += '\n<h3>' + lyr + '</h3>'
+                htmlstring += '\n<p><small>'
 
                 for errorType in errorDetailListList:
                     for line in errorType:
-                        htmlstring += line + '<br>'
-                    htmlstring += '<br>'
+                        htmlstring += line + '\n<br>'
+                    htmlstring += '\n<br>'
 
                 htmlstring += '</small></p>'
         if errors == 0:
-            htmlstring += '<p>None found.<p>'
+            htmlstring += '\n<p>None found.<p>'
         return htmlstring
 
     def htmlFootnote(self):
-        htmlstring = '''<h2>Footnote</h2>'''
+        htmlstring = '''\n<h2>Footnote</h2>'''
         self.timeEnd = str(datetime.datetime.now())
-        htmlstring += '<p>'
-        htmlstring += 'This report has been saved as: ' + self.htmlfile + '<br>'
-        htmlstring += 'Time created: ' + self.timeEnd + '<br>'
-        htmlstring += 'Python script used: ' + inspect.getfile(inspect.currentframe())  + '<br>'        
-        htmlstring += 'Checker version used: v' + self.checker_version  + '<br>'
+        htmlstring += '\n<p>'
+        htmlstring += '\nThis report has been saved as: ' + self.htmlfile + '<br>'
+        htmlstring += '\nTime created: ' + self.timeEnd + '<br>'
+        htmlstring += '\nPython script used: ' + inspect.getfile(inspect.currentframe())  + '<br>'        
+        htmlstring += '\nChecker version used: v' + self.checker_version  + '<br>'
         htmlstring += '</p>'
         return htmlstring
 

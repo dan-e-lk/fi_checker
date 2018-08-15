@@ -350,6 +350,14 @@ def find_IdField(f, dataformat):
             return f[0]
 
 
+def getOntarioLogo():
+    """
+    this should test if this ontario logo works before returning it
+    """
+    return 'http://files.ontario.ca/mnr/fishonline-resources/stdu_129760.gif'
+
+
+
 
 if __name__ == '__main__':
 

@@ -7,9 +7,11 @@ htmlStyle = '''
 <!DOCTYPE html>
 <html>
 <head>
+<link href="https://fonts.googleapis.com/css?family=Raleway:400,800" rel="stylesheet">
 <style>
 body {
     font-family: "Helvetica", "Tahoma";
+    padding-left: 10px;
 }
 
 #table {width:50%;}
@@ -40,15 +42,16 @@ table#t01 td {
     border: 1px solid white;
     border-collapse: collapse;
 }
+h1, h2 {
+    font-family: 'Raleway', sans-serif;
+}
+
 h1 {
-    display: block;
     font-size: 1.5em;
     margin-top: 0.67em;
-    margin-bottom: 0.67em;
-    margin-left: 0;
-    margin-right: 0;
     font-weight: bold;
-    background-color: #B8B8B8;
+    border-bottom: 3px solid #181818;
+    padding: 10px;
 }
 
 h2 {
@@ -56,10 +59,9 @@ h2 {
     font-size: 1.3em;
     margin-top: 0.83em;
     margin-bottom: 0.83em;
-    margin-left: 0;
-    margin-right: 0;
     font-weight: bold;
-    background-color: #E6E6E6;
+    background: linear-gradient(to right, #E6E6E6, white);
+    border-bottom: 1px solid #E6E6E6;    
 }
 
 h3 {
@@ -67,18 +69,15 @@ h3 {
     font-size: 1em;
     margin-top: 1em;
     margin-bottom: 1em;
-    margin-left: 0;
-    margin-right: 0;
     font-weight: bold;
-    background-color: #F1F1F1;
+    background: linear-gradient(to right, #F1F1F1, white);
+    border-bottom: 1px solid #F1F1F1;    
 }
 
 h4 {
     display: block;
     margin-top: 1.33em;
     margin-bottom: 1.33em;
-    margin-left: 0;
-    margin-right: 0;
     font-weight: bold;
 }
 #p01 {
@@ -92,6 +91,12 @@ h4 {
 #p03 {
     color: red;
     font-weight: bold;
+}
+
+img {
+    float: right;
+    height: 40px;
+    padding-right: 10px;
 }
 
 
