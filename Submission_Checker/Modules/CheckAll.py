@@ -316,7 +316,7 @@ class Check():
                     self.summarytbl[lyr].append(self.existingManFields)
                     self.summarytbl[lyr].append(self.additionalFields)
                     if len(self.existingManFields) == len(manFields):
-                        self.fieldValidation[lyr] = 'Valid'
+                        self.fieldValidation[lyr] = 'No Missing Field' # *23411
                     else:
                         missingFields = [f for f in manFields if f not in self.existingManFields]
                         self.fieldDefComments[lyr].append('Field(s) missing: ' + str(missingFields))
@@ -376,9 +376,7 @@ class Check():
                 <th>Existing Mandatory Fields</th>
                 <th>Additional Fields</th>
                 <th>Field Validation</th>
-                <th>Field Comments</th>
                 <th>Record Validation</th>
-                <th>Record Validation Comments</th>
                 <th><small>Reference</small></th>
               </tr>'''
         for lyr in self.lyrs:
@@ -395,35 +393,42 @@ class Check():
 
             # Existing Mandatory Fields
             htmlstring += '\n<td><small>' + Reference.shortenList(self.summarytbl[lyr][3]) + '</small></td>'
+
             # Additional Fields
             htmlstring += '\n<td><small>' + Reference.shortenList(self.summarytbl[lyr][4]) + '</small></td>' 
+
+            # Field Validation
             if self.summarytbl[lyr][5] == 'Invalid':
-                htmlstring += '\n<td><p id="p03">' +self.summarytbl[lyr][5] + '</p></td>' # Field Validation - red if invalid
+                htmlstring += '\n<td><p id="p03">' +self.summarytbl[lyr][5] + '</p>' # Field Validation - red if invalid. *23411 - removed closing </td>
             else:
-                htmlstring += '\n<td><p id="p01">' +self.summarytbl[lyr][5] + '</p></td>' # Field Validation - green if invalid
+                htmlstring += '\n<td><p id="p01">' +self.summarytbl[lyr][5] + '</p>' # Field Validation - green if invalid. *23411 - removed closing </td>
             if len(self.summarytbl[lyr][6]) == 0:
-                htmlstring += '\n<td>N/A</td>' # Field Definition Comments - N/A if there isn't any.
+                htmlstring += '\n</td>' # Field Definition Comments - write nothing if there isn't any missing field *23411. - removed opening <td>
             else:
-                htmlstring += '\n<td><small>'
-                for line in self.summarytbl[lyr][6]: # Field Definition Comments - if there's one or more, write each line separately
+                htmlstring += '\n<small>'
+                for line in self.summarytbl[lyr][6]: # Field Definition Comments - if there's one or more, write each line separately. *23411 - removed opening <td>
                     htmlstring += '\n- ' + line + '<br>'
                 htmlstring += '</small></td>'
-            if self.summarytbl[lyr][7] == 'Invalid-Critical':
-                htmlstring += '\n<td><p id="p03">' +self.summarytbl[lyr][7] + '</p></td>' # Field Validation - red if invalid critical
-            elif self.summarytbl[lyr][7] == 'Invalid-Minor':
-                htmlstring += '\n<td><p id="p02">' +self.summarytbl[lyr][7] + '</p></td>' # Field Validation - orange if invalid minor
-            elif self.summarytbl[lyr][7] == 'Valid':
-                htmlstring += '\n<td><p id="p01">' +self.summarytbl[lyr][7] + '</p></td>' # Field Validation - green if valid
-            else:
-                htmlstring += '\n<td>' + self.summarytbl[lyr][7] + '</td>' # Field Validation - regular font if anything else
 
-            htmlstring += '\n<td><small>'
+            # Record Validation
+            if self.summarytbl[lyr][7] == 'Invalid-Critical':
+                htmlstring += '\n<td><p id="p03">' +self.summarytbl[lyr][7] + '</p>' # Record Validation - red if invalid critical *23411 - removed closing </td>
+            elif self.summarytbl[lyr][7] == 'Invalid-Minor':
+                htmlstring += '\n<td><p id="p02">' +self.summarytbl[lyr][7] + '</p>' # Record Validation - orange if invalid minor *23411 - removed closing </td>
+            elif self.summarytbl[lyr][7] == 'Valid':
+                htmlstring += '\n<td><p id="p01">' +self.summarytbl[lyr][7] + '</p>' # Record Validation - green if valid *23411 - removed closing </td>
+            else:
+                htmlstring += '\n<td>' + self.summarytbl[lyr][7] # Record Validation - regular font if anything else *23411 - removed closing </td>
+            htmlstring += '\n<small>' # *23411 - removed opening <td>
+
             # Record Validation Comment - first line (Total 99 records with 9 artifacts)
-            htmlstring += '\n<div class="tooltip">- ' + self.summarytbl[lyr][8][0] + '<span class="tooltiptext">Artifacts are empty polygons populated in coverages to fill up the holes in polygons.</span></div><br>'
+            htmlstring += '\n<div class="tooltip"><strong>- ' + self.summarytbl[lyr][8][0] + '</strong><span class="tooltiptext">Artifacts are empty polygons populated in coverages to fill up the holes in polygons.</span></div><br>'
             if len(self.summarytbl[lyr][8]) > 1:
                 for line in self.summarytbl[lyr][8][1:]: # Record Validation Comments - write each line separately
                     htmlstring += '\n- ' + line + '<br>'
             htmlstring += '</small></td>'
+
+            # Reference
             htmlstring += '\n<td>' + self.summarytbl[lyr][9] + '</td>' # FIM Reference
             htmlstring += '</tr>' # End of line
 

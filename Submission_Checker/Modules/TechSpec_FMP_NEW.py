@@ -1659,15 +1659,15 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
                         criticalError += 1
                         recordValCom[lyr].append("Error on %s record(s): AGE must be populated and follow the correct format when POLYTYPE is FOR."%len(errorList))
 
-                    errorList = ["Error on %s %s: AGE can be zero only when DEVSTAGE is DEPHARV or DEPNAT (when POLYTYPE = FOR)."%(id_field, cursor[id_field_idx]) for row in cursor
+                    errorList = ["Error on %s %s: AGE attribute must be zero when DEVSTAGE is DEPHARV or DEPNAT, but must be greater than zero for any other DEVSTAGE value."%(id_field, cursor[id_field_idx]) for row in cursor # *23412
                                     if cursor[f.index('POLYTYPE')] == 'FOR'
-                                    if cursor[f.index('AGE')] == 0
+                                    if cursor[f.index('AGE')] <= 0
                                     if cursor[f.index('DEVSTAGE')] not in ['DEPHARV','DEPNAT']]
                     cursor.reset()
                     if len(errorList) > 0:
                         errorDetail[lyr].append(errorList)
                         criticalError += 1
-                        recordValCom[lyr].append("Error on %s record(s): AGE can be zero only when DEVSTAGE is DEPHARV or DEPNAT (when POLYTYPE = FOR)."%len(errorList))
+                        recordValCom[lyr].append("Error on %s record(s): AGE attribute must be zero when DEVSTAGE is DEPHARV or DEPNAT, but must be greater than zero for any other DEVSTAGE value."%len(errorList)) # *23412
 
                     errorList = ["Error on %s %s: AGE must be equal to the plan start year minus the YRORG."%(id_field, cursor[id_field_idx]) for row in cursor
                                     if cursor[f.index('POLYTYPE')] == 'FOR'
