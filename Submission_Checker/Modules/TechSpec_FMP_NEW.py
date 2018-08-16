@@ -377,18 +377,18 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
                     criticalError += 1
                     recordValCom[lyr].append("Error on %s record(s): YRDEP must be at least a year less than the plan start year."%len(errorList))
 
-                errorList = ["Warning on %s %s: YRDEP should be greater than or equal to 1900 where POLYTYPE = FOR (4.1.4 YRDEP)."%(id_field, cursor[id_field_idx]) for row in cursor
+                errorList = ["Warning on %s %s: YRDEP should be greater than or equal to 1900 where POLYTYPE = FOR."%(id_field, cursor[id_field_idx]) for row in cursor
                                 if cursor[f.index('POLYTYPE')] == 'FOR'
-                                if cursor[f.index('YRDEP')] not in [None,0] and cursor[f.index('YRDEP')] < 1900 ] # *23404
+                                if cursor[f.index('YRDEP')] not in [None,0] and cursor[f.index('YRDEP')] < 1900] # *23404
                 cursor.reset()
                 if len(errorList) > 0:
                     errorDetail[lyr].append(errorList)
                     minorError += 1
                     recordValCom[lyr].append("Warning on %s record(s): YRDEP should be greater than or equal to 1900 where POLYTYPE = FOR (4.1.4 YRDEP)."%len(errorList))
 
-                errorList = ["Warning on %s %s: YRDEP should be greater than or equal to 1900 where DEPTYPE is not null (4.1.4 YRDEP)."%(id_field, cursor[id_field_idx]) for row in cursor
+                errorList = ["Warning on %s %s: YRDEP should be greater than or equal to 1900 where DEPTYPE is not null."%(id_field, cursor[id_field_idx]) for row in cursor
                                 if cursor[f.index('DEPTYPE')] not in vnull
-                                if cursor[f.index('YRDEP')] < 1900 ]
+                                if cursor[f.index('YRDEP')] < 1900]
                 cursor.reset()
                 if len(errorList) > 0:
                     errorDetail[lyr].append(errorList)
@@ -631,7 +631,7 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
 
                     errorList = ["Error on %s %s: OHT must be populated and must be between 0 and 40 (when POLYTYPE = FOR)."%(id_field, cursor[id_field_idx]) for row in cursor
                                     if cursor[f.index('POLYTYPE')] == 'FOR'
-                                    if cursor[f.index('OHT')] < 0 or cursor[f.index('OHT')] > 40] # surprisingly this will also catch nulls and empty spaces
+                                    if cursor[f.index('OHT')] == None or cursor[f.index('OHT')] < 0 or cursor[f.index('OHT')] > 40] # *23410
                     cursor.reset()
                     if len(errorList) > 0:
                         errorDetail[lyr].append(errorList)
@@ -695,7 +695,7 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
 
                     errorList = ["Error on %s %s: OSTKG must be populated and must be between 0 and 4.0 (when POLYTYPE = FOR)."%(id_field, cursor[id_field_idx]) for row in cursor
                                     if cursor[f.index('POLYTYPE')] == 'FOR'
-                                    if cursor[f.index('OSTKG')] < 0 or cursor[f.index('OSTKG')] > 4] # surprisingly this will also catch nulls and empty spaces
+                                    if cursor[f.index('OSTKG')] == None or cursor[f.index('OSTKG')] < 0 or cursor[f.index('OSTKG')] > 4] # *23410
                     cursor.reset()
                     if len(errorList) > 0:
                         errorDetail[lyr].append(errorList)
@@ -972,7 +972,7 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
 
                     errorList = ["Error on %s %s: UHT must be between 0 and 40 when POLYTYPE = FOR."%(id_field, cursor[id_field_idx]) for row in cursor
                                     if cursor[f.index('POLYTYPE')] == 'FOR'
-                                    if cursor[f.index('UHT')] < 0 or cursor[f.index('UHT')] > 40]
+                                    if cursor[f.index('UHT')] == None or cursor[f.index('UHT')] < 0 or cursor[f.index('UHT')] > 40] # *23410
                     cursor.reset()
                     if len(errorList) > 0:
                         errorDetail[lyr].append(errorList)
@@ -1018,7 +1018,7 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
 
                     errorList = ["Error on %s %s: UCCLO must be between 0 and 100 when POLYTYPE = FOR."%(id_field, cursor[id_field_idx]) for row in cursor
                                     if cursor[f.index('POLYTYPE')] == 'FOR'
-                                    if cursor[f.index('UCCLO')] < 0 or cursor[f.index('UCCLO')] > 100] # surprisingly this will also catch nulls and empty spaces
+                                    if cursor[f.index('UCCLO')] == None or cursor[f.index('UCCLO')] < 0 or cursor[f.index('UCCLO')] > 100] # 23410
                     cursor.reset()
                     if len(errorList) > 0:
                         errorDetail[lyr].append(errorList)
@@ -1044,7 +1044,7 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
 
                     errorList = ["Error on %s %s: USTKG must be between 0 and 4.0 (when POLYTYPE = FOR)."%(id_field, cursor[id_field_idx]) for row in cursor
                                     if cursor[f.index('POLYTYPE')] == 'FOR'
-                                    if cursor[f.index('USTKG')] < 0 or cursor[f.index('USTKG')] > 4] # surprisingly this will also catch nulls and empty spaces
+                                    if cursor[f.index('USTKG')] == None or cursor[f.index('USTKG')] < 0 or cursor[f.index('USTKG')] > 4] # *23410
                     cursor.reset()
                     if len(errorList) > 0:
                         errorDetail[lyr].append(errorList)
@@ -1698,7 +1698,7 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
 
                     errorList = ["Error on %s %s: HT must be populated and must be between 0 and 40 (when POLYTYPE = FOR)."%(id_field, cursor[id_field_idx]) for row in cursor
                                     if cursor[f.index('POLYTYPE')] == 'FOR'
-                                    if cursor[f.index('HT')] < 0 or cursor[f.index('HT')] > 40] # surprisingly this will also catch nulls and empty spaces
+                                    if cursor[f.index('HT')] == None or cursor[f.index('HT')] < 0 or cursor[f.index('HT')] > 40] # *23410
                     cursor.reset()
                     if len(errorList) > 0:
                         errorDetail[lyr].append(errorList)
@@ -1747,7 +1747,7 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
 
                     errorList = ["Error on %s %s: CCLO must be populated and must be between 0 and 100 (when POLYTYPE = FOR)."%(id_field, cursor[id_field_idx]) for row in cursor
                                     if cursor[f.index('POLYTYPE')] == 'FOR'
-                                    if cursor[f.index('CCLO')] < 0 or cursor[f.index('CCLO')] > 100] # surprisingly this will also catch nulls and empty spaces
+                                    if cursor[f.index('CCLO')] == None or cursor[f.index('CCLO')] < 0 or cursor[f.index('CCLO')] > 100] # *23410
                     cursor.reset()
                     if len(errorList) > 0:
                         errorDetail[lyr].append(errorList)
@@ -1774,7 +1774,7 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
 
                     errorList = ["Error on %s %s: STKG must be populated and must be between 0 and 4.0 (when POLYTYPE = FOR)."%(id_field, cursor[id_field_idx]) for row in cursor
                                     if cursor[f.index('POLYTYPE')] == 'FOR'
-                                    if cursor[f.index('STKG')] < 0 or cursor[f.index('STKG')] > 4] # surprisingly this will also catch nulls and empty spaces
+                                    if cursor[f.index('STKG')] == None or cursor[f.index('STKG')] < 0 or cursor[f.index('STKG')] > 4] # *23410
                     cursor.reset()
                     if len(errorList) > 0:
                         errorDetail[lyr].append(errorList)
