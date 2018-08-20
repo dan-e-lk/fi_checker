@@ -384,7 +384,7 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
                 if len(errorList) > 0:
                     errorDetail[lyr].append(errorList)
                     minorError += 1
-                    recordValCom[lyr].append("Warning on %s record(s): YRDEP should be greater than or equal to 1900 where POLYTYPE = FOR (4.1.4 YRDEP)."%len(errorList))
+                    recordValCom[lyr].append("Warning on %s record(s): YRDEP should be greater than or equal to 1900 where POLYTYPE = FOR."%len(errorList))
 
                 errorList = ["Warning on %s %s: YRDEP should be greater than or equal to 1900 where DEPTYPE is not null."%(id_field, cursor[id_field_idx]) for row in cursor
                                 if cursor[f.index('DEPTYPE')] not in vnull
@@ -453,7 +453,7 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
 
                     errorList = ["Error on %s %s: OYRORG must be greater than 1600 and less than the plan start year when POLYTYPE is FOR."%(id_field, cursor[id_field_idx]) for row in cursor
                                     if cursor[f.index('POLYTYPE')] == 'FOR'
-                                    if cursor[f.index('OYRORG')] in vnull or int(cursor[f.index('OYRORG')]) < 1600 or int(cursor[f.index('OYRORG')]) > fmpStartYear - 1 ]
+                                    if not isinstance(cursor[f.index('OYRORG')],int) or cursor[f.index('OYRORG')] < 1600 or cursor[f.index('OYRORG')] > fmpStartYear - 1 ]
                     cursor.reset()
                     if len(errorList) > 0:
                         errorDetail[lyr].append(errorList)
@@ -584,7 +584,7 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
             try:
                 current_field = 'OAGE'              
                 if lyrAcro in ["PCI", "BMI"]:
-                    errorList = ["Error on %s %s: OAGE must be zero (or null) when POLYTYPE is not FOR."%(id_field, cursor[id_field_idx]) for row in cursor
+                    errorList = ["Error on %s %s: OAGE must be zero or null when POLYTYPE is not FOR."%(id_field, cursor[id_field_idx]) for row in cursor
                                     if cursor[f.index('POLYTYPE')] != 'FOR'
                                     if cursor[f.index('OAGE')] not in [0,None]]
                     cursor.reset()
@@ -602,15 +602,15 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
                         criticalError += 1
                         recordValCom[lyr].append("Error on %s record(s): OAGE must be populated and follow the correct format when POLYTYPE is FOR."%len(errorList))
 
-                    errorList = ["Error on %s %s: OAGE can be zero only when DEVSTAGE is DEPHARV or DEPNAT (when POLYTYPE = FOR)."%(id_field, cursor[id_field_idx]) for row in cursor
+                    errorList = ["Error on %s %s: OAGE - A zero or NULL value is not a valid code, unless DEVSTAGE is DEPHARV or DEPNAT."%(id_field, cursor[id_field_idx]) for row in cursor
                                     if cursor[f.index('POLYTYPE')] == 'FOR'
-                                    if cursor[f.index('OAGE')] == 0
-                                    if cursor[f.index('DEVSTAGE')] not in ['DEPHARV','DEPNAT']]
+                                    if cursor[f.index('DEVSTAGE')] not in ['DEPHARV','DEPNAT']
+                                    if cursor[f.index('OAGE')] in [None, 0]] # *23412
                     cursor.reset()
                     if len(errorList) > 0:
                         errorDetail[lyr].append(errorList)
                         criticalError += 1
-                        recordValCom[lyr].append("Error on %s record(s): OAGE can be zero only when DEVSTAGE is DEPHARV or DEPNAT (when POLYTYPE = FOR)."%len(errorList))
+                        recordValCom[lyr].append("Error on %s record(s): OAGE - A zero or NULL value is not a valid code, unless DEVSTAGE is DEPHARV or DEPNAT."%len(errorList))
             except ValueError:
                 recordValCom[lyr].append("***Unable to run full validation on %s field due to value error - most likely due to missing mandatory field(s)"%current_field)
                 arcpy.AddWarning("***Unable to run full validation on %s field due to the following error:\n"%current_field + str(sys.exc_info()[1]))
@@ -620,7 +620,7 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
             try:
                 current_field = 'OHT'              
                 if lyrAcro in ["PCI", "BMI"]:
-                    errorList = ["Error on %s %s: OHT must be zero (or null) when POLYTYPE is not FOR."%(id_field, cursor[id_field_idx]) for row in cursor
+                    errorList = ["Error on %s %s: OHT must be zero or null when POLYTYPE is not FOR."%(id_field, cursor[id_field_idx]) for row in cursor
                                     if cursor[f.index('POLYTYPE')] != 'FOR'
                                     if cursor[f.index('OHT')] not in [0,None]]
                     cursor.reset()
@@ -640,9 +640,9 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
 
                     errorList = ["Error on %s %s: OHT must be greater than zero if the DEVSTAGE does not start with DEP, NEW or LOW (when POLYTYPE = FOR)."%(id_field, cursor[id_field_idx]) for row in cursor
                                     if cursor[f.index('POLYTYPE')] == 'FOR'
-                                    if cursor[f.index('OHT')] <= 0
+                                    if cursor[f.index('OHT')] <= 0 or cursor[f.index('OHT')] == None
                                     if cursor[f.index('DEVSTAGE')] not in vnull
-                                    if cursor[f.index('DEVSTAGE')][:3] not in ['DEP','NEW','LOW']]
+                                    if cursor[f.index('DEVSTAGE')][:3] not in ['DEP','NEW','LOW']] # *23413
                     cursor.reset()
                     if len(errorList) > 0:
                         errorDetail[lyr].append(errorList)
@@ -704,10 +704,9 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
 
                     errorList = ["Error on %s %s: OSTKG must be greater than zero if the DEVSTAGE does not start with DEP or NEW (when POLYTYPE = FOR)."%(id_field, cursor[id_field_idx]) for row in cursor
                                     if cursor[f.index('POLYTYPE')] == 'FOR'
-                                    if cursor[f.index('OSTKG')] != None # this has already been checked.
-                                    if cursor[f.index('OSTKG')] <= 0
                                     if cursor[f.index('DEVSTAGE')] not in vnull
-                                    if cursor[f.index('DEVSTAGE')][:3] not in ['DEP','NEW']]
+                                    if cursor[f.index('DEVSTAGE')][:3] not in ['DEP','NEW']
+                                    if cursor[f.index('OSTKG')] == None or cursor[f.index('OSTKG')] <= 0] # *23413
                     cursor.reset()
                     if len(errorList) > 0:
                         errorDetail[lyr].append(errorList)
@@ -716,20 +715,18 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
 
                     errorList = ["Warning on %s %s: OSTKG should be greater than 0.4 for certain DEVSTAGE values (when POLYTYPE = FOR)."%(id_field, cursor[id_field_idx]) for row in cursor
                                     if cursor[f.index('POLYTYPE')] == 'FOR'
-                                    if cursor[f.index('OSTKG')] != None # this has already been checked.
-                                    if cursor[f.index('OSTKG')] < 0.4
-                                    if cursor[f.index('DEVSTAGE')] not in vnull
-                                    if cursor[f.index('DEVSTAGE')] in ['NAT','ESTNAT','ESTPLANT','ESTSEED','IMPROVE','SELECT','SNGLTREE','THINCOM','FIRSTCUT','SEEDCUT','PREPCUT','FIRSTPASS','BLKSTRIP','THINPRE']]
+                                    if cursor[f.index('DEVSTAGE')] in ['NAT','ESTNAT','ESTPLANT','ESTSEED','IMPROVE','SELECT','SNGLTREE','THINCOM','FIRSTCUT','SEEDCUT','PREPCUT','FIRSTPASS','BLKSTRIP','THINPRE']
+                                    if cursor[f.index('OSTKG')] == None or cursor[f.index('OSTKG')] < 0.4] # *23413
                     cursor.reset()
                     if len(errorList) > 0:
                         errorDetail[lyr].append(errorList)
                         minorError += 1
-                        recordValCom[lyr].append("Warning on %s record(s): OSTKG should be greater than 0.4 for certain DEVSTAGE values (when POLYTYPE = FOR)."%len(errorList))
+                        recordValCom[lyr].append("Warning on %s record(s): OSTKG should be greater than 0.4 when DEVSTAGE is one of the following: 'NAT','ESTNAT','ESTPLANT','ESTSEED','IMPROVE','SELECT','SNGLTREE','THINCOM','FIRSTCUT','SEEDCUT','PREPCUT','FIRSTPASS','BLKSTRIP','THINPRE'."%len(errorList))
 
                     errorList = ["Warning on %s %s: OSTKG and USTKG should be zero when DEVSTAGE starts with DEP."%(id_field, cursor[id_field_idx]) for row in cursor
                                     if cursor[f.index('DEVSTAGE')] not in vnull
                                     if cursor[f.index('DEVSTAGE')][:3] == 'DEP'
-                                    if cursor[f.index('OSTKG')] != 0 or cursor[f.index('USTKG')] != 0]
+                                    if cursor[f.index('OSTKG')] not in [0, None] or cursor[f.index('USTKG')] not in [0, None]] # *23413
                     cursor.reset()
                     if len(errorList) > 0:
                         errorDetail[lyr].append(errorList)
@@ -776,7 +773,7 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
 
             # UYRORG (PCI and BMI only)
             try:
-                current_field = 'UYRORG'              
+                current_field = 'UYRORG'
                 if lyrAcro in ["PCI", "BMI"]:
                     errorList = ["Error on %s %s: UYRORG must be zero or null when POLYTYPE is not FOR or if DEVSTAGE is DEPHARV or DEPNAT."%(id_field, cursor[id_field_idx]) for row in cursor
                                     if cursor[f.index('POLYTYPE')] != 'FOR' or cursor[f.index('DEVSTAGE')] in ['DEPHARV','DEPNAT']
@@ -787,23 +784,32 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
                         criticalError += 1
                         recordValCom[lyr].append("Error on %s record(s): UYRORG must be zero or null when POLYTYPE is not FOR or if DEVSTAGE is DEPHARV or DEPNAT."%len(errorList))
 
-                    errorList = ["Error on %s %s: UYRORG must be greater than OYRORG and greater than 1800 (when POLYTYPE is FOR and VERT is TO, TU, MO or MU)."%(id_field, cursor[id_field_idx]) for row in cursor
+                    errorList = ["Error on %s %s: UYRORG should be greater than OYRORG when POLYTYPE is FOR and VERT is TO, TU, MO or MU."%(id_field, cursor[id_field_idx]) for row in cursor
                                     if cursor[f.index('POLYTYPE')] == 'FOR' and cursor[f.index('VERT')] in ['TO','TU','MO','MU']
-                                    if cursor[f.index('UYRORG')] < 1800 or cursor[f.index('UYRORG')] < cursor[f.index('OYRORG')] ]
+                                    if cursor[f.index('UYRORG')] < cursor[f.index('OYRORG')] ] # *23414
                     cursor.reset()
                     if len(errorList) > 0:
                         errorDetail[lyr].append(errorList)
                         criticalError += 1
-                        recordValCom[lyr].append("Error on %s record(s): UYRORG must be greater than OYRORG and greater than 1800 (when POLYTYPE is FOR and VERT is TO, TU, MO or MU)."%len(errorList))
+                        recordValCom[lyr].append("Error on %s record(s): UYRORG should be greater than OYRORG when POLYTYPE is FOR and VERT is TO, TU, MO or MU."%len(errorList))
 
-                    errorList = ["Error on %s %s: UYRORG must be less than the plan start year (when POLYTYPE is FOR and VERT is TO, TU, MO or MU)."%(id_field, cursor[id_field_idx]) for row in cursor
+                    errorList = ["Error on %s %s: UYRORG must be greater than 1800 when POLYTYPE is FOR and VERT is TO, TU, MO or MU."%(id_field, cursor[id_field_idx]) for row in cursor
+                                    if cursor[f.index('POLYTYPE')] == 'FOR' and cursor[f.index('VERT')] in ['TO','TU','MO','MU']
+                                    if cursor[f.index('UYRORG')] == None or cursor[f.index('UYRORG')] < 1800 ] # *23414
+                    cursor.reset()
+                    if len(errorList) > 0:
+                        errorDetail[lyr].append(errorList)
+                        criticalError += 1
+                        recordValCom[lyr].append("Error on %s record(s): UYRORG must be greater than 1800 when POLYTYPE is FOR and VERT is TO, TU, MO or MU."%len(errorList))
+
+                    errorList = ["Error on %s %s: UYRORG must be less than the plan start year when POLYTYPE is FOR and VERT is TO, TU, MO or MU."%(id_field, cursor[id_field_idx]) for row in cursor
                                     if cursor[f.index('POLYTYPE')] == 'FOR' and cursor[f.index('VERT')] in ['TO','TU','MO','MU']
                                     if cursor[f.index('UYRORG')] >= fmpStartYear ]
                     cursor.reset()
                     if len(errorList) > 0:
                         errorDetail[lyr].append(errorList)
                         criticalError += 1
-                        recordValCom[lyr].append("Error on %s record(s): UYRORG must be less than the plan start year (when POLYTYPE is FOR and VERT is TO, TU, MO or MU)."%len(errorList))
+                        recordValCom[lyr].append("Error on %s record(s): UYRORG must be less than the plan start year when POLYTYPE is FOR and VERT is TO, TU, MO or MU."%len(errorList))
 
                     errorList = ["Warning on %s %s: UYRORG should not be greater than YRSOURCE when POLYTYPE is FOR and VERT is TO, TU, MO or MU."%(id_field, cursor[id_field_idx]) for row in cursor
                                     if cursor[f.index('POLYTYPE')] == 'FOR' and cursor[f.index('VERT')] in ['TO','TU','MO','MU']
@@ -1492,7 +1498,7 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
 
                     errorList = ["Error on %s %s: YRORG must be greater than 1600 and less than the plan start year when POLYTYPE is FOR."%(id_field, cursor[id_field_idx]) for row in cursor
                                     if cursor[f.index('POLYTYPE')] == 'FOR'
-                                    if cursor[f.index('YRORG')] in vnull or int(cursor[f.index('YRORG')]) < 1600 or int(cursor[f.index('YRORG')]) > fmpStartYear - 1 ]
+                                    if cursor[f.index('YRORG')] == None or cursor[f.index('YRORG')] < 1600 or cursor[f.index('YRORG')] > fmpStartYear - 1 ] # *23413
                     cursor.reset()
                     if len(errorList) > 0:
                         errorDetail[lyr].append(errorList)
@@ -1520,8 +1526,8 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
 
                     errorList = ["Warning on %s %s: YRORG should be less than or equal to UYRORG if UYRORG is not 0."%(id_field, cursor[id_field_idx]) for row in cursor
                                     if cursor[f.index('POLYTYPE')] == 'FOR'
-                                    if cursor[f.index('UYRORG')] > 0
-                                    if cursor[f.index('YRORG')] > cursor[f.index('UYRORG')] ]
+                                    if cursor[f.index('UYRORG')] not in [0, None]
+                                    if cursor[f.index('YRORG')] > cursor[f.index('UYRORG')] ] # *23413
                     cursor.reset()
                     if len(errorList) > 0:
                         errorDetail[lyr].append(errorList)
@@ -1659,15 +1665,15 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
                         criticalError += 1
                         recordValCom[lyr].append("Error on %s record(s): AGE must be populated and follow the correct format when POLYTYPE is FOR."%len(errorList))
 
-                    errorList = ["Error on %s %s: AGE attribute must be zero when DEVSTAGE is DEPHARV or DEPNAT, but must be greater than zero for any other DEVSTAGE value."%(id_field, cursor[id_field_idx]) for row in cursor # *23412
+                    errorList = ["Error on %s %s: AGE - A zero or NULL value is not a valid code, unless DEVSTAGE is DEPHARV or DEPNAT (when POLYTYPE is FOR)."%(id_field, cursor[id_field_idx]) for row in cursor # *23412
                                     if cursor[f.index('POLYTYPE')] == 'FOR'
-                                    if cursor[f.index('AGE')] <= 0
-                                    if cursor[f.index('DEVSTAGE')] not in ['DEPHARV','DEPNAT']]
+                                    if cursor[f.index('DEVSTAGE')] not in ['DEPHARV','DEPNAT']
+                                    if cursor[f.index('AGE')] in [None, 0]]
                     cursor.reset()
                     if len(errorList) > 0:
                         errorDetail[lyr].append(errorList)
                         criticalError += 1
-                        recordValCom[lyr].append("Error on %s record(s): AGE attribute must be zero when DEVSTAGE is DEPHARV or DEPNAT, but must be greater than zero for any other DEVSTAGE value."%len(errorList)) # *23412
+                        recordValCom[lyr].append("Error on %s record(s): AGE - A zero or NULL value is not a valid code, unless DEVSTAGE is DEPHARV or DEPNAT (when POLYTYPE is FOR)."%len(errorList)) # *23412
 
                     errorList = ["Error on %s %s: AGE must be equal to the plan start year minus the YRORG."%(id_field, cursor[id_field_idx]) for row in cursor
                                     if cursor[f.index('POLYTYPE')] == 'FOR'
@@ -1707,9 +1713,9 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
 
                     errorList = ["Error on %s %s: HT must be greater than zero if the DEVSTAGE does not start with DEP, NEW or LOW (when POLYTYPE = FOR)."%(id_field, cursor[id_field_idx]) for row in cursor
                                     if cursor[f.index('POLYTYPE')] == 'FOR'
-                                    if cursor[f.index('HT')] <= 0
+                                    if cursor[f.index('HT')] == None or cursor[f.index('HT')] <= 0
                                     if cursor[f.index('DEVSTAGE')] not in vnull
-                                    if cursor[f.index('DEVSTAGE')][:3] not in ['DEP','NEW','LOW']]
+                                    if cursor[f.index('DEVSTAGE')][:3] not in ['DEP','NEW','LOW']] # *23413
                     cursor.reset()
                     if len(errorList) > 0:
                         errorDetail[lyr].append(errorList)
@@ -1784,7 +1790,7 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
 
                     errorList = ["Error on %s %s: STKG must be greater than zero if the DEVSTAGE starts with NAT or EST (when POLYTYPE = FOR)."%(id_field, cursor[id_field_idx]) for row in cursor
                                     if cursor[f.index('POLYTYPE')] == 'FOR'
-                                    if cursor[f.index('STKG')] <= 0
+                                    if cursor[f.index('STKG')] == None or cursor[f.index('STKG')] <= 0
                                     if cursor[f.index('DEVSTAGE')] not in vnull
                                     if cursor[f.index('DEVSTAGE')][:3] in ['NAT','EST']]
                     cursor.reset()
@@ -1806,15 +1812,15 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
                         recordValCom[lyr].append("Warning on %s record(s): STKG should be greater than 0.4 if DEVSTAGE is NAT or starts with EST (when POLYTYPE = FOR)."%len(errorList))
 
 
-                    errorList = ["Warning on %s %s: STKG should be zero when DEVSTAGE starts with DEP."%(id_field, cursor[id_field_idx]) for row in cursor
+                    errorList = ["Warning on %s %s: STKG should be zero or null when DEVSTAGE starts with DEP."%(id_field, cursor[id_field_idx]) for row in cursor
                                     if cursor[f.index('DEVSTAGE')] not in vnull
                                     if cursor[f.index('DEVSTAGE')][:3] == 'DEP'
-                                    if cursor[f.index('STKG')] != 0]
+                                    if cursor[f.index('STKG')] not in [0, None]] # *23413
                     cursor.reset()
                     if len(errorList) > 0:
                         errorDetail[lyr].append(errorList)
                         minorError += 1
-                        recordValCom[lyr].append("Warning on %s record(s): STKG should be zero when DEVSTAGE starts with DEP."%len(errorList))
+                        recordValCom[lyr].append("Warning on %s record(s): STKG should be zero or null when DEVSTAGE starts with DEP."%len(errorList))
 
 
                     errorList = ["Warning on %s %s: STKG should be less than 2.5."%(id_field, cursor[id_field_idx]) for row in cursor
