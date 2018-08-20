@@ -116,6 +116,15 @@ class Check():
         htmlstring +='\n<h1>%s Tech Spec Validation Report</h1>'%self.plan
         htmlstring += '''
             <h2>Report Summary</h2>
+            <div class='infobox'>
+                <div class='infotexthead'> Colour Code</div>  
+                <div class='infotext'>
+                    Some texts have been colour-coded to quickly draw your attention.<br>
+                    <span id='p01'>Green</span>: No error found<br>
+                    <span id='p02'>Orange</span>: A warning that may require your attention<br>
+                    <span id='p03'>Red</span>: A divergence from the Tech Spec that requires your attention                                      
+                </div>
+            </div>            
             <table id="t01">
               <tr><td>Submission Type:</td> <td>%s</td>             </tr>
               <tr><td>Submission Year:</td> <td>%s</td>             </tr>
@@ -126,7 +135,7 @@ class Check():
               <tr><td>Date Reviewed:</td>   <td>%s</td>             </tr>
               <tr><td>Tech Spec Used:</td>  <td>%s version</td>     </tr>
               <tr><td>Data Format:</td>     <td>%s</td>             </tr>
-              <tr><td>Data Location:</td>   <td>%s</td>             </tr>
+              <tr><td>Data Location:</td>   <td><small>%s</small></td></tr>
             </table> <br>
             '''%(self.plan,self.year,self.fmu,self.subID,self.fmpStartYear, self.MUNumber,self.today,self.tech_spec_version, self.dataformat, self.workspace)
         return htmlstring
@@ -445,7 +454,7 @@ class Check():
         return htmlstring
 
     def htmlErrorDetail(self):
-        htmlstring = '''\n<h2>Error Detail</h2>'''
+        htmlstring = '''\n<br><h2>Error Detail</h2>'''
         errors = 0
         for lyr in self.lyrs:
             if len(self.errorDetail[lyr]) > 0: ## if there are errors...

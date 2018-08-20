@@ -11,28 +11,29 @@ htmlStyle = '''
 <style>
 body {
     font-family: "Helvetica", "Tahoma";
-    padding-left: 10px;
+    padding: 0 50px 0 50px;
 }
 
 #table {width:50%;}
 table, th, td {
     border: 1px solid black;
     border-collapse: collapse;
+    width: 800px;    
 }
 th, td {
     padding: 3px;
     text-align: left;
 }
 table#t02 tr:nth-child(even) {
-    background-color: #eee;
+    background-color: #F2F5F0;
 }
 table#t02 tr:nth-child(odd) {
-   background-color:#fff;
+   background-color: #FCFCFB;
 }
 table#t02 th {
-    background-color: #708090;
+    background-color: #658254;
     color: white;
-   	font-size: 85%;
+    font-size: 85%;
 }
 table#t01 th {
     border: 1px solid white;
@@ -42,26 +43,28 @@ table#t01 td {
     border: 1px solid white;
     border-collapse: collapse;
 }
+
 h1, h2 {
     font-family: 'Raleway', sans-serif;
 }
 
 h1 {
     font-size: 1.5em;
-    margin-top: 0.67em;
+    margin: 0;
     font-weight: bold;
-    border-bottom: 3px solid #181818;
-    padding: 10px;
+    background: #415634;
+    color: white;
+    padding: 30px 0 10px 20px;
 }
 
 h2 {
     display: block;
     font-size: 1.3em;
-    margin-top: 0.83em;
-    margin-bottom: 0.83em;
+    margin-top: 0;
     font-weight: bold;
-    background: linear-gradient(to right, #E6E6E6, white);
-    border-bottom: 1px solid #E6E6E6;    
+    background: linear-gradient(to right, #DBE2D6, white);
+    border-bottom: 1px solid #DBE2D6;
+    padding: 5px 0 2px 5px;
 }
 
 h3 {
@@ -70,8 +73,9 @@ h3 {
     margin-top: 1em;
     margin-bottom: 1em;
     font-weight: bold;
-    background: linear-gradient(to right, #F1F1F1, white);
-    border-bottom: 1px solid #F1F1F1;    
+    background: linear-gradient(to right, #EAEEE7, white);
+    border-bottom: 1px solid #EAEEE7;
+    padding: 5px 0 2px 5px;
 }
 
 h4 {
@@ -95,10 +99,22 @@ h4 {
 
 img {
     float: right;
-    height: 40px;
-    padding-right: 10px;
+    height: 50px;
+    padding: 10px 10px 5px 0;
 }
-
+.infobox{
+    float: right;
+}
+.infotexthead{
+    font-weight: bold;
+    background-color: #EEF2EC;
+    padding: 10px 20px 10px 10px;
+}
+.infotext{
+    padding: 5px 5px 5px 10px;
+    line-height: 1.6;
+    font-size: 0.9em;    
+}
 
 <!--  Hover for tooltip  -->
 .tooltip {

@@ -341,10 +341,10 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
                     recordValCom[lyr].append("Error on %s record(s): DEVSTAGE attribute must be DEP* or NEW* if POLYTYPE = FOR and the stocking attributes equal 0.00 (OSTKG + USTKG + STKG = 0)."%len(errorList))
 
                 if lyrAcro in ["PCI", "BMI"]:
-                    errorList = ["Warning on %s %s: DEVSTAGE should be LOWMGMT, LOWNAT, DEPHARV or DEPNAT if POLYTYPE = FOR and if UCCLO + OCCLO < 25."%(id_field, cursor[id_field_idx]) for row in cursor
+                    errorList = ["Warning on %s %s: DEVSTAGE should be NEWPLANT, NEWSEED, NEWNAT, LOWMGMT, LOWNAT, DEPHARV or DEPNAT, if UCCLO + OCCLO < 25 (when POLYTYPE = FOR)."%(id_field, cursor[id_field_idx]) for row in cursor
                                     if cursor[f.index('POLYTYPE')] == 'FOR'
                                     if int(cursor[f.index('UCCLO')] or 0) + int(cursor[f.index('OCCLO')] or 0) < 25
-                                    if cursor[f.index('DEVSTAGE')] not in ['LOWMGMT','LOWNAT','DEPHARV','DEPNAT']]
+                                    if cursor[f.index('DEVSTAGE')] not in ['LOWMGMT','LOWNAT','DEPHARV','DEPNAT','NEWPLANT','NEWSEED','NEWNAT']] # *23415
                     cursor.reset()
                     if len(errorList) > 0:
                         errorDetail[lyr].append(errorList)
@@ -721,7 +721,7 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
                     if len(errorList) > 0:
                         errorDetail[lyr].append(errorList)
                         minorError += 1
-                        recordValCom[lyr].append("Warning on %s record(s): OSTKG should be greater than 0.4 when DEVSTAGE is one of the following: 'NAT','ESTNAT','ESTPLANT','ESTSEED','IMPROVE','SELECT','SNGLTREE','THINCOM','FIRSTCUT','SEEDCUT','PREPCUT','FIRSTPASS','BLKSTRIP','THINPRE'."%len(errorList))
+                        recordValCom[lyr].append("Warning on %s record(s): OSTKG should be greater than 0.4 when DEVSTAGE is one of the following: NAT, ESTNAT, ESTPLANT, ESTSEED, IMPROVE, SELECT, SNGLTREE, THINCOM, FIRSTCUT, SEEDCUT, PREPCUT, FIRSTPASS, BLKSTRIP, THINPRE."%len(errorList))
 
                     errorList = ["Warning on %s %s: OSTKG and USTKG should be zero when DEVSTAGE starts with DEP."%(id_field, cursor[id_field_idx]) for row in cursor
                                     if cursor[f.index('DEVSTAGE')] not in vnull

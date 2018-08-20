@@ -354,7 +354,7 @@ def getOntarioLogo():
     """
     this should test if this ontario logo works before returning it
     """
-    return 'http://files.ontario.ca/mnr/fishonline-resources/stdu_129760.gif'
+    return 'https://www.ontario.ca/sites/all/themes/odpm/images/ontario.png'
 
 
 
