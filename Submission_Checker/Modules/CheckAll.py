@@ -99,6 +99,7 @@ class Check():
 
         # Add footnote
         rep.write(self.htmlFootnote())
+        rep.write(htmlstyle.jvscript)
         rep.write('</body></html>')
         rep.close()
 
@@ -112,32 +113,33 @@ class Check():
     def htmlReportSummary1(self):
 
         htmlstring = '<body>'
-        htmlstring +='\n<img src="' + Reference.getOntarioLogo() + '">'        
+        htmlstring +='\n<img src="' + Reference.getOntarioLogo() + '''" alt="Ontario MNRF">'''        
         htmlstring +='\n<h1>%s Tech Spec Validation Report</h1>'%self.plan
         htmlstring += '''
             <h2>Report Summary</h2>
-            <div class='infobox'>
-                <div class='infotexthead'> Colour Code</div>  
-                <div class='infotext'>
-                    Some texts have been colour-coded to quickly draw your attention.<br>
-                    <span id='p01'>Green</span>: No error found<br>
-                    <span id='p02'>Orange</span>: A warning that may require your attention<br>
-                    <span id='p03'>Red</span>: A divergence from the Tech Spec that requires your attention                                      
-                </div>
-            </div>            
-            <table id="t01">
-              <tr><td>Submission Type:</td> <td>%s</td>             </tr>
-              <tr><td>Submission Year:</td> <td>%s</td>             </tr>
-              <tr><td>MU Name:</td>         <td>%s</td>             </tr> 
-              <tr><td>Submission ID:</td>   <td>%s</td>             </tr>             
-              <tr><td>Plan Start Year:</td> <td>%s</td>             </tr>
-              <tr><td>MU Number:</td>       <td>%s</td>             </tr>
-              <tr><td>Date Reviewed:</td>   <td>%s</td>             </tr>
-              <tr><td>Tech Spec Used:</td>  <td>%s version</td>     </tr>
-              <tr><td>Data Format:</td>     <td>%s</td>             </tr>
-              <tr><td>Data Location:</td>   <td><small>%s</small></td></tr>
-            </table> <br>
-            '''%(self.plan,self.year,self.fmu,self.subID,self.fmpStartYear, self.MUNumber,self.today,self.tech_spec_version, self.dataformat, self.workspace)
+            <div class = "h2content">
+                <div class="infobox">
+                    <div class='infotexthead'> Colour Code</div>  
+                    <div class='infotext'>
+                        Some texts have been colour-coded to quickly draw your attention.<br>
+                        <span id='p01'>Green</span>: No error found<br>
+                        <span id='p02'>Orange</span>: A warning that may require your attention<br>
+                        <span id='p03'>Red</span>: A divergence from the Tech Spec that requires your attention                                      
+                    </div>
+                </div>            
+                <table id="t01">
+                  <tr><td>Submission Type:</td> <td>%s</td>             </tr>
+                  <tr><td>Submission Year:</td> <td>%s</td>             </tr>
+                  <tr><td>MU Name:</td>         <td>%s</td>             </tr> 
+                  <tr><td>Submission ID:</td>   <td>%s</td>             </tr>             
+                  <tr><td>Plan Start Year:</td> <td>%s</td>             </tr>
+                  <tr><td>MU Number:</td>       <td>%s</td>             </tr>
+                  <tr><td>Date Reviewed:</td>   <td>%s</td>             </tr>
+                  <tr><td>Tech Spec Used:</td>  <td>%s version</td>     </tr>
+                  <tr><td>Data Format:</td>     <td>%s</td>             </tr>
+                  <tr><td>Data Location:</td>   <td><small>%s</small></td></tr>
+                </table> <br>
+            '''%(self.plan,self.year,self.fmu,self.subID,self.fmpStartYear, self.MUNumber,self.today,self.tech_spec_version, self.dataformat, Reference.shortenStr(self.workspace))
         return htmlstring
 
 
@@ -385,7 +387,7 @@ class Check():
                 <th>Existing Mandatory Fields</th>
                 <th>Additional Fields</th>
                 <th>Field Validation</th>
-                <th>Record Validation</th>
+                <th id='w'>Record Validation</th>
                 <th><small>Reference</small></th>
               </tr>'''
         for lyr in self.lyrs:
@@ -451,16 +453,19 @@ class Check():
             htmlstring += '\n<br><p id="p03">' + self.strProjectionCheck + ' - Hover over each layer name to check the projection.</p>' # Not all layers are using the same projection.
 
         htmlstring += '\n<br>'
+        htmlstring += '\n</div>' # closing h2content div from start of the report summary.
         return htmlstring
 
     def htmlErrorDetail(self):
-        htmlstring = '''\n<br><h2>Error Detail</h2>'''
+        htmlstring = '''\n<br><button class="collapsible">Error Detail</button>'''
+        htmlstring += '''\n<div class="content">'''
         errors = 0
         for lyr in self.lyrs:
             if len(self.errorDetail[lyr]) > 0: ## if there are errors...
                 errorDetailListList = Reference.sortError(self.errorDetail[lyr],self.error_limit) # *************************** This is where you change the number of same errors appear on error detail section.
                 errors += 1
-                htmlstring += '\n<h3>' + lyr + '</h3>'
+                htmlstring += '''\n<br><button class="collapsible" id="col-small">''' + lyr + '</button>'
+                htmlstring += '''\n<div class="content">'''
                 htmlstring += '\n<p><small>'
 
                 for errorType in errorDetailListList:
@@ -469,12 +474,15 @@ class Check():
                     htmlstring += '\n<br>'
 
                 htmlstring += '</small></p>'
+                htmlstring += '\n</div>' # closing 2nd level collapsible
         if errors == 0:
             htmlstring += '\n<p>None found.<p>'
+        htmlstring += '\n</div>' # closing 1st level collapsible
         return htmlstring
 
     def htmlFootnote(self):
-        htmlstring = '''\n<h2>Footnote</h2>'''
+        htmlstring = '''\n<br><button class="collapsible">Footnote</button>'''
+        htmlstring += '''\n<div class="content">'''
         self.timeEnd = str(datetime.datetime.now())
         htmlstring += '\n<p>'
         htmlstring += '\nThis report has been saved as: ' + self.htmlfile + '<br>'
@@ -482,6 +490,7 @@ class Check():
         htmlstring += '\nPython script used: ' + inspect.getfile(inspect.currentframe())  + '<br>'        
         htmlstring += '\nChecker version used: v' + self.checker_version  + '<br>'
         htmlstring += '</p>'
+        htmlstring += '\n</div>' # closing div class="content"
         return htmlstring
 
 

@@ -232,6 +232,12 @@ def shortenList(lst):
     else:
         return """<div class="tooltip">""" + str(lst)[:25] + """...<span class="tooltiptext">""" + str(lst) + """</span></div>"""
 
+def shortenStr(string):
+    '''Input a long string and it will turn the string into a tooltip (visible only when the user hover over).'''
+    if len(string) < 40:
+        return string
+    else:
+        return """<div class="tooltip">""" + string[:35] + """...<span class="tooltiptext">""" + string + """</span></div>"""
 
 
 def sortError(errorListList, maxnum):
@@ -352,7 +358,8 @@ def find_IdField(f, dataformat):
 
 def getOntarioLogo():
     """
-    this should test if this ontario logo works before returning it
+    this function should test if this ontario logo works before returning it
+    However, urllib2.urlopen module doesn't seem to work on OPS network.
     """
     return 'https://www.ontario.ca/sites/all/themes/odpm/images/ontario.png'
 
