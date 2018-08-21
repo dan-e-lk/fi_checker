@@ -18,7 +18,7 @@ body {
 table, th, td {
     border: 1px solid black;
     border-collapse: collapse;
-    max-width: 1200px;    
+    max-width: 1400px;
 }
 th, td {
     padding: 3px;
