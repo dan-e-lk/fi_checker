@@ -986,6 +986,7 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
                         recordValCom[lyr].append("Error on %s record(s): UHT must be between 0 and 40 when POLYTYPE = FOR."%len(errorList))
 
                     errorList = ["Error on %s %s: OHT minus UHT must be >= 3 OR OAGE minus UAGE must be >= 20, when VERT is TO, TU, MO or MU."%(id_field, cursor[id_field_idx]) for row in cursor
+                                    if cursor[f.index('VERT')] in ['TO','TU','MO','MU']
                                     if cursor[f.index('UHT')] != 0 and cursor[f.index('UAGE')] != 0
                                     if isinstance(cursor[f.index('UHT')],(int,float)) and isinstance(cursor[f.index('OHT')],(int,float)) and isinstance(cursor[f.index('OAGE')],(int,float)) and isinstance(cursor[f.index('UAGE')],(int,float))
                                     if (cursor[f.index('UHT')] > cursor[f.index('OHT')] - 3) and (cursor[f.index('UAGE')] > cursor[f.index('OAGE')] - 20)]
