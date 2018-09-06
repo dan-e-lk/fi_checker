@@ -19,20 +19,32 @@ lyrInfo = {
 # Lyr acronym            name                           mandatory fields                                            Data Type   Tech Spec       Tech Spec URL
 
     "AGG":  ["Forestry Aggregate Pits",                 ['PITID','REHABREQ','REHAB','PITCLOSE','TONNES'],           'point',    '4.3.18',       R.findPDF('FIM_AR_TechSpec_2017.pdf#page=114')],
+    "EST":  ["Establishment Assessment",                ['ARDSTGRP','SILVSYS','AGEEST','YRDEP','DSTBFU','SGR',
+                                                            'TARGETFU','TARGETYD','ESTIND','ESTFU','ESTYIELD',
+                                                            'SPCOMP','HT','DENSITY','STKG'],                        'polygon',  '4.3.15',       R.findPDF('FIM_AR_TechSpec_2017.pdf#page=87')],
+
     "FTG":  ["Free-To-Grow",                            ['ARDSTGRP','YRDEP','DSTBFU','SGR','TARGETFU','FTG',
                                                             'FTGFU','SPCOMP','HT','STKG'],                          'polygon',  '4.3.17',       R.findPDF('FIM_AR_TechSpec_2017.pdf#page=106')],
+
     "HRV":  ["Harvest Disturbance",                     ['BLOCKID','HARVCAT','SILVSYS','HARVMTHD','MGMTSTG',
                                                             'ESTAREA','SGR','DSTBFU','TARGETFU','TARGETYD','TRIAL',
                                                             'LOGMTHD'],                                             'polygon',  '4.3.8',        R.findPDF('FIM_AR_TechSpec_2017.pdf#page=29')],
+
     "NDB":  ["Natural Disturbance",                     ['NDEPCAT','VOLCON','VOLHWD','DSTBFU'],                     'polygon',  '4.3.7',        R.findPDF('FIM_AR_TechSpec_2017.pdf#page=25')],
+    "PER":  ["Performance Assessment",                  ['SILVSYS','PERFU','PERYIELD','SPCOMP','BHA','HT',
+                                                            'DENSITY','STKG','AGS','UGS'],                          'polygon',  '4.3.16',        R.findPDF('FIM_AR_TechSpec_2017.pdf#page=98')],
+
     "PRT":  ["Protection Treatment",                    ['TRTMTHD1','TRTCAT1','PRODTYPE','RATE_AI','APPNUM'],       'polygon',  '4.3.14',       R.findPDF('FIM_AR_TechSpec_2017.pdf#page=81')],
-    "RDS":  ["Road Construction and Road Use",          ['ROADID','CONSTRCT','DECOM','ACCESS','MAINTAIN','MONITOR'],'arc',      'A1.3',         'https://dr6j45jk9xcmk.cloudfront.net/documents/2834/fim-tech-spec-2013-aoda.pdf#page=72'],
-    "RGN":  ["Regeneration Treatment",                  ['TRTMTHD1','TRTCAT1'],                                     'polygon',  'A1.5',         'https://dr6j45jk9xcmk.cloudfront.net/documents/2834/fim-tech-spec-2013-aoda.pdf#page=82'],
-    "SCT":  ["Slash and Chip Treatment",                ['SLASHPIL','CHIPPIL','BURN','MECHANIC','REMOVAL'],         'arc',      'A1.12',        'https://dr6j45jk9xcmk.cloudfront.net/documents/2834/fim-tech-spec-2013-aoda.pdf#page=110'],
-    "SGR":  ["Silvicultural Ground Rule Update",        ['SGR'],                                                    'polygon',  'A1.11',        'https://dr6j45jk9xcmk.cloudfront.net/documents/2834/fim-tech-spec-2013-aoda.pdf#page=109'],
-    "SIP":  ["Site Preparation Treatment",              ['TRTMTHD1'],                                               'polygon',  'A1.6',         'https://dr6j45jk9xcmk.cloudfront.net/documents/2834/fim-tech-spec-2013-aoda.pdf#page=88'],
-    "TND":  ["Tending Treatment",                       ['TRTMTHD1'],                                               'polygon',  'A1.7',         'https://dr6j45jk9xcmk.cloudfront.net/documents/2834/fim-tech-spec-2013-aoda.pdf#page=92'],
-    "WTX":  ["Water Crossings",                         ['WATXID','WATXTYPE','CONSTRCT','MONITOR','REMOVE','ROADID'],'point',   'A1.4',        'https://dr6j45jk9xcmk.cloudfront.net/documents/2834/fim-tech-spec-2013-aoda.pdf#page=78']
+    "RDS":  ["Road Construction and Road Use",          ['ROADID',' ROADCLAS','CONSTRCT','DECOM','TRANS','ACCESS',
+                                                            'MAINTAIN','MONITOR','CONTROL1','CONTROL2'],            'arc',      '4.3.9',        R.findPDF('FIM_AR_TechSpec_2017.pdf#page=44')],
+
+    "RGN":  ["Regeneration Treatment",                  ['TRTMTHD1','TRTCAT1','ESTAREA','SP1','SP2'],               'polygon',  '4.3.11',       R.findPDF('FIM_AR_TechSpec_2017.pdf#page=59')],
+    "SCT":  ["Slash and Chip Treatment",                ['SLASHPIL','CHIPPIL','BURN','MECHANIC','REMOVAL'],         'arc',      '4.3.20',       R.findPDF('FIM_AR_TechSpec_2017.pdf#page=122')],
+    "SGR":  ["Silvicultural Ground Rule Update",        ['SGR','TARGETFU','TARGETYD','TRIAL'],                      'polygon',  '4.3.19',       R.findPDF('FIM_AR_TechSpec_2017.pdf#page=118')],
+    "SIP":  ["Site Preparation Treatment",              ['TRTMTHD1','TRTCAT1','PRODTYPE','RATE_AI','APPNUM'],       'polygon',  '4.3.12',       R.findPDF('FIM_AR_TechSpec_2017.pdf#page=68')],
+    "TND":  ["Tending Treatment",                       ['TRTMTHD1','TRTCAT1','PRODTYPE','RATE_AI','APPNUM'],       'polygon',  '4.3.13',       R.findPDF('FIM_AR_TechSpec_2017.pdf#page=74')],
+    "WTX":  ["Water Crossings",                         ['WATXID','WATXTYPE','CONSTRCT','MONITOR','REMOVE',
+                                                            'REPLACE','REVIEW','ROADID','TRANS'],                   'point',    '4.3.10',       R.findPDF('FIM_AR_TechSpec_2017.pdf#page=52')]
         }
 
 # vnull is used to check if an item is NULL or blank.
