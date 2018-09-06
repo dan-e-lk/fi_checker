@@ -18,11 +18,14 @@ verbose = True
 lyrInfo = {
 # Lyr acronym            name                           mandatory fields                                            Data Type   Tech Spec       Tech Spec URL
 
-    "AGG":  ["Forestry Aggregate Pits",                 ['PIT_ID','REHABREQ','REHAB','TONNES'],                     'point',    'A1.10',        'https://dr6j45jk9xcmk.cloudfront.net/documents/2834/fim-tech-spec-2013-aoda.pdf#page=106'],
-    "FTG":  ["Free-To-Grow",                            ['ARDSTGRP','YRDEP','DSTBFU','SGR','TARGETFU','FTG'],       'polygon',  'A1.9',         'https://dr6j45jk9xcmk.cloudfront.net/documents/2834/fim-tech-spec-2013-aoda.pdf#page=99'],
-    "HRV":  ["Harvest Disturbance",                     ['HARVCAT','SILVSYS','HARVMTHD','SGR','DSTBFU'],            'polygon',  'A1.2',         'https://dr6j45jk9xcmk.cloudfront.net/documents/2834/fim-tech-spec-2013-aoda.pdf#page=64'],
-    "NDB":  ["Natural Disturbance",                     ['NDEPCAT','VOLCON','VOLHWD','DSTBFU'],                     'polygon',  'A1.1',         'https://dr6j45jk9xcmk.cloudfront.net/documents/2834/fim-tech-spec-2013-aoda.pdf#page=61'],
-    "PRT":  ["Protection Treatment",                    ['TRTMTHD1'],                                               'polygon',  'A1.8',         'https://dr6j45jk9xcmk.cloudfront.net/documents/2834/fim-tech-spec-2013-aoda.pdf#page=96'],
+    "AGG":  ["Forestry Aggregate Pits",                 ['PITID','REHABREQ','REHAB','PITCLOSE','TONNES'],           'point',    '4.3.18',       R.findPDF('FIM_AR_TechSpec_2017.pdf#page=114')],
+    "FTG":  ["Free-To-Grow",                            ['ARDSTGRP','YRDEP','DSTBFU','SGR','TARGETFU','FTG',
+                                                            'FTGFU','SPCOMP','HT','STKG'],                          'polygon',  '4.3.17',       R.findPDF('FIM_AR_TechSpec_2017.pdf#page=106')],
+    "HRV":  ["Harvest Disturbance",                     ['BLOCKID','HARVCAT','SILVSYS','HARVMTHD','MGMTSTG',
+                                                            'ESTAREA','SGR','DSTBFU','TARGETFU','TARGETYD','TRIAL',
+                                                            'LOGMTHD'],                                             'polygon',  '4.3.8',        R.findPDF('FIM_AR_TechSpec_2017.pdf#page=29')],
+    "NDB":  ["Natural Disturbance",                     ['NDEPCAT','VOLCON','VOLHWD','DSTBFU'],                     'polygon',  '4.3.7',        R.findPDF('FIM_AR_TechSpec_2017.pdf#page=25')],
+    "PRT":  ["Protection Treatment",                    ['TRTMTHD1','TRTCAT1','PRODTYPE','RATE_AI','APPNUM'],       'polygon',  '4.3.14',       R.findPDF('FIM_AR_TechSpec_2017.pdf#page=81')],
     "RDS":  ["Road Construction and Road Use",          ['ROADID','CONSTRCT','DECOM','ACCESS','MAINTAIN','MONITOR'],'arc',      'A1.3',         'https://dr6j45jk9xcmk.cloudfront.net/documents/2834/fim-tech-spec-2013-aoda.pdf#page=72'],
     "RGN":  ["Regeneration Treatment",                  ['TRTMTHD1','TRTCAT1'],                                     'polygon',  'A1.5',         'https://dr6j45jk9xcmk.cloudfront.net/documents/2834/fim-tech-spec-2013-aoda.pdf#page=82'],
     "SCT":  ["Slash and Chip Treatment",                ['SLASHPIL','CHIPPIL','BURN','MECHANIC','REMOVAL'],         'arc',      'A1.12',        'https://dr6j45jk9xcmk.cloudfront.net/documents/2834/fim-tech-spec-2013-aoda.pdf#page=110'],
@@ -76,7 +79,6 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
                     artifact_count = recordCount - recordCount2
         arcpy.AddMessage("  Checking each record in %s (%s records, %s artifacts)..."%(lyr,recordCount, artifact_count))
         recordValCom[lyr].append("Total %s records (with %s artifacts)."%(recordCount, artifact_count))
-
 
 
 
