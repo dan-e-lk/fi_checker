@@ -468,90 +468,113 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
 
 
 
-        # ###########################  Checking HRV   ############################
+        ###########################  Checking HRV   ############################
 
-        # if lyrAcro == "HRV":
-        #     try: # need try and except block here for cases such as not having mandatory fields.
-        #     # HARVCAT
-        #         errorList = ["Error on %s %s: HARVCAT must be populated and follow the correct coding scheme."%(id_field, cursor[id_field_idx]) for row in cursor
-        #                         if cursor[HARVCAT] not in ['REGULAR','BRIDGING','REDIRECT','ROADROW','ACCELER','FRSTPASS','SCNDPASS','SALVAGE']]
-        #         cursor.reset()
-        #         if len(errorList) > 0:
-        #             errorDetail[lyr].append(errorList)
-        #             criticalError += 1
-        #             recordValCom[lyr].append("Error on %s record(s): HARVCAT must be populated and follow the correct coding scheme (A1.2.1)."%len(errorList))
+        if lyrAcro == "HRV":
+            try: # need try and except block here for cases such as not having mandatory fields.
 
-        #         errorList = ["Error on %s %s: HARVCAT = BRIDGING is the only available when AR year is equal to the FMP start year."%(id_field, cursor[id_field_idx]) for row in cursor
-        #                         if cursor[HARVCAT] == 'BRIDGING'
-        #                         if year != fmpStartYear]
-        #         cursor.reset()
-        #         if len(errorList) > 0:
-        #             errorDetail[lyr].append(errorList)
-        #             criticalError += 1
-        #             recordValCom[lyr].append("Error on %s record(s): BRIDGING is the only available when AR year is equal to the FMP start year (A1.2.1)."%len(errorList))
+            #BLOCKID  **new in 2017
+                # The population of this attribute is mandatory where plan start year is greater than or equal to 2019
+                # A blank or null value is not a valid code where plan start is greater than or equal to 2019
+                if fmpStartYear >= 2019:
+                    errorList = ["Error on %s %s: BLOCKID must be populated where plan start year is greater than or equal to 2019."%(id_field, cursor[id_field_idx]) for row in cursor
+                                    if cursor[BLOCKID] in vnull]
+                    cursor.reset()
+                    if len(errorList) > 0:
+                        errorDetail[lyr].append(errorList)
+                        criticalError += 1
+                        recordValCom[lyr].append("Error on %s record(s): BLOCKID must be populated where plan start year is greater than or equal to 2019."%len(errorList))
 
-        #     # SILVSYS
-        #         errorList = ["Error on %s %s: SILVSYS must be populated with the correct coding scheme."%(id_field, cursor[id_field_idx]) for row in cursor
-        #                         if cursor[SILVSYS] not in ['CC','SE','SH']]
-        #         cursor.reset()
-        #         if len(errorList) > 0:
-        #             errorDetail[lyr].append(errorList)
-        #             criticalError += 1
-        #             recordValCom[lyr].append("Error on %s record(s): SILVSYS must be populated with the correct coding scheme (A1.2.2)."%len(errorList))
 
-        #     # HARVMTHD
-        #         errorList = ["Error on %s %s: HARVMTHD must be populated with the correct coding scheme."%(id_field, cursor[id_field_idx]) for row in cursor
-        #                         if cursor[HARVMTHD] not in ['CONVENTION','BLOCKSTRIP','PATCH','SEEDTREE','HARP','THINCOM','UNIFORM','STRIP','GROUPSH','SINGLETREE','GROUPSE']]
-        #         cursor.reset()
-        #         if len(errorList) > 0:
-        #             errorDetail[lyr].append(errorList)
-        #             criticalError += 1
-        #             recordValCom[lyr].append("Error on %s record(s): HARVMTHD must be populated with the correct coding scheme (A1.2.3)."%len(errorList))
+            # HARVCAT
+                # The population of this attribute is mandatory
+                # The attribute population must follow the correct coding scheme
+                # A blank or null value is not a valid code
+                errorList = ["Error on %s %s: HARVCAT must be populated and follow the correct coding scheme."%(id_field, cursor[id_field_idx]) for row in cursor
+                                if cursor[HARVCAT] not in ['REGULAR','BRIDGING','REDIRECT','ROADROW','ACCELER','FRSTPASS','SCNDPASS','SALVAGE']]
+                cursor.reset()
+                if len(errorList) > 0:
+                    errorDetail[lyr].append(errorList)
+                    criticalError += 1
+                    recordValCom[lyr].append("Error on %s record(s): HARVCAT must be populated and follow the correct coding scheme."%len(errorList))
 
-        #         # SILVSYS = SE
-        #         errorList = ["Error on %s %s: HARVMTHD = SINGLETREE or GROUPSE is only valid if SILVSYS = SE."%(id_field, cursor[id_field_idx]) for row in cursor
-        #                         if cursor[HARVMTHD] in ['SINGLETREE','GROUPSE']
-        #                         if cursor[SILVSYS] != 'SE' ]
-        #         cursor.reset()
-        #         if len(errorList) > 0:
-        #             errorDetail[lyr].append(errorList)
-        #             criticalError += 1
-        #             recordValCom[lyr].append("Error on %s record(s): HARVMTHD = SINGLETREE or GROUPSE is only valid if SILVSYS = SE (A1.2.3)."%len(errorList))
+                # Bridging (HARVCAT = BRIDGING) is only available when the AR start year is equal to the first year of the plan period
+                errorList = ["Error on %s %s: HARVCAT = BRIDGING is the only available when AR year is equal to the first year of the plan period."%(id_field, cursor[id_field_idx]) for row in cursor
+                                if cursor[HARVCAT] == 'BRIDGING' and year != fmpStartYear]
+                cursor.reset()
+                if len(errorList) > 0:
+                    errorDetail[lyr].append(errorList)
+                    criticalError += 1
+                    recordValCom[lyr].append("Error on %s record(s): HARVCAT = BRIDGING is the only available when AR year is equal to the first year of the plan period."%len(errorList))
 
-        #         # SILVSYS = SH
-        #         errorList = ["Error on %s %s: HARVMTHD = UNIFORM, STRIP or GROUPSH is only valid if SILVSYS = SH."%(id_field, cursor[id_field_idx]) for row in cursor
-        #                         if cursor[HARVMTHD] in ['UNIFORM','STRIP','GROUPSH']
-        #                         if cursor[SILVSYS] != 'SH' ]
-        #         cursor.reset()
-        #         if len(errorList) > 0:
-        #             errorDetail[lyr].append(errorList)
-        #             criticalError += 1
-        #             recordValCom[lyr].append("Error on %s record(s): HARVMTHD = UNIFORM, STRIP or GROUPSH is only valid if SILVSYS = SH (A1.2.3)."%len(errorList))
+            # SILVSYS
+                # The population of this attribute is mandatory
+                # The attribute population must follow the correct coding scheme
+                # A blank or null value is not a valid code
+                errorList = ["Error on %s %s: SILVSYS must be populated with the correct coding scheme."%(id_field, cursor[id_field_idx]) for row in cursor
+                                if cursor[SILVSYS] not in ['CC','SE','SH']]
+                cursor.reset()
+                if len(errorList) > 0:
+                    errorDetail[lyr].append(errorList)
+                    criticalError += 1
+                    recordValCom[lyr].append("Error on %s record(s): SILVSYS must be populated with the correct coding scheme."%len(errorList))
 
-        #         # SILVSYS = CC
-        #         errorList = ["Error on %s %s: HARVMTHD = CONVENTION, BLOCKSTRIP, PATCH, SEEDTREE, or HARP is only available if SILVSYS = CC."%(id_field, cursor[id_field_idx]) for row in cursor
-        #                         if cursor[HARVMTHD] in ['CONVENTION','BLOCKSTRIP','PATCH','SEEDTREE','HARP']
-        #                         if cursor[SILVSYS] != 'CC' ]
-        #         cursor.reset()
-        #         if len(errorList) > 0:
-        #             errorDetail[lyr].append(errorList)
-        #             criticalError += 1
-        #             recordValCom[lyr].append("Error on %s record(s): HARVMTHD = CONVENTION, BLOCKSTRIP, PATCH, SEEDTREE, or HARP is only available if SILVSYS = CC (A1.2.3)."%len(errorList))
+            # HARVMTHD
+                # The population of this attribute is mandatory
+                # The attribute population must follow the correct coding scheme
+                # A blank or null value is not a valid code
+                errorList = ["Error on %s %s: HARVMTHD must be populated with the correct coding scheme."%(id_field, cursor[id_field_idx]) for row in cursor
+                                if cursor[HARVMTHD] not in ['CONVENTION','BLOCKSTRIP','PATCH','SEEDTREE','HARP','THINCOM','UNIFORM','STRIP','GROUPSH','SINGLETREE','GROUPSE']]
+                cursor.reset()
+                if len(errorList) > 0:
+                    errorDetail[lyr].append(errorList)
+                    criticalError += 1
+                    recordValCom[lyr].append("Error on %s record(s): HARVMTHD must be populated with the correct coding scheme."%len(errorList))
 
-        #         # HARVMTHD = THINCOM
-        #         errorList = ["Error on %s %s: HARVMTHD = THINCOM is only available if SILVSYS = CC or SH."%(id_field, cursor[id_field_idx]) for row in cursor
-        #                         if cursor[HARVMTHD] == 'THINCOM'
-        #                         if cursor[SILVSYS] not in ['CC','SH'] ]
-        #         cursor.reset()
-        #         if len(errorList) > 0:
-        #             errorDetail[lyr].append(errorList)
-        #             criticalError += 1
-        #             recordValCom[lyr].append("Error on %s record(s): HARVMTHD = THINCOM is only available if SILVSYS = CC or SH (A1.2.3)."%len(errorList))
+                # The single-tree (SINGLETREE) and group selection (GROUPSE) are only valid codes when SILVSYS = SE
+                errorList = ["Error on %s %s: HARVMTHD = SINGLETREE or GROUPSE is only valid if SILVSYS = SE."%(id_field, cursor[id_field_idx]) for row in cursor
+                                if cursor[HARVMTHD] in ['SINGLETREE','GROUPSE']
+                                if cursor[SILVSYS] != 'SE' ]
+                cursor.reset()
+                if len(errorList) > 0:
+                    errorDetail[lyr].append(errorList)
+                    criticalError += 1
+                    recordValCom[lyr].append("Error on %s record(s): HARVMTHD = SINGLETREE or GROUPSE is only valid if SILVSYS = SE."%len(errorList))
 
-        #     # count where SILVSYS = SH
-        #         silv_sh_list = ["SH" for row in cursor if cursor[SILVSYS] == 'SH']
-        #         cursor.reset()
-        #         silv_sh_count = len(silv_sh_list)
+                # The uniform (UNIFORM), strip (STRIP) and group shelterwood (GROUPSH) are only valide codes when SILVSYS = SH
+                errorList = ["Error on %s %s: HARVMTHD: UNIFORM, STRIP or GROUPSH are only valid codes when SILVSYS = SH."%(id_field, cursor[id_field_idx]) for row in cursor
+                                if cursor[HARVMTHD] in ['UNIFORM','STRIP','GROUPSH']
+                                if cursor[SILVSYS] != 'SH' ]
+                cursor.reset()
+                if len(errorList) > 0:
+                    errorDetail[lyr].append(errorList)
+                    criticalError += 1
+                    recordValCom[lyr].append("Error on %s record(s): HARVMTHD: UNIFORM, STRIP or GROUPSH are only valid codes when SILVSYS = SH."%len(errorList))
+
+                # The conventional, block or strip, patch, seed-tree and harvesting with regeneration protection (CONVENTION, BLOCKSTRIP, PATCH, SEEDTREE, or HARP) are only valid when SILVSYS = CC
+                errorList = ["Error on %s %s: HARVMTHD: CONVENTION, BLOCKSTRIP, PATCH, SEEDTREE, or HARP is only available when SILVSYS = CC."%(id_field, cursor[id_field_idx]) for row in cursor
+                                if cursor[HARVMTHD] in ['CONVENTION','BLOCKSTRIP','PATCH','SEEDTREE','HARP']
+                                if cursor[SILVSYS] != 'CC' ]
+                cursor.reset()
+                if len(errorList) > 0:
+                    errorDetail[lyr].append(errorList)
+                    criticalError += 1
+                    recordValCom[lyr].append("Error on %s record(s): HARVMTHD: CONVENTION, BLOCKSTRIP, PATCH, SEEDTREE, or HARP is only available when SILVSYS = CC."%len(errorList))
+
+                # The commercial thinning (THINCOM) is valid for either the clear cut or the shelterwood silviculture system.
+                errorList = ["Error on %s %s: HARVMTHD: THINCOM is valid only if SILVSYS is CC or SH."%(id_field, cursor[id_field_idx]) for row in cursor
+                                if cursor[HARVMTHD] == 'THINCOM'
+                                if cursor[SILVSYS] not in ['CC','SH'] ]
+                cursor.reset()
+                if len(errorList) > 0:
+                    errorDetail[lyr].append(errorList)
+                    criticalError += 1
+                    recordValCom[lyr].append("Error on %s record(s): HARVMTHD: THINCOM is valid only if SILVSYS is CC or SH."%len(errorList))
+
+            # count where SILVSYS = SH
+                silv_sh_list = ["SH" for row in cursor if cursor[SILVSYS] == 'SH']
+                cursor.reset()
+                silv_sh_count = len(silv_sh_list)
 
         #     # MGMTSTG
         #         if 'MGMTSTG' in f:
