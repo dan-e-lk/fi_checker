@@ -571,90 +571,124 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
                     criticalError += 1
                     recordValCom[lyr].append("Error on %s record(s): HARVMTHD: THINCOM is valid only if SILVSYS is CC or SH."%len(errorList))
 
-            # count where SILVSYS = SH
-                silv_sh_list = ["SH" for row in cursor if cursor[SILVSYS] == 'SH']
+            # MGMTSTG
+                # The population of this attribute is mandatory where SILVSYS = SH
+                errorList = ["Error on %s %s: MGMTSTG must be populated if SILVSYS = SH."%(id_field, cursor[id_field_idx]) for row in cursor
+                                if cursor[SILVSYS] == 'SH'
+                                if cursor[MGMTSTG] in vnull]
                 cursor.reset()
-                silv_sh_count = len(silv_sh_list)
+                if len(errorList) > 0:
+                    errorDetail[lyr].append(errorList)
+                    criticalError += 1
+                    recordValCom[lyr].append("Error on %s record(s): MGMTSTG must be populated if SILVSYS = SH."%len(errorList))
 
-        #     # MGMTSTG
-        #         if 'MGMTSTG' in f:
-        #             errorList = ["Error on %s %s: MGMTSTG must follow the correct coding scheme if populated."%(id_field, cursor[id_field_idx]) for row in cursor
-        #                             if cursor[MGMTSTG] not in vnull
-        #                             if cursor[MGMTSTG] not in ['PREPCUT','SEEDCUT','FIRSTCUT','LASTCUT']]
-        #             cursor.reset()
-        #             if len(errorList) > 0:
-        #                 errorDetail[lyr].append(errorList)
-        #                 criticalError += 1
-        #                 recordValCom[lyr].append("Error on %s record(s): MGMTSTG must follow the correct coding scheme if populated (A1.2.4)."%len(errorList))
+                # The attribute population must follow the correct coding scheme
+                # A blank or null value is a valid code
+                errorList = ["Error on %s %s: MGMTSTG must follow the correct coding scheme if populated."%(id_field, cursor[id_field_idx]) for row in cursor
+                                if cursor[MGMTSTG] not in vnull
+                                if cursor[MGMTSTG] not in ['PREPCUT','SEEDCUT','FIRSTCUT','LASTCUT']]
+                cursor.reset()
+                if len(errorList) > 0:
+                    errorDetail[lyr].append(errorList)
+                    criticalError += 1
+                    recordValCom[lyr].append("Error on %s record(s): MGMTSTG must follow the correct coding scheme if populated."%len(errorList))
 
-        #             errorList = ["Error on %s %s: MGMTSTG must be populated with the correct coding scheme if SILVSYS = SH."%(id_field, cursor[id_field_idx]) for row in cursor
-        #                             if cursor[SILVSYS] == 'SH'
-        #                             if cursor[MGMTSTG] not in ['PREPCUT','SEEDCUT','FIRSTCUT','LASTCUT']]
-        #             cursor.reset()
-        #             if len(errorList) > 0:
-        #                 errorDetail[lyr].append(errorList)
-        #                 criticalError += 1
-        #                 recordValCom[lyr].append("Error on %s record(s): MGMTSTG must be populated with the correct coding scheme if SILVSYS = SH (A1.2.4)."%len(errorList))
+                # The stage of management will be blank (MGMTSTG = null) when the silviculture system is either selection or clearcut, or the harvest method is commercial thinning. (SILVSYS = SE or CC   OR HARVMTHD = THINCOM)
+                errorList = ["Error on %s %s: MGMTSTG must be null if SILVSYS = SE or CC or if HARVMTHD = THINCOM."%(id_field, cursor[id_field_idx]) for row in cursor
+                                if cursor[SILVSYS] in ['SE','CC'] or cursor[HARVMTHD] == 'THINCOM'
+                                if cursor[MGMTSTG] not in vnull]
+                cursor.reset()
+                if len(errorList) > 0:
+                    errorDetail[lyr].append(errorList)
+                    criticalError += 1
+                    recordValCom[lyr].append("Error on %s record(s): MGMTSTG must be null if SILVSYS = SE or CC or if HARVMTHD = THINCOM."%len(errorList))
 
-        #             errorList = ["Error on %s %s: MGMTSTG must be null if SILVSYS = SE or CC or if HARVMTHD = THINCOM."%(id_field, cursor[id_field_idx]) for row in cursor
-        #                             if cursor[SILVSYS] in ['SE','CC'] or cursor[HARVMTHD] == 'THINCOM'
-        #                             if cursor[MGMTSTG] not in vnull]
-        #             cursor.reset()
-        #             if len(errorList) > 0:
-        #                 errorDetail[lyr].append(errorList)
-        #                 criticalError += 1
-        #                 recordValCom[lyr].append("Error on %s record(s): MGMTSTG must be null if SILVSYS = SE or CC or if HARVMTHD = THINCOM (A1.2.4)."%len(errorList))
+            # ESTAREA
+                # the population of this attribute is mandatory where HARVMTH = BLCKSTRIP
+                # A zero (or null) value is not a valid code
+                # The attibute population must follow the correct format (if populated)
+                errorList = ["Error on %s %s: ESTAREA must be between 0.01 and 1 and zero or null is not a valid code."%(id_field, cursor[id_field_idx]) for row in cursor
+                                if cursor[ESTAREA] in vnull or cursor[ESTAREA] < 0.01 or cursor[ESTAREA] > 1]
+                cursor.reset()
+                if len(errorList) > 0:
+                    errorDetail[lyr].append(errorList)
+                    criticalError += 1
+                    recordValCom[lyr].append("Error on %s record(s): ESTAREA must be between 0.01 and 1 and zero or null is not a valid code."%len(errorList))
 
-        #         elif silv_sh_count > 0:
-        #            fieldValComUpdate[lyr].append("Missing MGMTSTG: The presence of MGMTSTG field is mandatory where SILVSYS = SH.")
-        #            fieldValUpdate[lyr] = 'Invalid'
+            # SGR
+                # The population of this attribute is mandatory
+                # A blank or null value is a valid code where HARVCAT = ROADROW
+                errorList = ["Error on %s %s: SGR must be populated unless HARVCAT = ROADROW."%(id_field, cursor[id_field_idx]) for row in cursor
+                                if cursor[HARVCAT] != 'ROADROW'
+                                if cursor[SGR] in vnull]
+                cursor.reset()
+                if len(errorList) > 0:
+                    errorDetail[lyr].append(errorList)
+                    criticalError += 1
+                    recordValCom[lyr].append("Error on %s record(s): SGR must be populated unless HARVCAT = ROADROW."%len(errorList))
 
-        #     # count where HARVMTHD = BLOCKSTRIP
-        #         harvm_blkstr_list = ["blk" for row in cursor if cursor[HARVMTHD] == 'BLOCKSTRIP']
-        #         cursor.reset()
-        #         harvm_blkstr_count = len(harvm_blkstr_list)            
+            # DSTBFU
+                # The population of this attribute is mandatory
+                # A blank or null value is not a valid code            
+                errorList = ["Error on %s %s: DSTBFU must be populated."%(id_field, cursor[id_field_idx]) for row in cursor
+                                if cursor[DSTBFU] in vnull]
+                cursor.reset()
+                if len(errorList) > 0:
+                    errorDetail[lyr].append(errorList)
+                    criticalError += 1
+                    recordValCom[lyr].append("Error on %s record(s): DSTBFU must be populated."%len(errorList))
 
-        #     # ESTAREA
-        #         if 'ESTAREA' in f:
-        #             errorList = ["Error on %s %s: ESTAREA must be between 0.01 and 1 if HARVMTHD = BLOCKSTRIP."%(id_field, cursor[id_field_idx]) for row in cursor
-        #                             if cursor[HARVMTHD] == 'BLOCKSTRIP'
-        #                             if cursor[ESTAREA] < 0.01 or cursor[ESTAREA] > 1]
-        #             cursor.reset()
-        #             if len(errorList) > 0:
-        #                 errorDetail[lyr].append(errorList)
-        #                 criticalError += 1
-        #                 recordValCom[lyr].append("Error on %s record(s): ESTAREA must be between 0.01 and 1 if HARVMTHD = BLOCKSTRIP (A1.2.5)."%len(errorList))
+            # TARGETFU
+                # The population of this attribute is mandatory
+                # A blank or null value is not a valid code            
+                errorList = ["Error on %s %s: TARGETFU must be populated."%(id_field, cursor[id_field_idx]) for row in cursor
+                                if cursor[TARGETFU] in vnull]
+                cursor.reset()
+                if len(errorList) > 0:
+                    errorDetail[lyr].append(errorList)
+                    criticalError += 1
+                    recordValCom[lyr].append("Error on %s record(s): TARGETFU must be populated."%len(errorList))
 
-        #         elif harvm_blkstr_count > 0:
-        #            fieldValComUpdate[lyr].append("Missing ESTAREA: The presence of ESTAREA field is mandatory where HARVMTHD = BLOCKSTRIP.")
-        #            fieldValUpdate[lyr] = 'Invalid'
+            # TARGETYD
+                # The population of this attribute is mandatory where silviculture system is clearcut or shelterwood (SILVSYS = CC or SH)
+                # A blank or null value is not a valid code where silviculture system is clearcut or shelterwood (SILVSYS = CC or SH)        
+                errorList = ["Error on %s %s: TARGETYD must be populated where SILVSYS = CC or SH."%(id_field, cursor[id_field_idx]) for row in cursor
+                                if cursor[SILVSYS] in ['CC','SH']
+                                if cursor[TARGETYD] in vnull]
+                cursor.reset()
+                if len(errorList) > 0:
+                    errorDetail[lyr].append(errorList)
+                    criticalError += 1
+                    recordValCom[lyr].append("Error on %s record(s): TARGETYD must be populated where SILVSYS = CC or SH."%len(errorList))
 
-        #     # SGR
-        #         errorList = ["Error on %s %s: SGR must be populated unless HARVCAT = ROADROW."%(id_field, cursor[id_field_idx]) for row in cursor
-        #                         if cursor[HARVCAT] != 'ROADROW'
-        #                         if cursor[SGR] in vnull]
-        #         cursor.reset()
-        #         if len(errorList) > 0:
-        #             errorDetail[lyr].append(errorList)
-        #             criticalError += 1
-        #             recordValCom[lyr].append("Error on %s record(s): SGR must be populated unless HARVCAT = ROADROW (A1.2.6)."%len(errorList))
+            # TRIAL
+                # The population of this attribute is mandatory
+                # A blank or null value is not a valid code            
+                errorList = ["Error on %s %s: TRIAL must be populated with Y or N and blank or null value is not a valid code."%(id_field, cursor[id_field_idx]) for row in cursor
+                                if cursor[TRIAL] not in ['Y','N']]
+                cursor.reset()
+                if len(errorList) > 0:
+                    errorDetail[lyr].append(errorList)
+                    criticalError += 1
+                    recordValCom[lyr].append("Error on %s record(s): TRIAL must be populated with Y or N and blank or null value is not a valid code."%len(errorList))                    
 
-        #     # DSTBFU
-        #         errorList = ["Error on %s %s: DSTBFU must be populated."%(id_field, cursor[id_field_idx]) for row in cursor
-        #                         if cursor[DSTBFU] in vnull]
-        #         cursor.reset()
-        #         if len(errorList) > 0:
-        #             errorDetail[lyr].append(errorList)
-        #             criticalError += 1
-        #             recordValCom[lyr].append("Error on %s record(s): DSTBFU must be populated (A1.2.7)."%len(errorList))
+            # LOGMTHD
+                # The attribute population must follow the correct coding scheme
+                # A blank or null value is not a valid code            
+                errorList = ["Error on %s %s: LOGMTHD must be populated with FT, CL or TL and blank or null value is not a valid code."%(id_field, cursor[id_field_idx]) for row in cursor
+                                if cursor[LOGMTHD] in vnull]
+                cursor.reset()
+                if len(errorList) > 0:
+                    errorDetail[lyr].append(errorList)
+                    criticalError += 1
+                    recordValCom[lyr].append("Error on %s record(s): LOGMTHD must be populated with FT, CL or TL and blank or null value is not a valid code."%len(errorList))
 
-
-        #     except ValueError:
-        #         recordValCom[lyr].append("***Unable to run full validation on %s due to missing mandatory field(s)"%lyr)
-        #         criticalError += 1
-        #     except NameError:
-        #         recordValCom[lyr].append("***Unable to run full validation on %s due to unexpected error."%lyr)
-        #         systemError = True
+            except ValueError:
+                recordValCom[lyr].append("***Unable to run full validation on %s due to missing mandatory field(s)"%lyr)
+                criticalError += 1
+            except NameError:
+                recordValCom[lyr].append("***Unable to run full validation on %s due to unexpected error."%lyr)
+                systemError = True
 
 
 
