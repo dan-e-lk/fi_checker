@@ -692,181 +692,201 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
 
 
 
-        # ###########################  Checking NDB   ############################
+        ###########################  Checking NDB   ############################
 
-        # if lyrAcro == "NDB":
-        #     try: # need try and except block here for cases such as not having mandatory fields.
+        if lyrAcro == "NDB":
+            try: # need try and except block here for cases such as not having mandatory fields.
 
-        #     # NDEPCAT
-        #         errorList = ["Error on %s %s: NDEPCAT must be populated with the correct coding scheme."%(id_field, cursor[id_field_idx]) for row in cursor
-        #                         if cursor[NDEPCAT] not in ['BLOWDOWN','DISEASE','DROUGHT','FIRE','FLOOD','ICE','INSECTS','SNOW']]
-        #         cursor.reset()
-        #         if len(errorList) > 0:
-        #             errorDetail[lyr].append(errorList)
-        #             criticalError += 1
-        #             recordValCom[lyr].append("Error on %s record(s): NDEPCAT must be populated with the correct coding scheme (A1.1.1)."%len(errorList))
+            # NDEPCAT
+                # The population of this attribute is mandatory
+                # The attribute population must follow the correct coding scheme
+                # A blank or null value is not a valid code
+                errorList = ["Error on %s %s: NDEPCAT must be populated with the correct coding scheme."%(id_field, cursor[id_field_idx]) for row in cursor
+                                if cursor[NDEPCAT] not in ['BLOWDOWN','DISEASE','DROUGHT','FIRE','FLOOD','ICE','INSECTS','SNOW']]
+                cursor.reset()
+                if len(errorList) > 0:
+                    errorDetail[lyr].append(errorList)
+                    criticalError += 1
+                    recordValCom[lyr].append("Error on %s record(s): NDEPCAT must be populated with the correct coding scheme."%len(errorList))
 
-        #     # VOLCON
-        #         errorList = ["Error on %s %s: VOLCON must be between 0 and 9,999,999."%(id_field, cursor[id_field_idx]) for row in cursor
-        #                         if cursor[VOLCON] < 0 or cursor[VOLCON] > 9999999 ]
-        #         cursor.reset()
-        #         if len(errorList) > 0:
-        #             errorDetail[lyr].append(errorList)
-        #             criticalError += 1
-        #             recordValCom[lyr].append("Error on %s record(s): VOLCON must be between 0 and 9,999,999 (A1.1.2)."%len(errorList))
+            # VOLCON
+                # The attribute population must follow the correct format
+                errorList = ["Error on %s %s: VOLCON must be between 0 and 9,999,999 if populated."%(id_field, cursor[id_field_idx]) for row in cursor
+                                if cursor[VOLCON] not in vnull
+                                if cursor[VOLCON] < 0 or cursor[VOLCON] > 9999999 ]
+                cursor.reset()
+                if len(errorList) > 0:
+                    errorDetail[lyr].append(errorList)
+                    criticalError += 1
+                    recordValCom[lyr].append("Error on %s record(s): VOLCON must be between 0 and 9,999,999 if populated."%len(errorList))
 
-        #     # VOLHWD
-        #         errorList = ["Error on %s %s: VOLHWD must be between 0 and 9,999,999."%(id_field, cursor[id_field_idx]) for row in cursor
-        #                         if cursor[VOLHWD] < 0 or cursor[VOLHWD] > 9999999 ]
-        #         cursor.reset()
-        #         if len(errorList) > 0:
-        #             errorDetail[lyr].append(errorList)
-        #             criticalError += 1
-        #             recordValCom[lyr].append("Error on %s record(s): VOLHWD must be between 0 and 9,999,999 (A1.1.3)."%len(errorList))
+            # VOLHWD
+                # The attribute population must follow the correct format            
+                errorList = ["Error on %s %s: VOLHWD must be between 0 and 9,999,999 if populated."%(id_field, cursor[id_field_idx]) for row in cursor
+                                if cursor[VOLHWD] not in vnull
+                                if cursor[VOLHWD] < 0 or cursor[VOLHWD] > 9999999 ]
+                cursor.reset()
+                if len(errorList) > 0:
+                    errorDetail[lyr].append(errorList)
+                    criticalError += 1
+                    recordValCom[lyr].append("Error on %s record(s): VOLHWD must be between 0 and 9,999,999 if populated."%len(errorList))
 
-        #     # VOLCON and VOLHWD cannot both be zero
-        #         errorList = ["Error on %s %s: VOLCON and VOLHWD cannot both be zero."%(id_field, cursor[id_field_idx]) for row in cursor
-        #                         if cursor[VOLCON] in [0, None] and cursor[VOLHWD] in [0, None]]
-        #         cursor.reset()
-        #         if len(errorList) > 0:
-        #             errorDetail[lyr].append(errorList)
-        #             criticalError += 1
-        #             recordValCom[lyr].append("Error on %s record(s): VOLCON and VOLHWD cannot both be zero (A1.1.2, A1.1.3)."%len(errorList))
+            # # VOLCON and VOLHWD cannot both be zero  # this no longer applicable in 2017 tech spec.
+            #     errorList = ["Error on %s %s: VOLCON and VOLHWD cannot both be zero."%(id_field, cursor[id_field_idx]) for row in cursor
+            #                     if cursor[VOLCON] in [0, None] and cursor[VOLHWD] in [0, None]]
+            #     cursor.reset()
+            #     if len(errorList) > 0:
+            #         errorDetail[lyr].append(errorList)
+            #         criticalError += 1
+            #         recordValCom[lyr].append("Error on %s record(s): VOLCON and VOLHWD cannot both be zero (A1.1.2, A1.1.3)."%len(errorList))
 
-        #     # DSTBFU
-        #         errorList = ["Error on %s %s: DSTBFU must be populated."%(id_field, cursor[id_field_idx]) for row in cursor
-        #                         if cursor[DSTBFU] in vnull]
-        #         cursor.reset()
-        #         if len(errorList) > 0:
-        #             errorDetail[lyr].append(errorList)
-        #             criticalError += 1
-        #             recordValCom[lyr].append("Error on %s record(s): DSTBFU must be populated (A1.1.4)."%len(errorList))
+            # DSTBFU
+                # The population of this attribute is mandatory
+                # A blank or null value is not a valid code
+                errorList = ["Error on %s %s: DSTBFU must be populated."%(id_field, cursor[id_field_idx]) for row in cursor
+                                if cursor[DSTBFU] in vnull]
+                cursor.reset()
+                if len(errorList) > 0:
+                    errorDetail[lyr].append(errorList)
+                    criticalError += 1
+                    recordValCom[lyr].append("Error on %s record(s): DSTBFU must be populated."%len(errorList))
 
-        #     except ValueError:
-        #         recordValCom[lyr].append("***Unable to run full validation on %s due to missing mandatory field(s)"%lyr)
-        #         criticalError += 1
-        #     except NameError:
-        #         recordValCom[lyr].append("***Unable to run full validation on %s due to unexpected error."%lyr)
-        #         systemError = True
-
-
-        # ###########################  Checking PRT   ############################
-
-        # if lyrAcro == "PRT":
-        #     try: # need try and except block here for cases such as not having mandatory fields.
-
-        #     # TRTMTHD1
-        #         errorList = ["Error on %s %s: TRTMTHD1 must be populated and must follow the correct coding scheme."%(id_field, cursor[id_field_idx]) for row in cursor
-        #                         if cursor[SILVSYS] not in ['PCHEMA','PCHEMG','PMANUAL']]
-        #         cursor.reset()
-        #         if len(errorList) > 0:
-        #             errorDetail[lyr].append(errorList)
-        #             criticalError += 1
-        #             recordValCom[lyr].append("Error on %s record(s): TRTMTHD1 must be populated and must follow the correct coding scheme (A1.8.1)."%len(errorList))
-
-        #     # TRTMTHD2
-        #         if 'TRTMTHD2' in f:
-        #             errorList = ["Error on %s %s: If TRTMTHD2 is populated then TRTMTHD1 must also be populated and TRTMTHD2 must follow the correct coding scheme."%cursor[f.index('OBJECTID')] for row in cursor
-        #                             if (cursor[TRTMTHD1] in vnull and cursor[TRTMTHD2] not in vnull)
-        #                             or cursor[TRTMTHD2] not in vnull + ['PCHEMA','PCHEMG','PMANUAL']]
-        #             cursor.reset()
-        #             if len(errorList) > 0:
-        #                 errorDetail[lyr].append(errorList)
-        #                 criticalError += 1
-        #                 recordValCom[lyr].append("Error on %s record(s): If TRTMTHD2 is populated then TRTMTHD1 must also be populated and TRTMTHD2 must follow the correct coding scheme (A1.8.1)."%len(errorList))
-
-        #     # TRTMTHD3
-        #         if 'TRTMTHD3' in f:
-        #             if 'TRTMTHD2' in f:
-        #                 errorList = ["Error on %s %s: If TRTMTHD3 is populated then TRTMTHD1 and TRTMTHD2 must also be populated and TRTMTHD3 must follow the correct coding scheme."%cursor[f.index('OBJECTID')] for row in cursor
-        #                                 if ((cursor[TRTMTHD1] in vnull or cursor[TRTMTHD2] in vnull) and cursor[TRTMTHD3] not in vnull)
-        #                                 or cursor[TRTMTHD3] not in vnull + ['PCHEMA','PCHEMG','PMANUAL']]
-        #                 cursor.reset()
-        #                 if len(errorList) > 0:
-        #                     errorDetail[lyr].append(errorList)
-        #                     criticalError += 1
-        #                     recordValCom[lyr].append("Error on %s record(s): If TRTMTHD3 is populated then TRTMTHD1 and TRTMTHD2 must also be populated and TRTMTHD3 must follow the correct coding scheme (A1.8.1)."%len(errorList))
-        #             else:
-        #                 fieldValUpdate[lyr] = 'Invalid'
-        #                 fieldValComUpdate[lyr].append('TRTMTHD2 is mandatory when TRTMTHD3 is present.')
-
-        #     # TRTCAT1
-        #         if 'TRTCAT1' in f:
-        #             errorList = ["Error on %s %s: TRTCAT1 must be populated with the correct coding scheme if populated."%(id_field, cursor[id_field_idx]) for row in cursor
-        #                             if cursor[SILVSYS] not in ['REG','RET','SUP'] + vnull]
-        #             cursor.reset()
-        #             if len(errorList) > 0:
-        #                 errorDetail[lyr].append(errorList)
-        #                 criticalError += 1
-        #                 recordValCom[lyr].append("Error on %s record(s): TRTCAT1 must be populated with the correct coding scheme if populated (A1.8.2)."%len(errorList))
-
-        #     # TRTCAT2
-        #         if 'TRTCAT2' in f:
-        #             errorList = ["Error on %s %s: TRTCAT2 must be populated with the correct coding scheme if populated."%(id_field, cursor[id_field_idx]) for row in cursor
-        #                             if cursor[SILVSYS] not in ['REG','RET','SUP'] + vnull]
-        #             cursor.reset()
-        #             if len(errorList) > 0:
-        #                 errorDetail[lyr].append(errorList)
-        #                 criticalError += 1
-        #                 recordValCom[lyr].append("Error on %s record(s): TRTCAT2 must be populated with the correct coding scheme if populated (A1.8.2)."%len(errorList))
-
-        #     # TRTCAT3
-        #         if 'TRTCAT3' in f:
-        #             errorList = ["Error on %s %s: TRTCAT3 must be populated with the correct coding scheme if populated."%(id_field, cursor[id_field_idx]) for row in cursor
-        #                             if cursor[SILVSYS] not in ['REG','RET','SUP'] + vnull]
-        #             cursor.reset()
-        #             if len(errorList) > 0:
-        #                 errorDetail[lyr].append(errorList)
-        #                 criticalError += 1
-        #                 recordValCom[lyr].append("Error on %s record(s): TRTCAT3 must be populated with the correct coding scheme if populated (A1.8.2)."%len(errorList))
-
-        #     # TRTMTHD chemical count
-        #         trtmthd1_chem = ['y' for row in cursor if cursor[TRTMTHD1] in ['PCHEMA','PCHEMG']]
-        #         cursor.reset()
-
-        #         if 'TRTMTHD2' in f:
-        #             trtmthd2_chem = ['y' for row in cursor if cursor[TRTMTHD2] in ['PCHEMA','PCHEMG']]
-        #         else:
-        #             trtmthd2_chem = []
-        #         cursor.reset()
-
-        #         if 'TRTMTHD3' in f:
-        #             trtmthd3_chem = ['y' for row in cursor if cursor[TRTMTHD3] in ['PCHEMA','PCHEMG']]
-        #         else:
-        #             trtmthd3_chem = []
-        #         cursor.reset()
-
-        #         trtmthd_chem_count = len(trtmthd1_chem + trtmthd2_chem + trtmthd3_chem)
-
-        #     # PRODTYPE
-        #         if 'PRODTYPE' in f:
-        #             trt2_check = " or cursor[TRTMTHD2] in ['PCHEMA','PCHEMG']" if "TRTMTHD2" in f else ""
-        #             trt3_check = " or cursor[TRTMTHD3] in ['PCHEMA','PCHEMG']" if "TRTMTHD3" in f else ""
-
-        #             command = """errorList = ["Error on %s %s: PRODTYPE must be populated where TRTMTHD# = PCHEMA or PCHEMG."%(id_field, cursor[id_field_idx]) for row in cursor
-        #                             if cursor[PRODTYPE] in vnull
-        #                             if cursor[TRTMTHD1] in ['PCHEMA','PCHEMG']""" + trt2_check + trt3_check + "]"
-        #             exec(command)
-
-        #             cursor.reset()
-        #             if len(errorList) > 0:
-        #                 errorDetail[lyr].append(errorList)
-        #                 criticalError += 1
-        #                 recordValCom[lyr].append("Error on %s record(s): PRODTYPE must be populated where TRTMTHD# = PCHEMA or PCHEMG (A1.8.3)."%len(errorList))
-
-        #         # add PRODTYPE = null when all the trtmthd are manual.
-
-        #         elif trtmthd_chem_count > 0:
-        #            fieldValComUpdate[lyr].append("Missing PRODTYPE: The presence of PRODTYPE field is mandatory where TRTMTHD# = PCHEMA or PCHEMG.")
-        #            fieldValUpdate[lyr] = 'Invalid'
+            except ValueError:
+                recordValCom[lyr].append("***Unable to run full validation on %s due to missing mandatory field(s)"%lyr)
+                criticalError += 1
+            except NameError:
+                recordValCom[lyr].append("***Unable to run full validation on %s due to unexpected error."%lyr)
+                systemError = True
 
 
-        #     except ValueError:
-        #         recordValCom[lyr].append("***Unable to run full validation on %s due to missing mandatory field(s)"%lyr)
-        #         criticalError += 1
-        #     except NameError:
-        #         recordValCom[lyr].append("***Unable to run full validation on %s due to unexpected error."%lyr)
-        #         systemError = True
+        ###########################  Checking PRT   ############################
+
+        if lyrAcro == "PRT":
+            try: # need try and except block here for cases such as not having mandatory fields.
+
+            # TRTMTHD1
+                # The attribute population must follow the correct coding scheme
+                errorList = ["Error on %s %s: TRTMTHD1 must be populated and must follow the correct coding scheme."%(id_field, cursor[id_field_idx]) for row in cursor
+                                if cursor[SILVSYS] not in ['PCHEMA','PCHEMG','PMANUAL']]
+                cursor.reset()
+                if len(errorList) > 0:
+                    errorDetail[lyr].append(errorList)
+                    criticalError += 1
+                    recordValCom[lyr].append("Error on %s record(s): TRTMTHD1 must be populated and must follow the correct coding scheme."%len(errorList))
+
+            # TRTMTHD2
+                if 'TRTMTHD2' in f:
+                    errorList = ["Error on %s %s: TRTMTHD2 must follow the correct coding scheme if populated."%cursor[f.index('OBJECTID')] for row in cursor
+                                    if cursor[TRTMTHD2] not in vnull + ['PCHEMA','PCHEMG','PMANUAL']]
+                    cursor.reset()
+                    if len(errorList) > 0:
+                        errorDetail[lyr].append(errorList)
+                        criticalError += 1
+                        recordValCom[lyr].append("Error on %s record(s): TRTMTHD2 must follow the correct coding scheme if populated."%len(errorList))
+
+            # TRTMTHD3
+                if 'TRTMTHD3' in f:
+                    errorList = ["Error on %s %s: TRTMTHD3 must follow the correct coding scheme if populated."%cursor[f.index('OBJECTID')] for row in cursor
+                                    if cursor[TRTMTHD3] not in vnull + ['PCHEMA','PCHEMG','PMANUAL']]
+                    cursor.reset()
+                    if len(errorList) > 0:
+                        errorDetail[lyr].append(errorList)
+                        criticalError += 1
+                        recordValCom[lyr].append("Error on %s record(s): TRTMTHD3 must follow the correct coding scheme if populated."%len(errorList))
+
+
+            # TRTMTHD3
+                if 'TRTMTHD3' in f:
+                    if 'TRTMTHD2' in f:
+                        errorList = ["Error on %s %s: If TRTMTHD3 is populated then TRTMTHD1 and TRTMTHD2 must also be populated and TRTMTHD3 must follow the correct coding scheme."%cursor[f.index('OBJECTID')] for row in cursor
+                                        if ((cursor[TRTMTHD1] in vnull or cursor[TRTMTHD2] in vnull) and cursor[TRTMTHD3] not in vnull)
+                                        or cursor[TRTMTHD3] not in vnull + ['PCHEMA','PCHEMG','PMANUAL']]
+                        cursor.reset()
+                        if len(errorList) > 0:
+                            errorDetail[lyr].append(errorList)
+                            criticalError += 1
+                            recordValCom[lyr].append("Error on %s record(s): If TRTMTHD3 is populated then TRTMTHD1 and TRTMTHD2 must also be populated and TRTMTHD3 must follow the correct coding scheme (A1.8.1)."%len(errorList))
+                    else:
+                        fieldValUpdate[lyr] = 'Invalid'
+                        fieldValComUpdate[lyr].append('TRTMTHD2 is mandatory when TRTMTHD3 is present.')
+
+            # TRTCAT1
+                if 'TRTCAT1' in f:
+                    errorList = ["Error on %s %s: TRTCAT1 must be populated with the correct coding scheme if populated."%(id_field, cursor[id_field_idx]) for row in cursor
+                                    if cursor[SILVSYS] not in ['REG','RET','SUP'] + vnull]
+                    cursor.reset()
+                    if len(errorList) > 0:
+                        errorDetail[lyr].append(errorList)
+                        criticalError += 1
+                        recordValCom[lyr].append("Error on %s record(s): TRTCAT1 must be populated with the correct coding scheme if populated (A1.8.2)."%len(errorList))
+
+            # TRTCAT2
+                if 'TRTCAT2' in f:
+                    errorList = ["Error on %s %s: TRTCAT2 must be populated with the correct coding scheme if populated."%(id_field, cursor[id_field_idx]) for row in cursor
+                                    if cursor[SILVSYS] not in ['REG','RET','SUP'] + vnull]
+                    cursor.reset()
+                    if len(errorList) > 0:
+                        errorDetail[lyr].append(errorList)
+                        criticalError += 1
+                        recordValCom[lyr].append("Error on %s record(s): TRTCAT2 must be populated with the correct coding scheme if populated (A1.8.2)."%len(errorList))
+
+            # TRTCAT3
+                if 'TRTCAT3' in f:
+                    errorList = ["Error on %s %s: TRTCAT3 must be populated with the correct coding scheme if populated."%(id_field, cursor[id_field_idx]) for row in cursor
+                                    if cursor[SILVSYS] not in ['REG','RET','SUP'] + vnull]
+                    cursor.reset()
+                    if len(errorList) > 0:
+                        errorDetail[lyr].append(errorList)
+                        criticalError += 1
+                        recordValCom[lyr].append("Error on %s record(s): TRTCAT3 must be populated with the correct coding scheme if populated (A1.8.2)."%len(errorList))
+
+            # TRTMTHD chemical count
+                trtmthd1_chem = ['y' for row in cursor if cursor[TRTMTHD1] in ['PCHEMA','PCHEMG']]
+                cursor.reset()
+
+                if 'TRTMTHD2' in f:
+                    trtmthd2_chem = ['y' for row in cursor if cursor[TRTMTHD2] in ['PCHEMA','PCHEMG']]
+                else:
+                    trtmthd2_chem = []
+                cursor.reset()
+
+                if 'TRTMTHD3' in f:
+                    trtmthd3_chem = ['y' for row in cursor if cursor[TRTMTHD3] in ['PCHEMA','PCHEMG']]
+                else:
+                    trtmthd3_chem = []
+                cursor.reset()
+
+                trtmthd_chem_count = len(trtmthd1_chem + trtmthd2_chem + trtmthd3_chem)
+
+            # PRODTYPE
+                if 'PRODTYPE' in f:
+                    trt2_check = " or cursor[TRTMTHD2] in ['PCHEMA','PCHEMG']" if "TRTMTHD2" in f else ""
+                    trt3_check = " or cursor[TRTMTHD3] in ['PCHEMA','PCHEMG']" if "TRTMTHD3" in f else ""
+
+                    command = """errorList = ["Error on %s %s: PRODTYPE must be populated where TRTMTHD# = PCHEMA or PCHEMG."%(id_field, cursor[id_field_idx]) for row in cursor
+                                    if cursor[PRODTYPE] in vnull
+                                    if cursor[TRTMTHD1] in ['PCHEMA','PCHEMG']""" + trt2_check + trt3_check + "]"
+                    exec(command)
+
+                    cursor.reset()
+                    if len(errorList) > 0:
+                        errorDetail[lyr].append(errorList)
+                        criticalError += 1
+                        recordValCom[lyr].append("Error on %s record(s): PRODTYPE must be populated where TRTMTHD# = PCHEMA or PCHEMG (A1.8.3)."%len(errorList))
+
+                # add PRODTYPE = null when all the trtmthd are manual.
+
+                elif trtmthd_chem_count > 0:
+                   fieldValComUpdate[lyr].append("Missing PRODTYPE: The presence of PRODTYPE field is mandatory where TRTMTHD# = PCHEMA or PCHEMG.")
+                   fieldValUpdate[lyr] = 'Invalid'
+
+
+            except ValueError:
+                recordValCom[lyr].append("***Unable to run full validation on %s due to missing mandatory field(s)"%lyr)
+                criticalError += 1
+            except NameError:
+                recordValCom[lyr].append("***Unable to run full validation on %s due to unexpected error."%lyr)
+                systemError = True
 
 
 
