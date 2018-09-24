@@ -759,6 +759,48 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
                 systemError = True
 
 
+        # ###########################  Checking PER   ############################
+
+        # if lyrAcro == "PER":
+        #     try: # need try and except block here for cases such as not having mandatory fields.
+
+        #     # SILVSYS
+        #         # The attribute population must follow the correct coding scheme
+        #         errorList = ["Error on %s %s: TRTMTHD1 must be populated and must follow the correct coding scheme."%(id_field, cursor[id_field_idx]) for row in cursor
+        #                         if cursor[TRTMTHD1] not in ['PCHEMA','PCHEMG','PMANUAL']]
+        #         cursor.reset()
+        #         if len(errorList) > 0:
+        #             errorDetail[lyr].append(errorList)
+        #             criticalError += 1
+        #             recordValCom[lyr].append("Error on %s record(s): TRTMTHD1 must be populated and must follow the correct coding scheme."%len(errorList))
+
+
+
+        #     except ValueError:
+        #         recordValCom[lyr].append("***Unable to run full validation on %s due to missing mandatory field(s)"%lyr)
+        #         criticalError += 1
+        #     except NameError:
+        #         recordValCom[lyr].append("***Unable to run full validation on %s due to unexpected error."%lyr)
+        #         systemError = True
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
         ###########################  Checking PRT   ############################
 
         if lyrAcro == "PRT":
@@ -797,20 +839,22 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
 
             # TRTMTHD1, 2 and 3
                 # For TRTMTHD1, 2 or 3, the population of one of these attributes is mandatory.
-                opt_flds = ['TRTMTHD2','TRTMTHD3'] # optional fields
-                command = """errorList = ["Error on %s %s: For TRTMTHD1, TRTMTHD2 and TRTMTHD3, the population of one of these attributes is mandatory."%(id_field, cursor[id_field_idx]) for row in cursor
-                                    if cursor[TRTMTHD1] not in ['PCHEMA','PCHEMG','PMANUAL']"""
-                for opt_fld in opt_flds:
-                    if opt_fld in f:
-                        command += """ and cursor[""" + opt_fld + """] not in ['PCHEMA','PCHEMG','PMANUAL']"""
-                command += ']'
-                exec(command)
-                cursor.reset()
+        #### this one has been commented out because TRTMTHD1 has to be populated anyways and it's being checked already. ####
 
-                if len(errorList) > 0:
-                    errorDetail[lyr].append(errorList)
-                    criticalError += 1
-                    recordValCom[lyr].append("Error on %s record(s): For TRTMTHD1, TRTMTHD2 and TRTMTHD3, the population of one of these attributes is mandatory."%len(errorList))
+                # opt_flds = ['TRTMTHD2','TRTMTHD3'] # optional fields
+                # command = """errorList = ["Error on %s %s: For TRTMTHD1, TRTMTHD2 and TRTMTHD3, the population of one of these attributes is mandatory."%(id_field, cursor[id_field_idx]) for row in cursor
+                #                     if cursor[TRTMTHD1] not in ['PCHEMA','PCHEMG','PMANUAL']"""
+                # for opt_fld in opt_flds:
+                #     if opt_fld in f:
+                #         command += """ and cursor[""" + opt_fld + """] not in ['PCHEMA','PCHEMG','PMANUAL']"""
+                # command += ']'
+                # exec(command)
+                # cursor.reset()
+
+                # if len(errorList) > 0:
+                #     errorDetail[lyr].append(errorList)
+                #     criticalError += 1
+                #     recordValCom[lyr].append("Error on %s record(s): For TRTMTHD1, TRTMTHD2 and TRTMTHD3, the population of one of these attributes is mandatory."%len(errorList))
 
 
             # TRTCAT1
