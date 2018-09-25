@@ -34,7 +34,7 @@ lyrInfo = {
                                                             'DENSITY','STKG','AGS','UGS'],                          'polygon',  '4.3.16',        R.findPDF('FIM_AR_TechSpec_2017.pdf#page=98')],
 
     "PRT":  ["Protection Treatment",                    ['TRTMTHD1','TRTCAT1'],                                     'polygon',  '4.3.14',       R.findPDF('FIM_AR_TechSpec_2017.pdf#page=81')],
-    "RDS":  ["Road Construction and Road Use",          ['ROADID',' ROADCLAS','CONSTRCT','DECOM','TRANS','ACCESS',
+    "RDS":  ["Road Construction and Road Use",          ['ROADID','ROADCLAS','CONSTRCT','DECOM','TRANS','ACCESS',
                                                             'MAINTAIN','MONITOR','CONTROL1','CONTROL2'],            'arc',      '4.3.9',        R.findPDF('FIM_AR_TechSpec_2017.pdf#page=44')],
 
     "RGN":  ["Regeneration Treatment",                  ['TRTMTHD1','TRTCAT1','ESTAREA','SP1','SP2'],               'polygon',  '4.3.11',       R.findPDF('FIM_AR_TechSpec_2017.pdf#page=59')],
@@ -360,7 +360,7 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
                     if len(errorList) > 0:
                         errorDetail[lyr].append(errorList)
                         criticalError += 1
-                        recordValCom[lyr].append("Error on %s record(s): SPCOMP must be populated when FTG = Y (A1.9.8)."%len(errorList))
+                        recordValCom[lyr].append("Error on %s record(s): SPCOMP must be populated when FTG = Y."%len(errorList))
 
                     # The attribute population must follow the correct format
                     ## code to check spcomp
@@ -439,7 +439,7 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
                     if len(errorList) > 0:
                         errorDetail[lyr].append(errorList)
                         criticalError += 1
-                        recordValCom[lyr].append("Error on %s record(s): STKG must be between 0 and 4 if populated (A1.9.9)."%len(errorList))
+                        recordValCom[lyr].append("Error on %s record(s): STKG must be between 0 and 4 if populated."%len(errorList))
 
                     # Where FTG = Y: The population of this attribute is mandatory
                     # Where FTG = Y: A zero (or null) value is not a valid code
@@ -730,15 +730,6 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
                     errorDetail[lyr].append(errorList)
                     criticalError += 1
                     recordValCom[lyr].append("Error on %s record(s): VOLHWD must be between 0 and 9,999,999 if populated."%len(errorList))
-
-            # # VOLCON and VOLHWD cannot both be zero  # this no longer applicable in 2017 tech spec.
-            #     errorList = ["Error on %s %s: VOLCON and VOLHWD cannot both be zero."%(id_field, cursor[id_field_idx]) for row in cursor
-            #                     if cursor[VOLCON] in [0, None] and cursor[VOLHWD] in [0, None]]
-            #     cursor.reset()
-            #     if len(errorList) > 0:
-            #         errorDetail[lyr].append(errorList)
-            #         criticalError += 1
-            #         recordValCom[lyr].append("Error on %s record(s): VOLCON and VOLHWD cannot both be zero (A1.1.2, A1.1.3)."%len(errorList))
 
             # DSTBFU
                 # The population of this attribute is mandatory
@@ -1209,7 +1200,6 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
                     fieldValComUpdate[lyr].append("Missing APPNUM: The presence of APPNUM field is mandatory when any of the treatment methods are chemical.")
                     fieldValUpdate[lyr] = 'Invalid'
 
-
             except ValueError:
                 recordValCom[lyr].append("***Unable to run full validation on %s due to missing mandatory field(s)"%lyr)
                 criticalError += 1
@@ -1219,169 +1209,174 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
 
 
 
-        # ###########################  Checking RDS   ############################
+        ###########################  Checking RDS   ############################
 
-        # if lyrAcro == "RDS":
-        #     try: # need try and except block here for cases such as not having mandatory fields.
+        if lyrAcro == "RDS":
+            try: # need try and except block here for cases such as not having mandatory fields.
 
-        #     # ROADID
-        #         errorList = ["Error on %s %s: The population of ROADID is mandatory."%(id_field, cursor[id_field_idx]) for row in cursor
-        #                         if cursor[ROADID] in vnull]
-        #         cursor.reset()
-        #         if len(errorList) > 0:
-        #             errorDetail[lyr].append(errorList)
-        #             criticalError += 1
-        #             recordValCom[lyr].append("Error on %s record(s): The population of ROADID is mandatory (A1.3.1)."%len(errorList))
+            # ROADID
+                # The population of this attribute is mandatory
+                # A blank or null value is not a valid code
+                errorList = ["Error on %s %s: The population of ROADID is mandatory."%(id_field, cursor[id_field_idx]) for row in cursor
+                                if cursor[ROADID] in vnull]
+                cursor.reset()
+                if len(errorList) > 0:
+                    errorDetail[lyr].append(errorList)
+                    criticalError += 1
+                    recordValCom[lyr].append("Error on %s record(s): The population of ROADID is mandatory."%len(errorList))
 
-        #     # count where CONSTRCT = Y
-        #         constrct_y_list = ["y" for row in cursor if cursor[CONSTRCT] == 'Y']
-        #         cursor.reset()
-        #         constrct_y_count = len(constrct_y_list)              
+            # ROADCLAS
+                # The population of this attribute is mandatory where CONSTRUCT = Y
+                # A blank or null value IS A VALID code
+                errorList = ["Error on %s %s: ROADCLAS must be populated where CONSTRCT = Y."%(id_field, cursor[id_field_idx]) for row in cursor
+                                if cursor[CONSTRCT] == 'Y'
+                                if cursor[ROADCLAS] in vnull]
+                cursor.reset()
+                if len(errorList) > 0:
+                    errorDetail[lyr].append(errorList)
+                    criticalError += 1
+                    recordValCom[lyr].append("Error on %s record(s): ROADCLAS must be populated where CONSTRCT = Y."%len(errorList))
 
-        #     # ROADCLAS
-        #         if 'ROADCLAS' in f:
-        #             errorList = ["Error on %s %s: ROADCLAS must be populated with the correct coding scheme where CONSTRCT = Y."%(id_field, cursor[id_field_idx]) for row in cursor
-        #                             if cursor[CONSTRCT] == 'Y'
-        #                             if cursor[ROADCLAS] not in ['B','O','P']]
-        #             cursor.reset()
-        #             if len(errorList) > 0:
-        #                 errorDetail[lyr].append(errorList)
-        #                 criticalError += 1
-        #                 recordValCom[lyr].append("Error on %s record(s): ROADCLAS must be populated with the correct coding scheme where CONSTRCT = Y (A1.3.2)."%len(errorList))
+                # The attribute population must follow the correct coding scheme.
+                errorList = ["Error on %s %s: ROADCLAS must follow the correct coding scheme (if populated)."%(id_field, cursor[id_field_idx]) for row in cursor
+                                if cursor[ROADCLAS] not in vnull
+                                if cursor[ROADCLAS] not in ['B','O','P']]
+                cursor.reset()
+                if len(errorList) > 0:
+                    errorDetail[lyr].append(errorList)
+                    criticalError += 1
+                    recordValCom[lyr].append("Error on %s record(s): ROADCLAS must follow the correct coding scheme (if populated)."%len(errorList))
 
-        #             errorList = ["Error on %s %s: ROADCLAS must follow the correct coding scheme if populated."%(id_field, cursor[id_field_idx]) for row in cursor
-        #                             if cursor[ROADCLAS] not in ['B','O','P'] + vnull]
-        #             cursor.reset()
-        #             if len(errorList) > 0:
-        #                 errorDetail[lyr].append(errorList)
-        #                 criticalError += 1
-        #                 recordValCom[lyr].append("Error on %s record(s): ROADCLAS must follow the correct coding scheme if populated (A1.3.2)."%len(errorList))
+            # CONSTRCT
+                # The population of this attribute is mandatory
+                # The attribute population must follow the correct coding scheme.
+                errorList = ["Error on %s %s: CONSTRCT must be populated and must be Y or N."%(id_field, cursor[id_field_idx]) for row in cursor
+                                if cursor[CONSTRCT] not in ['Y','N']]
+                cursor.reset()
+                if len(errorList) > 0:
+                    errorDetail[lyr].append(errorList)
+                    criticalError += 1
+                    recordValCom[lyr].append("Error on %s record(s): CONSTRCT must be populated and must be Y or N."%len(errorList))
 
-        #         elif constrct_y_count > 0:
-        #            fieldValComUpdate[lyr].append("Missing ROADCLAS: The presence of ROADCLAS field is mandatory where CONSTRCT = Y.")
-        #            fieldValUpdate[lyr] = 'Invalid'
+            # DECOM
+                # The attribute population must follow the correct coding scheme.
+                # A blank or null value IS A VALID code.       
+                errorList = ["Error on %s %s: DECOM must follow the correct coding scheme, if populated."%(id_field, cursor[id_field_idx]) for row in cursor
+                                if cursor[DECOM] not in vnull
+                                if cursor[DECOM] not in ['BERM','SCAR','SLSH','WATX']]
+                cursor.reset()
+                if len(errorList) > 0:
+                    errorDetail[lyr].append(errorList)
+                    criticalError += 1
+                    recordValCom[lyr].append("Error on %s record(s): DECOM must follow the correct coding scheme, if populated."%len(errorList))
 
-        #     # CONSTRCT
-        #         errorList = ["Error on %s %s: CONSTRCT must be populated and must be Y or N."%(id_field, cursor[id_field_idx]) for row in cursor
-        #                         if cursor[CONSTRCT] not in ['Y','N']]
-        #         cursor.reset()
-        #         if len(errorList) > 0:
-        #             errorDetail[lyr].append(errorList)
-        #             criticalError += 1
-        #             recordValCom[lyr].append("Error on %s record(s): CONSTRCT must be populated and must be Y or N (A1.3.3)."%len(errorList))
+            # TRANS
+                # The attribute population must follow the correct format
+                # A zero value is a valid code
+                # The value must be greater than or equal to the 10 year plan period start year.
+                errorList = ["Error on %s %s: TRANS must be greater than or equal to the 10 year plan period start year, if populated."%(id_field, cursor[id_field_idx]) for row in cursor
+                                if cursor[TRANS] not in [0, None]
+                                if cursor[TRANS] < fmpStartYear or cursor[TRANS] > 9999]
+                cursor.reset()
+                if len(errorList) > 0:
+                    errorDetail[lyr].append(errorList)
+                    criticalError += 1
+                    recordValCom[lyr].append("Error on %s record(s): TRANS must be greater than or equal to the 10 year plan period start year, if populated."%len(errorList))
 
-        #     # DECOM
-        #         errorList = ["Error on %s %s: DECOM must be populated and must be Y or N."%(id_field, cursor[id_field_idx]) for row in cursor
-        #                         if cursor[DECOM] not in ['Y','N']]
-        #         cursor.reset()
-        #         if len(errorList) > 0:
-        #             errorDetail[lyr].append(errorList)
-        #             criticalError += 1
-        #             recordValCom[lyr].append("Error on %s record(s): DECOM must be populated and must be Y or N (A1.3.4)."%len(errorList))
+            # ACCESS
+                # The attribute population must follow the correct coding scheme.
+                # A blank or null value IS A VALID code.
+                errorList = ["Error on %s %s: ACCESS must follow the correct coding scheme, if populated."%(id_field, cursor[id_field_idx]) for row in cursor
+                                if cursor[ACCESS] not in ['APPLY','REMOVE','BOTH'] + vnull]
+                cursor.reset()
+                if len(errorList) > 0:
+                    errorDetail[lyr].append(errorList)
+                    criticalError += 1
+                    recordValCom[lyr].append("Error on %s record(s): ACCESS must follow the correct coding scheme, if populated."%len(errorList))
+                
+                # other ACCESS validations can be found under CONTROL1 & 2 validation below.
 
-        #     # ACCESS
-        #         errorList = ["Error on %s %s: ACCESS must be APPLY or REMOVE if populated."%(id_field, cursor[id_field_idx]) for row in cursor
-        #                         if cursor[ACCESS] not in ['APPLY','REMOVE'] + vnull]
-        #         cursor.reset()
-        #         if len(errorList) > 0:
-        #             errorDetail[lyr].append(errorList)
-        #             criticalError += 1
-        #             recordValCom[lyr].append("Error on %s record(s): ACCESS must be APPLY or REMOVE if populated (A1.3.5)."%len(errorList))
-        #         # other ACCESS validations can be found under CONTROL1 & 2 validation below.
+            # MAINTAIN
+                # The population of this attribute is mandatory
+                # The attribute population must follow the correct coding scheme.            
+                errorList = ["Error on %s %s: MAINTAIN must be populated and must be Y or N."%(id_field, cursor[id_field_idx]) for row in cursor
+                                if cursor[MAINTAIN] not in ['Y','N']]
+                cursor.reset()
+                if len(errorList) > 0:
+                    errorDetail[lyr].append(errorList)
+                    criticalError += 1
+                    recordValCom[lyr].append("Error on %s record(s): MAINTAIN must be populated and must be Y or N."%len(errorList))
 
-        #     # MAINTAIN
-        #         errorList = ["Error on %s %s: MAINTAIN must be populated and must be Y or N."%(id_field, cursor[id_field_idx]) for row in cursor
-        #                         if cursor[MAINTAIN] not in ['Y','N']]
-        #         cursor.reset()
-        #         if len(errorList) > 0:
-        #             errorDetail[lyr].append(errorList)
-        #             criticalError += 1
-        #             recordValCom[lyr].append("Error on %s record(s): MAINTAIN must be populated and must be Y or N (A1.3.6)."%len(errorList))
+            # MONITOR
+                # The population of this attribute is mandatory
+                # The attribute population must follow the correct coding scheme.            
+                errorList = ["Error on %s %s: MONITOR must be populated and must be Y or N."%(id_field, cursor[id_field_idx]) for row in cursor
+                                if cursor[MONITOR] not in ['Y','N']]
+                cursor.reset()
+                if len(errorList) > 0:
+                    errorDetail[lyr].append(errorList)
+                    criticalError += 1
+                    recordValCom[lyr].append("Error on %s record(s): MONITOR must be populated and must be Y or N."%len(errorList))
 
-        #     # MONITOR
-        #         errorList = ["Error on %s %s: MONITOR must be populated and must be Y or N."%(id_field, cursor[id_field_idx]) for row in cursor
-        #                         if cursor[MONITOR] not in ['Y','N']]
-        #         cursor.reset()
-        #         if len(errorList) > 0:
-        #             errorDetail[lyr].append(errorList)
-        #             criticalError += 1
-        #             recordValCom[lyr].append("Error on %s record(s): MONITOR must be populated and must be Y or N (A1.3.7)."%len(errorList))
+            # CONSTRCT DECOM ACCESS MAINTAIN and MONITOR
+                # At minimum, one of Construction, Decommissioning, Maintenance, Monitoring or Access Control must occur for each record.
+                errorList = ["Error on %s %s: At minimum, one of Construction, Decom, Maintenance, Monitoring or Access Control must occur."%(id_field, cursor[id_field_idx]) for row in cursor
+                                if cursor[CONSTRCT] != 'Y' and cursor[DECOM] not in ['BERM','SCAR','SLSH','WATX'] and cursor[MAINTAIN] != 'Y' and cursor[MONITOR] != 'Y' and cursor[ACCESS] not in ['APPLY','REMOVE','BOTH'] ]
+                cursor.reset()
+                if len(errorList) > 0:
+                    errorDetail[lyr].append(errorList)
+                    criticalError += 1
+                    recordValCom[lyr].append("Error on %s record(s): At minimum, one of Construction, Decom, Maintenance, Monitoring or Access Control must occur."%len(errorList))            
 
-        #     # CONSTRCT DECOM ACCESS MAINTAIN and MONITOR
-        #         errorList = ["Error on %s %s: At minimum, one of Construction, Decom, Maintenance, Monitoring or Access Control must occur."%(id_field, cursor[id_field_idx]) for row in cursor
-        #                         if cursor[CONSTRCT] != 'Y' and cursor[DECOM] != 'Y' and cursor[ACCESS] not in ['APPLY','REMOVE'] and cursor[MAINTAIN] != 'Y' and cursor[MONITOR] != 'Y']
-        #         cursor.reset()
-        #         if len(errorList) > 0:
-        #             errorDetail[lyr].append(errorList)
-        #             criticalError += 1
-        #             recordValCom[lyr].append("Error on %s record(s): At minimum, one of Construction, Decom, Maintenance, Monitoring or Access Control must occur (A1.3.7)."%len(errorList))            
+            # CONTROL1
+                # The attribute population must follow the correct coding scheme.
+                # A blank or null value IS A VALID code.            
+                errorList = ["Error on %s %s: CONTROL1 must follow the correct coding scheme if populated."%(id_field, cursor[id_field_idx]) for row in cursor
+                                if cursor[CONTROL1] not in ['BERM','GATE','PRIV','SCAR','SIGN','SLSH','WATX'] + vnull]
+                cursor.reset()
+                if len(errorList) > 0:
+                    errorDetail[lyr].append(errorList)
+                    criticalError += 1
+                    recordValCom[lyr].append("Error on %s record(s): CONTROL1 must follow the correct coding scheme if populated."%len(errorList))
 
-        #     # count where ACCESS = APPLY
-        #         access_y_list = ["a" for row in cursor if cursor[ACCESS] == 'APPLY']
-        #         cursor.reset()
-        #         access_y_count = len(access_y_list)               
+                # When the road access control status is apply or both, then the control type must be a code other than null (CONTROL1 is not null)
+                errorList = ["Error on %s %s: CONTROL1 must be populated with the correct coding scheme where ACCESS is 'APPLY' or 'BOTH'."%(id_field, cursor[id_field_idx]) for row in cursor
+                                if cursor[ACCESS] in ['APPLY','BOTH']
+                                if cursor[CONTROL1] not in ['BERM','GATE','PRIV','SCAR','SIGN','SLSH','WATX']]
+                cursor.reset()
+                if len(errorList) > 0:
+                    errorDetail[lyr].append(errorList)
+                    criticalError += 1
+                    recordValCom[lyr].append("Error on %s record(s): CONTROL1 must be populated with the correct coding scheme where ACCESS is 'APPLY' or 'BOTH'."%len(errorList))
 
-        #     # CONTROL1
-        #         if 'CONTROL1' in f:
-        #             errorList = ["Error on %s %s: CONTROL1 must be populated with the correct coding scheme where ACCESS = APPLY."%(id_field, cursor[id_field_idx]) for row in cursor
-        #                             if cursor[ACCESS] == 'APPLY'
-        #                             if cursor[CONTROL1] not in ['BERM','GATE','PRIV','SCAR','SIGN','SLSH','WATX']]
-        #             cursor.reset()
-        #             if len(errorList) > 0:
-        #                 errorDetail[lyr].append(errorList)
-        #                 criticalError += 1
-        #                 recordValCom[lyr].append("Error on %s record(s): CONTROL1 must be populated with the correct coding scheme where ACCESS = APPLY (A1.3.8)."%len(errorList))
+            # CONTROL2
+                # The attribute population must follow the correct coding scheme.
+                # A blank or null value IS A VALID code.             
+                errorList = ["Error on %s %s: CONTROL2 must follow the correct coding scheme if populated."%(id_field, cursor[id_field_idx]) for row in cursor
+                                if cursor[CONTROL2] not in ['BERM','GATE','PRIV','SCAR','SIGN','SLSH','WATX'] + vnull]
+                cursor.reset()
+                if len(errorList) > 0:
+                    errorDetail[lyr].append(errorList)
+                    criticalError += 1
+                    recordValCom[lyr].append("Error on %s record(s): CONTROL2 must follow the correct coding scheme if populated."%len(errorList))
 
-        #             errorList = ["Error on %s %s: CONTROL1 must follow the correct coding scheme if populated."%(id_field, cursor[id_field_idx]) for row in cursor
-        #                             if cursor[CONTROL1] not in ['BERM','GATE','PRIV','SCAR','SIGN','SLSH','WATX'] + vnull]
-        #             cursor.reset()
-        #             if len(errorList) > 0:
-        #                 errorDetail[lyr].append(errorList)
-        #                 criticalError += 1
-        #                 recordValCom[lyr].append("Error on %s record(s): CONTROL1 must follow the correct coding scheme if populated (A1.3.8)."%len(errorList))
+            # CONTROL 1 and 2
+                # Stage 2: When the road access control status is remove, then the control type should be null (CONTROL1 = null and CONTROL2 = null)
+                errorList = ["Warning on %s %s: CONTROL1 and CONTROL2 should be null when ACCESS = REMOVE."%(id_field, cursor[id_field_idx]) for row in cursor
+                                if cursor[ACCESS] == 'REMOVE'
+                                if cursor[CONTROL1] not in vnull or cursor[CONTROL2] not in vnull]
+                cursor.reset()
+                if len(errorList) > 0:
+                    errorDetail[lyr].append(errorList)
+                    minorError += 1
+                    recordValCom[lyr].append("Warning on %s record(s): CONTROL1 and CONTROL2 should be null when ACCESS = REMOVE."%len(errorList))                
 
-        #         elif access_y_count > 0:
-        #            fieldValComUpdate[lyr].append("Missing CONTROL1: The presence of CONTROL1 field is mandatory where ACCESS = APPLY.")
-        #            fieldValUpdate[lyr] = 'Invalid'
-
-        #     # CONTROL2
-        #         if 'CONTROL2' in f:
-        #             errorList = ["Error on %s %s: CONTROL2 must follow the correct coding scheme if populated."%(id_field, cursor[id_field_idx]) for row in cursor
-        #                             if cursor[CONTROL2] not in ['BERM','GATE','PRIV','SCAR','SIGN','SLSH','WATX'] + vnull]
-        #             cursor.reset()
-        #             if len(errorList) > 0:
-        #                 errorDetail[lyr].append(errorList)
-        #                 criticalError += 1
-        #                 recordValCom[lyr].append("Error on %s record(s): CONTROL2 must follow the correct coding scheme if populated (A1.3.8)."%len(errorList))
-
-        #     # CONTROL 1 and 2
-        #         if 'CONTROL2' in f and 'CONTROL1' in f:
-        #             errorList = ["Error on %s %s: CONTROL2 must be null if CONTROL1 is null."%(id_field, cursor[id_field_idx]) for row in cursor
-        #                             if cursor[CONTROL1] in vnull
-        #                             if cursor[CONTROL2] not in vnull]
-        #             cursor.reset()
-        #             if len(errorList) > 0:
-        #                 errorDetail[lyr].append(errorList)
-        #                 criticalError += 1
-        #                 recordValCom[lyr].append("Error on %s record(s): CONTROL2 must be null if CONTROL1 is null (A1.3.8)."%len(errorList))
-
-        #             errorList = ["Warning on %s %s: CONTROL1 and 2 should be null if ACCESS = REMOVE."%(id_field, cursor[id_field_idx]) for row in cursor
-        #                             if cursor[ACCESS] == 'REMOVE'
-        #                             if cursor[CONTROL1] not in vnull or cursor[CONTROL2] not in vnull]
-        #             cursor.reset()
-        #             if len(errorList) > 0:
-        #                 errorDetail[lyr].append(errorList)
-        #                 minorError += 1
-        #                 recordValCom[lyr].append("Warning on %s record(s): CONTROL1 and 2 should be null if ACCESS = REMOVE (A1.3.5)."%len(errorList))
-
-        #     except ValueError:
-        #         recordValCom[lyr].append("***Unable to run full validation on %s due to missing mandatory field(s)"%lyr)
-        #         criticalError += 1
-        #     except NameError:
-        #         recordValCom[lyr].append("***Unable to run full validation on %s due to unexpected error."%lyr)
-        #         systemError = True
-
-
+            except ValueError:
+                recordValCom[lyr].append("***Unable to run full validation on %s due to missing mandatory field(s)"%lyr)
+                criticalError += 1
+            except NameError:
+                recordValCom[lyr].append("***Unable to run full validation on %s due to unexpected error."%lyr)
+                systemError = True
 
 
         # ###########################  Checking RGN   ############################
