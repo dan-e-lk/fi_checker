@@ -996,13 +996,13 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
 
             # TRTMTHD1
                 # The attribute population must follow the correct coding scheme
-                errorList = ["Error on %s %s: TRTMTHD1 must be populated and must follow the correct coding scheme."%(id_field, cursor[id_field_idx]) for row in cursor
-                                if cursor[TRTMTHD1] not in ['PCHEMA','PCHEMG','PMANUAL']]
+                errorList = ["Error on %s %s: TRTMTHD1 must follow the correct coding scheme, if populated."%(id_field, cursor[id_field_idx]) for row in cursor
+                                if cursor[TRTMTHD1] not in vnull + ['PCHEMA','PCHEMG','PMANUAL']]
                 cursor.reset()
                 if len(errorList) > 0:
                     errorDetail[lyr].append(errorList)
                     criticalError += 1
-                    recordValCom[lyr].append("Error on %s record(s): TRTMTHD1 must be populated and must follow the correct coding scheme."%len(errorList))
+                    recordValCom[lyr].append("Error on %s record(s): TRTMTHD1 must follow the correct coding scheme, if populated."%len(errorList))
 
             # TRTMTHD2
                 if 'TRTMTHD2' in f:
@@ -1024,26 +1024,22 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
                         criticalError += 1
                         recordValCom[lyr].append("Error on %s record(s): TRTMTHD3 must follow the correct coding scheme if populated."%len(errorList))
 
-
             # TRTMTHD1, 2 and 3
                 # For TRTMTHD1, 2 or 3, the population of one of these attributes is mandatory.
-        #### this one has been commented out because TRTMTHD1 has to be populated anyways and it's being checked already. ####
+                opt_flds = ['TRTMTHD2','TRTMTHD3'] # optional fields
+                command = """errorList = ["Error on %s %s: For TRTMTHD1, TRTMTHD2 and TRTMTHD3, the population of one of these attributes is mandatory."%(id_field, cursor[id_field_idx]) for row in cursor
+                                    if cursor[TRTMTHD1] not in ['PCHEMA','PCHEMG','PMANUAL']"""
+                for opt_fld in opt_flds:
+                    if opt_fld in f:
+                        command += """ and cursor[""" + opt_fld + """] not in ['PCHEMA','PCHEMG','PMANUAL']"""
+                command += ']'
+                exec(command)
+                cursor.reset()
 
-                # opt_flds = ['TRTMTHD2','TRTMTHD3'] # optional fields
-                # command = """errorList = ["Error on %s %s: For TRTMTHD1, TRTMTHD2 and TRTMTHD3, the population of one of these attributes is mandatory."%(id_field, cursor[id_field_idx]) for row in cursor
-                #                     if cursor[TRTMTHD1] not in ['PCHEMA','PCHEMG','PMANUAL']"""
-                # for opt_fld in opt_flds:
-                #     if opt_fld in f:
-                #         command += """ and cursor[""" + opt_fld + """] not in ['PCHEMA','PCHEMG','PMANUAL']"""
-                # command += ']'
-                # exec(command)
-                # cursor.reset()
-
-                # if len(errorList) > 0:
-                #     errorDetail[lyr].append(errorList)
-                #     criticalError += 1
-                #     recordValCom[lyr].append("Error on %s record(s): For TRTMTHD1, TRTMTHD2 and TRTMTHD3, the population of one of these attributes is mandatory."%len(errorList))
-
+                if len(errorList) > 0:
+                    errorDetail[lyr].append(errorList)
+                    criticalError += 1
+                    recordValCom[lyr].append("Error on %s record(s): For TRTMTHD1, TRTMTHD2 and TRTMTHD3, the population of one of these attributes is mandatory."%len(errorList))
 
             # TRTCAT1
                 # The attribute population must follow the correct coding scheme
@@ -1379,294 +1375,338 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
                 systemError = True
 
 
-        # ###########################  Checking RGN   ############################
+        ###########################  Checking RGN   ############################
 
-        # if lyrAcro == "RGN":
-        #     try: # need try and except block here for cases such as not having mandatory fields.
+        if lyrAcro == "RGN":
+            try:
 
-        #     # TRTMTHD1
-        #         errorList = ["Error on %s %s: TRTMTHD1 must be populated and must follow the correct coding scheme."%(id_field, cursor[id_field_idx]) for row in cursor
-        #                         if cursor[TRTMTHD1] not in ['CLAAG','NATURAL','HARP','PLANT','SCARIFY','SEED','SEEDSIP','SEEDTREE','STRIPCUT']]
-        #         cursor.reset()
-        #         if len(errorList) > 0:
-        #             errorDetail[lyr].append(errorList)
-        #             criticalError += 1
-        #             recordValCom[lyr].append("Error on %s record(s): TRTMTHD1 must be populated and must follow the correct coding scheme (A1.5.1)."%len(errorList))
+            # TRTMTHD1
+                # The attribute population must follow the coding scheme
+                errorList = ["Error on %s %s: TRTMTHD1 must follow the correct coding scheme, if populated."%(id_field, cursor[id_field_idx]) for row in cursor
+                                if cursor[TRTMTHD1] not in ['CLAAG','NATURAL','HARP','PLANT','SCARIFY','SEED','SEEDSIP','SEEDTREE','STRIPCUT'] + vnull]
+                cursor.reset()
+                if len(errorList) > 0:
+                    errorDetail[lyr].append(errorList)
+                    criticalError += 1
+                    recordValCom[lyr].append("Error on %s record(s): TRTMTHD1 must follow the correct coding scheme, if populated."%len(errorList))
 
-        #     # TRTMTHD2
-        #         if 'TRTMTHD2' in f:
-        #             errorList = ["Error on %s %s: If TRTMTHD2 is populated then TRTMTHD1 must also be populated and TRTMTHD2 must follow the correct coding scheme."%(id_field, cursor[id_field_idx]) for row in cursor
-        #                             if (cursor[TRTMTHD1] in vnull and cursor[TRTMTHD2] not in vnull)
-        #                             or cursor[TRTMTHD2] not in vnull + ['CLAAG','NATURAL','HARP','PLANT','SCARIFY','SEED','SEEDSIP','SEEDTREE','STRIPCUT']]
-        #             cursor.reset()
-        #             if len(errorList) > 0:
-        #                 errorDetail[lyr].append(errorList)
-        #                 criticalError += 1
-        #                 recordValCom[lyr].append("Error on %s record(s): If TRTMTHD2 is populated then TRTMTHD1 must also be populated and TRTMTHD2 must follow the correct coding scheme (A1.5.1)."%len(errorList))
+            # TRTMTHD2
+                # The attribute population must follow the coding scheme
+                if 'TRTMTHD2' in f:
+                    errorList = ["Error on %s %s: TRTMTHD2 must follow the correct coding scheme, if populated."%(id_field, cursor[id_field_idx]) for row in cursor
+                                    if cursor[TRTMTHD2] not in ['CLAAG','NATURAL','HARP','PLANT','SCARIFY','SEED','SEEDSIP','SEEDTREE','STRIPCUT'] + vnull]
+                    cursor.reset()
+                    if len(errorList) > 0:
+                        errorDetail[lyr].append(errorList)
+                        criticalError += 1
+                        recordValCom[lyr].append("Error on %s record(s): TRTMTHD2 must follow the correct coding scheme, if populated."%len(errorList))
 
-        #     # TRTMTHD3
-        #         if 'TRTMTHD3' in f:
-        #             if 'TRTMTHD2' in f:
-        #                 errorList = ["Error on %s %s: If TRTMTHD3 is populated then TRTMTHD1 and TRTMTHD2 must also be populated and TRTMTHD3 must follow the correct coding scheme."%(id_field, cursor[id_field_idx]) for row in cursor
-        #                                 if ((cursor[TRTMTHD1] in vnull or cursor[TRTMTHD2] in vnull) and cursor[TRTMTHD3] not in vnull)
-        #                                 or cursor[TRTMTHD3] not in vnull + ['CLAAG','NATURAL','HARP','PLANT','SCARIFY','SEED','SEEDSIP','SEEDTREE','STRIPCUT']]
-        #                 cursor.reset()
-        #                 if len(errorList) > 0:
-        #                     errorDetail[lyr].append(errorList)
-        #                     criticalError += 1
-        #                     recordValCom[lyr].append("Error on %s record(s): If TRTMTHD3 is populated then TRTMTHD1 and TRTMTHD2 must also be populated and TRTMTHD3 must follow the correct coding scheme (A1.5.1)."%len(errorList))
-        #             else:
-        #                 fieldValUpdate[lyr] = 'Invalid'
-        #                 fieldValComUpdate[lyr].append('TRTMTHD2 is mandatory when TRTMTHD3 is present.')
+            # TRTMTHD3
+                # The attribute population must follow the coding scheme
+                if 'TRTMTHD3' in f:
+                    errorList = ["Error on %s %s: TRTMTHD3 must follow the correct coding scheme, if populated."%(id_field, cursor[id_field_idx]) for row in cursor
+                                    if cursor[TRTMTHD3] not in ['CLAAG','NATURAL','HARP','PLANT','SCARIFY','SEED','SEEDSIP','SEEDTREE','STRIPCUT'] + vnull]
+                    cursor.reset()
+                    if len(errorList) > 0:
+                        errorDetail[lyr].append(errorList)
+                        criticalError += 1
+                        recordValCom[lyr].append("Error on %s record(s): TRTMTHD3 must follow the correct coding scheme, if populated."%len(errorList))
+                        
+            # TRTMTHD1, 2 and 3
+                # For TRTMTHD1, 2 or 3, the population of one of these attributes is mandatory.
+                opt_flds = ['TRTMTHD2','TRTMTHD3'] # optional fields
+                command = """errorList = ["Error on %s %s: For TRTMTHD1, TRTMTHD2 and TRTMTHD3, the population of one of these attributes is mandatory."%(id_field, cursor[id_field_idx]) for row in cursor
+                                    if cursor[TRTMTHD1] not in ['CLAAG','NATURAL','HARP','PLANT','SCARIFY','SEED','SEEDSIP','SEEDTREE','STRIPCUT']"""
+                for opt_fld in opt_flds:
+                    if opt_fld in f:
+                        command += """ and cursor[""" + opt_fld + """] not in ['CLAAG','NATURAL','HARP','PLANT','SCARIFY','SEED','SEEDSIP','SEEDTREE','STRIPCUT']"""
+                command += ']'
+                exec(command)
+                cursor.reset()
 
-        #     # TRTCAT1
-        #         errorList = ["Error on %s %s: TRTCAT1 must be populated and must follow the correct coding scheme."%(id_field, cursor[id_field_idx]) for row in cursor
-        #                         if cursor[TRTCAT1] not in ['REG','RET','SUP']]
-        #         cursor.reset()
-        #         if len(errorList) > 0:
-        #             errorDetail[lyr].append(errorList)
-        #             criticalError += 1
-        #             recordValCom[lyr].append("Error on %s record(s): TRTCAT1 must be populated and must follow the correct coding scheme (A1.5.2)."%len(errorList))
+                if len(errorList) > 0:
+                    errorDetail[lyr].append(errorList)
+                    criticalError += 1
+                    recordValCom[lyr].append("Error on %s record(s): For TRTMTHD1, TRTMTHD2 and TRTMTHD3, the population of one of these attributes is mandatory."%len(errorList))
 
-        #     # TRTCAT1 and TRTMTHD1
-        #         errorList = ["Warning on %s %s: TRTMTHD1 should be PLANT or SEED if TRTCAT1 = RET."%(id_field, cursor[id_field_idx]) for row in cursor
-        #                         if cursor[TRTCAT1] == 'RET'
-        #                         if cursor[TRTMTHD1] not in ['PLANT','SEED']]
-        #         cursor.reset()
-        #         if len(errorList) > 0:
-        #             errorDetail[lyr].append(errorList)
-        #             minorError += 1
-        #             recordValCom[lyr].append("Warning on %s record(s): TRTMTHD1 should be PLANT or SEED if TRTCAT1 = RET (A1.5.2)."%len(errorList))
+            # TRTCAT1 and TRTMTHD1
+                # If the treatment method is populated (TRTMTHD# != Null) then the associated treatment category must also be populated.
+                # The attribute population must follow the correct coding scheme.
+                errorList = ["Error on %s %s: TRTCAT1 must be populated and must follow the correct coding scheme if TRTMTHD1 is populated."%(id_field, cursor[id_field_idx]) for row in cursor
+                                if cursor[TRTMTHD1] not in vnull
+                                if cursor[TRTCAT1] not in ['REG','RET','SUP']]
+                cursor.reset()
+                if len(errorList) > 0:
+                    errorDetail[lyr].append(errorList)
+                    criticalError += 1
+                    recordValCom[lyr].append("Error on %s record(s): TRTCAT1 must be populated and must follow the correct coding scheme if TRTMTHD1 is populated."%len(errorList))
 
-        #         errorList = ["Warning on %s %s: TRTMTHD1 should be PLANT, SCARIFY, SEED, OR SEEDSIP if TRTCAT1 = SUP."%(id_field, cursor[id_field_idx]) for row in cursor
-        #                         if cursor[TRTCAT1] == 'SUP'
-        #                         if cursor[TRTMTHD1] not in ['PLANT','SEED','SCARIFY','SEEDSIP']]
-        #         cursor.reset()
-        #         if len(errorList) > 0:
-        #             errorDetail[lyr].append(errorList)
-        #             minorError += 1
-        #             recordValCom[lyr].append("Warning on %s record(s): TRTMTHD1 should be PLANT, SCARIFY, SEED, OR SEEDSIP if TRTCAT1 = SUP (A1.5.2)."%len(errorList))
+                errorList = ["Error on %s %s: TRTMTHD1 must be PLANT or SEED if TRTCAT1 = RET."%(id_field, cursor[id_field_idx]) for row in cursor
+                                if cursor[TRTCAT1] == 'RET'
+                                if cursor[TRTMTHD1] not in ['PLANT','SEED']]
+                cursor.reset()
+                if len(errorList) > 0:
+                    errorDetail[lyr].append(errorList)
+                    criticalError += 1
+                    recordValCom[lyr].append("Error on %s record(s): TRTMTHD1 must be PLANT or SEED if TRTCAT1 = RET."%len(errorList))
 
-        #     # TRTCAT2 and TRTMTHD2
-        #         if 'TRTMTHD2' in f:
-        #             if 'TRTCAT2' in f:
-        #                 errorList = ["Error on %s %s: TRTCAT2 must be populated and must follow the correct coding scheme if TRTMTHD2 is populated."%(id_field, cursor[id_field_idx]) for row in cursor
-        #                                 if cursor[TRTMTHD2] not in vnull
-        #                                 if cursor[TRTCAT2] not in ['REG','RET','SUP']]
-        #                 cursor.reset()
-        #                 if len(errorList) > 0:
-        #                     errorDetail[lyr].append(errorList)
-        #                     criticalError += 1
-        #                     recordValCom[lyr].append("Error on %s record(s): TRTCAT2 must be populated and must follow the correct coding scheme if TRTMTHD2 is populated (A1.5.2)."%len(errorList))
+                errorList = ["Error on %s %s: TRTMTHD1 must be PLANT, SCARIFY, SEED, OR SEEDSIP if TRTCAT1 = SUP."%(id_field, cursor[id_field_idx]) for row in cursor
+                                if cursor[TRTCAT1] == 'SUP'
+                                if cursor[TRTMTHD1] not in ['PLANT','SEED','SCARIFY','SEEDSIP']]
+                cursor.reset()
+                if len(errorList) > 0:
+                    errorDetail[lyr].append(errorList)
+                    criticalError += 1
+                    recordValCom[lyr].append("Error on %s record(s): TRTMTHD1 must be PLANT, SCARIFY, SEED, OR SEEDSIP if TRTCAT1 = SUP."%len(errorList))
 
-        #                 errorList = ["Warning on %s %s: TRTMTHD2 should be PLANT or SEED if TRTCAT2 = RET."%(id_field, cursor[id_field_idx]) for row in cursor
-        #                                 if cursor[TRTCAT2] == 'RET'
-        #                                 if cursor[TRTMTHD2] not in ['PLANT','SEED']]
-        #                 cursor.reset()
-        #                 if len(errorList) > 0:
-        #                     errorDetail[lyr].append(errorList)
-        #                     minorError += 1
-        #                     recordValCom[lyr].append("Warning on %s record(s): TRTMTHD2 should be PLANT or SEED if TRTCAT2 = RET (A1.5.2)."%len(errorList))
+            # TRTCAT2 and TRTMTHD2
+                # If the treatment method is populated (TRTMTHD# != Null) then the associated treatment category must also be populated.
+                if 'TRTMTHD2' in f:
+                    if 'TRTCAT2' in f:
+                        errorList = ["Error on %s %s: TRTCAT2 must be populated and must follow the correct coding scheme if TRTMTHD2 is populated."%(id_field, cursor[id_field_idx]) for row in cursor
+                                        if cursor[TRTMTHD2] not in vnull
+                                        if cursor[TRTCAT2] not in ['REG','RET','SUP']]
+                        cursor.reset()
+                        if len(errorList) > 0:
+                            errorDetail[lyr].append(errorList)
+                            criticalError += 1
+                            recordValCom[lyr].append("Error on %s record(s): TRTCAT2 must be populated and must follow the correct coding scheme if TRTMTHD2 is populated."%len(errorList))
 
-        #                 errorList = ["Warning on %s %s: TRTMTHD2 should be PLANT, SCARIFY, SEED, OR SEEDSIP if TRTCAT2 = SUP."%(id_field, cursor[id_field_idx]) for row in cursor
-        #                                 if cursor[TRTCAT2] == 'SUP'
-        #                                 if cursor[TRTMTHD2] not in ['PLANT','SEED','SCARIFY','SEEDSIP']]
-        #                 cursor.reset()
-        #                 if len(errorList) > 0:
-        #                     errorDetail[lyr].append(errorList)
-        #                     minorError += 1
-        #                     recordValCom[lyr].append("Warning on %s record(s): TRTMTHD2 should be PLANT, SCARIFY, SEED, OR SEEDSIP if TRTCAT2 = SUP (A1.5.2)."%len(errorList))
-        #             else:
-        #                 fieldValComUpdate[lyr].append("Missing TRTCAT2: The presence of TRTCAT2 field is mandatory if TRTMTHD2 exists.")
-        #                 fieldValUpdate[lyr] = 'Invalid'                    
+                        errorList = ["Error on %s %s: TRTMTHD2 should be PLANT or SEED if TRTCAT2 = RET."%(id_field, cursor[id_field_idx]) for row in cursor
+                                        if cursor[TRTCAT2] == 'RET'
+                                        if cursor[TRTMTHD2] not in ['PLANT','SEED']]
+                        cursor.reset()
+                        if len(errorList) > 0:
+                            errorDetail[lyr].append(errorList)
+                            criticalError += 1
+                            recordValCom[lyr].append("Error on %s record(s): TRTMTHD2 should be PLANT or SEED if TRTCAT2 = RET."%len(errorList))
 
-        #     # TRTCAT3 and TRTMTHD3
-        #         if 'TRTMTHD3' in f:
-        #             if 'TRTCAT3' in f:
-        #                 errorList = ["Error on %s %s: TRTCAT3 must be populated and must follow the correct coding scheme if TRTMTHD3 is populated."%(id_field, cursor[id_field_idx]) for row in cursor
-        #                                 if cursor[TRTMTHD3] not in vnull
-        #                                 if cursor[TRTCAT3] not in ['REG','RET','SUP']]
-        #                 cursor.reset()
-        #                 if len(errorList) > 0:
-        #                     errorDetail[lyr].append(errorList)
-        #                     criticalError += 1
-        #                     recordValCom[lyr].append("Error on %s record(s): TRTCAT3 must be populated and must follow the correct coding scheme if TRTMTHD3 is populated (A1.5.2)."%len(errorList))
+                        errorList = ["Error on %s %s: TRTMTHD2 should be PLANT, SCARIFY, SEED, OR SEEDSIP if TRTCAT2 = SUP."%(id_field, cursor[id_field_idx]) for row in cursor
+                                        if cursor[TRTCAT2] == 'SUP'
+                                        if cursor[TRTMTHD2] not in ['PLANT','SEED','SCARIFY','SEEDSIP']]
+                        cursor.reset()
+                        if len(errorList) > 0:
+                            errorDetail[lyr].append(errorList)
+                            criticalError += 1
+                            recordValCom[lyr].append("Error on %s record(s): TRTMTHD2 should be PLANT, SCARIFY, SEED, OR SEEDSIP if TRTCAT2 = SUP."%len(errorList))
+                    else:
+                        fieldValComUpdate[lyr].append("Missing TRTCAT2: The presence of TRTCAT2 field is mandatory if TRTMTHD2 exists.")
+                        fieldValUpdate[lyr] = 'Invalid'          
 
-        #                 errorList = ["Warning on %s %s: TRTMTHD3 should be PLANT or SEED if TRTCAT3 = RET."%(id_field, cursor[id_field_idx]) for row in cursor
-        #                                 if cursor[TRTCAT3] == 'RET'
-        #                                 if cursor[TRTMTHD3] not in ['PLANT','SEED']]
-        #                 cursor.reset()
-        #                 if len(errorList) > 0:
-        #                     errorDetail[lyr].append(errorList)
-        #                     minorError += 1
-        #                     recordValCom[lyr].append("Warning on %s record(s): TRTMTHD3 should be PLANT or SEED if TRTCAT3 = RET (A1.5.2)."%len(errorList))
+            # TRTCAT3 and TRTMTHD3
+                # If the treatment method is populated (TRTMTHD# != Null) then the associated treatment category must also be populated.
+                if 'TRTMTHD3' in f:
+                    if 'TRTCAT3' in f:
+                        errorList = ["Error on %s %s: TRTCAT3 must be populated and must follow the correct coding scheme if TRTMTHD3 is populated."%(id_field, cursor[id_field_idx]) for row in cursor
+                                        if cursor[TRTMTHD3] not in vnull
+                                        if cursor[TRTCAT3] not in ['REG','RET','SUP']]
+                        cursor.reset()
+                        if len(errorList) > 0:
+                            errorDetail[lyr].append(errorList)
+                            criticalError += 1
+                            recordValCom[lyr].append("Error on %s record(s): TRTCAT3 must be populated and must follow the correct coding scheme if TRTMTHD3 is populated."%len(errorList))
 
-        #                 errorList = ["Warning on %s %s: TRTMTHD3 should be PLANT, SCARIFY, SEED, OR SEEDSIP if TRTCAT3 = SUP."%(id_field, cursor[id_field_idx]) for row in cursor
-        #                                 if cursor[TRTCAT3] == 'SUP'
-        #                                 if cursor[TRTMTHD3] not in ['PLANT','SEED','SCARIFY','SEEDSIP']]
-        #                 cursor.reset()
-        #                 if len(errorList) > 0:
-        #                     errorDetail[lyr].append(errorList)
-        #                     minorError += 1
-        #                     recordValCom[lyr].append("Warning on %s record(s): TRTMTHD3 should be PLANT, SCARIFY, SEED, OR SEEDSIP if TRTCAT3 = SUP (A1.5.2)."%len(errorList))
-        #             else:
-        #                 fieldValComUpdate[lyr].append("Missing TRTCAT3: The presence of TRTCAT3 field is mandatory if TRTMTHD3 exists.")
-        #                 fieldValUpdate[lyr] = 'Invalid'     
+                        errorList = ["Error on %s %s: TRTMTHD3 should be PLANT or SEED if TRTCAT3 = RET."%(id_field, cursor[id_field_idx]) for row in cursor
+                                        if cursor[TRTCAT3] == 'RET'
+                                        if cursor[TRTMTHD3] not in ['PLANT','SEED']]
+                        cursor.reset()
+                        if len(errorList) > 0:
+                            errorDetail[lyr].append(errorList)
+                            criticalError += 1
+                            recordValCom[lyr].append("Error on %s record(s): TRTMTHD3 should be PLANT or SEED if TRTCAT3 = RET."%len(errorList))
 
-        #     # TRTMTHD1,2,3 plant count
-        #         trtmthd1_plant = ['y' for row in cursor if cursor[TRTMTHD1] == 'PLANT']
-        #         cursor.reset()
-
-        #         if 'TRTMTHD2' in f:
-        #             trtmthd2_plant = ['y' for row in cursor if cursor[TRTMTHD2] == 'PLANT']
-        #         else:
-        #             trtmthd2_plant = []
-        #         cursor.reset()
-
-        #         if 'TRTMTHD3' in f:
-        #             trtmthd3_plant = ['y' for row in cursor if cursor[TRTMTHD3] == 'PLANT']
-        #         else:
-        #             trtmthd3_plant = []
-        #         cursor.reset()
-
-        #         trtmthd_plant_count = len(trtmthd1_plant + trtmthd2_plant + trtmthd3_plant)
-
-        #     # TRTMTHD1,2,3 STRIPCUT count
-        #         trtmthd1_stripcut = ['y' for row in cursor if cursor[TRTMTHD1] == 'STRIPCUT']
-        #         cursor.reset()
-
-        #         if 'TRTMTHD2' in f:
-        #             trtmthd2_stripcut = ['y' for row in cursor if cursor[TRTMTHD2] == 'STRIPCUT']
-        #         else:
-        #             trtmthd2_stripcut = []
-        #         cursor.reset()
-
-        #         if 'TRTMTHD3' in f:
-        #             trtmthd3_stripcut = ['y' for row in cursor if cursor[TRTMTHD3] == 'STRIPCUT']
-        #         else:
-        #             trtmthd3_stripcut = []
-        #         cursor.reset()
-
-        #         trtmthd_stripcut_count = len(trtmthd1_stripcut + trtmthd2_stripcut + trtmthd3_stripcut)
-
-        #     # ESTAREA
-        #         if 'ESTAREA' in f:
-        #             errorList = ["Error on %s %s: ESTAREA must be between 0 and 1.0."%(id_field, cursor[id_field_idx]) for row in cursor
-        #                              if cursor[ESTAREA] < 0 or cursor[ESTAREA] > 1.0]
-        #             cursor.reset()
-        #             if len(errorList) > 0:
-        #                 errorDetail[lyr].append(errorList)
-        #                 criticalError += 1
-        #                 recordValCom[lyr].append("Error on %s record(s): ESTAREA must be between 0 and 1.0 (A1.5.3)."%len(errorList))
+                        errorList = ["Error on %s %s: TRTMTHD3 should be PLANT, SCARIFY, SEED, OR SEEDSIP if TRTCAT3 = SUP."%(id_field, cursor[id_field_idx]) for row in cursor
+                                        if cursor[TRTCAT3] == 'SUP'
+                                        if cursor[TRTMTHD3] not in ['PLANT','SEED','SCARIFY','SEEDSIP']]
+                        cursor.reset()
+                        if len(errorList) > 0:
+                            errorDetail[lyr].append(errorList)
+                            criticalError += 1
+                            recordValCom[lyr].append("Error on %s record(s): TRTMTHD3 should be PLANT, SCARIFY, SEED, OR SEEDSIP if TRTCAT3 = SUP."%len(errorList))
+                    else:
+                        fieldValComUpdate[lyr].append("Missing TRTCAT3: The presence of TRTCAT3 field is mandatory if TRTMTHD3 exists.")
+                        fieldValUpdate[lyr] = 'Invalid'          
 
 
-        #         # ESTAREA must be > 0 if TRTMTHD1, 2 or 3 is STRIPCUT (TRTMTHD2 and 3 are non-mandatory fields)
-        #             trt2_check = " or cursor[TRTMTHD2] == 'STRIPCUT'" if "TRTMTHD2" in f else ""
-        #             trt3_check = " or cursor[TRTMTHD3] == 'STRIPCUT'" if "TRTMTHD3" in f else ""
-        #             command = """errorList = ["Error on %s %s: ESTAREA must be greater than zero when any of the TRTMTHD1, 2 or 3 is STRIPCUT."%(id_field, cursor[id_field_idx]) for row in cursor
-        #                             if cursor[TRTMTHD1] == 'STRIPCUT'""" + trt2_check + trt3_check + " if cursor[ESTAREA] <= 0]"
-        #             exec(command)                    
+            # TRTMTHD1,2,3 plant count
+                trtmthd1_plant = ['y' for row in cursor if cursor[TRTMTHD1] == 'PLANT']
+                cursor.reset()
 
-        #             cursor.reset()
-        #             if len(errorList) > 0:
-        #                 errorDetail[lyr].append(errorList)
-        #                 criticalError += 1
-        #                 recordValCom[lyr].append("Error on %s record(s): ESTAREA must be greater than zero when any of the TRTMTHD1, 2 or 3 is STRIPCUT (A1.5.3)."%len(errorList))
+                if 'TRTMTHD2' in f:
+                    trtmthd2_plant = ['y' for row in cursor if cursor[TRTMTHD2] == 'PLANT']
+                else:
+                    trtmthd2_plant = []
+                cursor.reset()
 
-        #         # ESTAREA must be > 0 if TRTMTHD1, 2 or 3 is PLANT (TRTMTHD2 and 3 are non-mandatory fields) and both SP1 and SP2 are populated.
-        #             if 'SP1' in f and 'SP2' in f:
-        #                 trt2_check = " or cursor[TRTMTHD2] == 'PLANT'" if "TRTMTHD2" in f else ""
-        #                 trt3_check = " or cursor[TRTMTHD3] == 'PLANT'" if "TRTMTHD3" in f else ""
-        #                 command = """errorList = ["Error on %s %s: ESTAREA must be greater than zero when any of the TRTMTHD1, 2 or 3 is PLANT and both SP1 and SP2 are populated."%(id_field, cursor[id_field_idx]) for row in cursor
-        #                                 if cursor[TRTMTHD1] == 'PLANT'""" + trt2_check + trt3_check + " if cursor[SP1] not in vnull and cursor[SP2] not in vnull and cursor[ESTAREA] <= 0]"
-        #                 exec(command)                    
+                if 'TRTMTHD3' in f:
+                    trtmthd3_plant = ['y' for row in cursor if cursor[TRTMTHD3] == 'PLANT']
+                else:
+                    trtmthd3_plant = []
+                cursor.reset()
 
-        #                 cursor.reset()
-        #                 if len(errorList) > 0:
-        #                     errorDetail[lyr].append(errorList)
-        #                     criticalError += 1
-        #                     recordValCom[lyr].append("Error on %s record(s): ESTAREA must be greater than zero when any of the TRTMTHD1, 2 or 3 is PLANT and both SP1 and SP2 are populated (A1.5.3)."%len(errorList))
+                trtmthd_plant_count = len(trtmthd1_plant + trtmthd2_plant + trtmthd3_plant)
 
-        #         # ESTAREA must be 0 if TRTMTHD1, 2 or 3 is neither PLANT nor STRIPCUT.
-        #             trt2_check = " and cursor[TRTMTHD2] not in ['PLANT','STRIPCUT']" if "TRTMTHD2" in f else ""
-        #             trt3_check = " and cursor[TRTMTHD3] not in ['PLANT','STRIPCUT']" if "TRTMTHD3" in f else ""
-        #             command = """errorList = ["Error on %s %s: ESTAREA must be 0 if TRTMTHD1, 2 or 3 is neither PLANT nor STRIPCUT."%(id_field, cursor[id_field_idx]) for row in cursor
-        #                             if cursor[TRTMTHD1] not in ['PLANT','STRIPCUT']""" + trt2_check + trt3_check + " if cursor[ESTAREA] != 0]"
-        #             exec(command)                    
+            # TRTMTHD1,2,3 STRIPCUT count
+                trtmthd1_stripcut = ['y' for row in cursor if cursor[TRTMTHD1] == 'STRIPCUT']
+                cursor.reset()
 
-        #             cursor.reset()
-        #             if len(errorList) > 0:
-        #                 errorDetail[lyr].append(errorList)
-        #                 criticalError += 1
-        #                 recordValCom[lyr].append("Error on %s record(s): ESTAREA must be 0 if TRTMTHD1, 2 or 3 is neither PLANT nor STRIPCUT (A1.5.3)."%len(errorList))
+                if 'TRTMTHD2' in f:
+                    trtmthd2_stripcut = ['y' for row in cursor if cursor[TRTMTHD2] == 'STRIPCUT']
+                else:
+                    trtmthd2_stripcut = []
+                cursor.reset()
 
-        #         elif trtmthd_stripcut_count > 0:
-        #             fieldValComUpdate[lyr].append("Missing ESTAREA: The presence of ESTAREA field is mandatory if TRTMTHD# = STRIPCUT exists.")
-        #             fieldValUpdate[lyr] = 'Invalid'
+                if 'TRTMTHD3' in f:
+                    trtmthd3_stripcut = ['y' for row in cursor if cursor[TRTMTHD3] == 'STRIPCUT']
+                else:
+                    trtmthd3_stripcut = []
+                cursor.reset()
 
-        #     # SP1 and SP2
-        #         if 'SP1' in f:
-        #             errorList = ["Error on %s %s: SP1 must use coding list from OSPCOMP in the FIM FRI Tech Spec, if populated (A1.5.4)."%(id_field, cursor[id_field_idx]) for row in cursor
-        #                              if cursor[SP1] not in vnull
-        #                              if cursor[SP1] not in R.SpcListInterp + R.SpcListOther]
-        #             cursor.reset()
-        #             if len(errorList) > 0:
-        #                 errorDetail[lyr].append(errorList)
-        #                 criticalError += 1
-        #                 recordValCom[lyr].append("Error on %s record(s): SP1 must use coding list from OSPCOMP in the FIM FRI Tech Spec, if populated (A1.5.4)."%len(errorList))
+                trtmthd_stripcut_count = len(trtmthd1_stripcut + trtmthd2_stripcut + trtmthd3_stripcut)
 
-        #         if 'SP2' in f:
-        #             errorList = ["Error on %s %s: SP2 must use coding list from OSPCOMP in the FIM FRI Tech Spec, if populated (A1.5.4)."%(id_field, cursor[id_field_idx]) for row in cursor
-        #                              if cursor[SP2] not in vnull
-        #                              if cursor[SP2] not in R.SpcListInterp + R.SpcListOther]
-        #             cursor.reset()
-        #             if len(errorList) > 0:
-        #                 errorDetail[lyr].append(errorList)
-        #                 criticalError += 1
-        #                 recordValCom[lyr].append("Error on %s record(s): SP2 must use coding list from OSPCOMP in the FIM FRI Tech Spec, if populated (A1.5.4)."%len(errorList))
-
-        #             if 'TRTMTHD2' in f:
-        #                 errorList = ["Error on %s %s: SP2 must be null if TRTMTHD# is not PLANT (A1.5.4)."%(id_field, cursor[id_field_idx]) for row in cursor
-        #                                  if cursor[TRTMTHD1] != 'PLANT' and cursor[TRTMTHD2] != 'PLANT'
-        #                                  if cursor[SP2] not in vnull]
-        #                 cursor.reset()
-        #                 if len(errorList) > 0:
-        #                     errorDetail[lyr].append(errorList)
-        #                     criticalError += 1
-        #                     recordValCom[lyr].append("Error on %s record(s): SP2 must be null if TRTMTHD# is not PLANT.(A1.5.4)."%len(errorList))
-        #             else:
-        #                 errorList = ["Error on %s %s: SP2 must be null if TRTMTHD# is not PLANT (A1.5.4)."%(id_field, cursor[id_field_idx]) for row in cursor
-        #                                  if cursor[TRTMTHD1] != 'PLANT'
-        #                                  if cursor[SP2] not in vnull]
-        #                 cursor.reset()
-        #                 if len(errorList) > 0:
-        #                     errorDetail[lyr].append(errorList)
-        #                     criticalError += 1
-        #                     recordValCom[lyr].append("Error on %s record(s): SP2 must be null if TRTMTHD# is not PLANT (A1.5.4)."%len(errorList))
-
-        #         if 'SP1' in f:
-        #             if 'TRTMTHD2' in f:
-        #                 errorList = ["Error on %s %s: SP1 must be populated if TRTMTHD# = PLANT (A1.5.4)."%(id_field, cursor[id_field_idx]) for row in cursor
-        #                                  if cursor[TRTMTHD1] == 'PLANT' or cursor[TRTMTHD2] == 'PLANT'
-        #                                  if cursor[SP1] in vnull]
-        #                 cursor.reset()
-        #                 if len(errorList) > 0:
-        #                     errorDetail[lyr].append(errorList)
-        #                     criticalError += 1
-        #                     recordValCom[lyr].append("Error on %s record(s): SP1 must be populated if TRTMTHD# = PLANT (A1.5.4)."%len(errorList))
+            # ESTAREA
+                # The attribute population must follow the correct format.
+                # A zero (or null) value is not a valid code
+                errorList = ["Error on %s %s: ESTAREA must be between 0.01 and 1."%(id_field, cursor[id_field_idx]) for row in cursor
+                                 if cursor[ESTAREA] == None or cursor[ESTAREA] < 0.01 or cursor[ESTAREA] > 1.0]
+                cursor.reset()
+                if len(errorList) > 0:
+                    errorDetail[lyr].append(errorList)
+                    criticalError += 1
+                    recordValCom[lyr].append("Error on %s record(s): ESTAREA must be between 0.01 and 1."%len(errorList))
 
 
+                # ESTAREA must be > 0 and < 1 if TRTMTHD1, 2 or 3 is STRIPCUT (TRTMTHD2 and 3 are non-mandatory fields)
+                # (ESTAREA cannot be zero anyways, so it's redundant to check if ESTAREA is greater than zero)
+                trt2_check = " or cursor[TRTMTHD2] == 'STRIPCUT'" if "TRTMTHD2" in f else ""
+                trt3_check = " or cursor[TRTMTHD3] == 'STRIPCUT'" if "TRTMTHD3" in f else ""
+                command = """errorList = ["Error on %s %s: ESTAREA must be less than 1 when any of the TRTMTHD1, 2 or 3 is STRIPCUT."%(id_field, cursor[id_field_idx]) for row in cursor
+                                if cursor[TRTMTHD1] == 'STRIPCUT'""" + trt2_check + trt3_check + " \
+                                if cursor[ESTAREA] == 1.0]"
+                exec(command)
+                cursor.reset()
+                if len(errorList) > 0:
+                    errorDetail[lyr].append(errorList)
+                    criticalError += 1
+                    recordValCom[lyr].append("Error on %s record(s): ESTAREA must be less than 1 when any of the TRTMTHD1, 2 or 3 is STRIPCUT."%len(errorList))
+
+                # ESTAREA must be < 1 if TRTMTHD1, 2 or 3 is PLANT (TRTMTHD2 and 3 are non-mandatory fields) and both SP1 and SP2 are populated.
+                # (ESTAREA cannot be zero anyways, so it's redundant to check if ESTAREA is greater than zero)
+                trt2_check = " or cursor[TRTMTHD2] == 'PLANT'" if "TRTMTHD2" in f else ""
+                trt3_check = " or cursor[TRTMTHD3] == 'PLANT'" if "TRTMTHD3" in f else ""
+                command = """errorList = ["Error on %s %s: ESTAREA must be less than 1 when any of the TRTMTHD1, 2 or 3 is PLANT and both SP1 and SP2 are populated."%(id_field, cursor[id_field_idx]) for row in cursor
+                                if cursor[TRTMTHD1] == 'PLANT'""" + trt2_check + trt3_check + " \
+                                if cursor[SP1] not in vnull and cursor[SP2] not in vnull \
+                                if cursor[ESTAREA] == 1.0]"
+                exec(command)                    
+                cursor.reset()
+                if len(errorList) > 0:
+                    errorDetail[lyr].append(errorList)
+                    criticalError += 1
+                    recordValCom[lyr].append("Error on %s record(s): ESTAREA must be less than 1 when any of the TRTMTHD1, 2 or 3 is PLANT and both SP1 and SP2 are populated."%len(errorList))
+
+                # ESTAREA must be 1 if TRTMTHD# is neither PLANT nor STRIPCUT.
+                trt2_check = " and cursor[TRTMTHD2] not in ['PLANT','STRIPCUT']" if "TRTMTHD2" in f else ""
+                trt3_check = " and cursor[TRTMTHD3] not in ['PLANT','STRIPCUT']" if "TRTMTHD3" in f else ""
+                command = """errorList = ["Error on %s %s: ESTAREA must be 1 if all of the Treatment Methods (TRTMTHD#) are neither PLANT nor STRIPCUT."%(id_field, cursor[id_field_idx]) for row in cursor
+                                if cursor[TRTMTHD1] not in ['PLANT','STRIPCUT']""" + trt2_check + trt3_check + " \
+                                if cursor[ESTAREA] != 1]"
+                exec(command)
+                cursor.reset()
+                if len(errorList) > 0:
+                    errorDetail[lyr].append(errorList)
+                    criticalError += 1
+                    recordValCom[lyr].append("Error on %s record(s): ESTAREA must be 1 if all of the Treatment Methods (TRTMTHD#) are neither PLANT nor STRIPCUT."%len(errorList))
+
+
+            # SP1 and SP2
+                # The presence of this attribute in the file structure of the layer is mandatory for SP1 and SP2
+                # The attribute population must follow the correct coding scheme.
+                errorList = ["Error on %s %s: SP1 must use the coding list from OSPCOMP in the FIM FRI Tech Spec, if populated."%(id_field, cursor[id_field_idx]) for row in cursor
+                                 if cursor[SP1] not in vnull
+                                 if cursor[SP1].upper() not in R.SpcListInterp + R.SpcListOther]
+                cursor.reset()
+                if len(errorList) > 0:
+                    errorDetail[lyr].append(errorList)
+                    criticalError += 1
+                    recordValCom[lyr].append("Error on %s record(s): SP1 must use the coding list from OSPCOMP in the FIM FRI Tech Spec, if populated."%len(errorList))
+
+                errorList = ["Error on %s %s: SP2 must use the coding list from OSPCOMP in the FIM FRI Tech Spec, if populated."%(id_field, cursor[id_field_idx]) for row in cursor
+                                 if cursor[SP2] not in vnull
+                                 if cursor[SP2].upper() not in R.SpcListInterp + R.SpcListOther]
+                cursor.reset()
+                if len(errorList) > 0:
+                    errorDetail[lyr].append(errorList)
+                    criticalError += 1
+                    recordValCom[lyr].append("Error on %s record(s): SP2 must use the coding list from OSPCOMP in the FIM FRI Tech Spec, if populated."%len(errorList))
+
+                # SP2 must be null if the treatment method is not planting (TRTMTHD# != PLANT)
+                trt2_check = " and cursor[TRTMTHD2] != 'PLANT'" if "TRTMTHD2" in f else ""
+                trt3_check = " and cursor[TRTMTHD3] != 'PLANT'" if "TRTMTHD3" in f else ""
+                command = """errorList = ["Error on %s %s: SP2 must be null if none of the Treatment Methods (TRTMTHD#) is PLANT."%(id_field, cursor[id_field_idx]) for row in cursor
+                                if cursor[TRTMTHD1] != 'PLANT'""" + trt2_check + trt3_check + " \
+                                if cursor[SP2] not in vnull]"
+                exec(command)
+                cursor.reset()
+                if len(errorList) > 0:
+                    errorDetail[lyr].append(errorList)
+                    criticalError += 1
+                    recordValCom[lyr].append("Error on %s record(s): SP2 must be null if none of the Treatment Methods (TRTMTHD#) is PLANT."%len(errorList))
+
+                # SP1 must be populated if any of the treatment methods are planting (TRTMTHD# = PLANT)
+                trt2_check = " or cursor[TRTMTHD2] == 'PLANT'" if "TRTMTHD2" in f else ""
+                trt3_check = " or cursor[TRTMTHD3] == 'PLANT'" if "TRTMTHD3" in f else ""
+                command = """errorList = ["Error on %s %s: SP1 must be populated if any of the Treatment Methods (TRTMTHD#) are PLANT."%(id_field, cursor[id_field_idx]) for row in cursor
+                                if cursor[TRTMTHD1] == 'PLANT'""" + trt2_check + trt3_check + " \
+                                if cursor[SP1] in vnull]"
+                exec(command)
+                cursor.reset()
+                if len(errorList) > 0:
+                    errorDetail[lyr].append(errorList)
+                    criticalError += 1
+                    recordValCom[lyr].append("Error on %s record(s): SP1 must be populated if any of the Treatment Methods (TRTMTHD#) are PLANT."%len(errorList))
+
+                # The first species field may be populated if the treatment method is SEED or SEEDSIP.
+                # The species fields (SP1 and SP2) should be null if all of the treatment methods are CLAAG, NATURAL, HARP, SCARIFY, STRIPCUT or SEEDTREE or Null (or if none of the treatment methods is PLANT, SEED or SEEDSIP)
+                trt2_check = " and cursor[TRTMTHD2] not in ['PLANT','SEED','SEEDSIP']" if "TRTMTHD2" in f else ""
+                trt3_check = " and cursor[TRTMTHD3] not in ['PLANT','SEED','SEEDSIP']" if "TRTMTHD3" in f else ""
+                command = """errorList = ["Warning on %s %s: SP1 and SP2 should be null if none of the treatment methods is PLANT, SEED or SEEDSIP."%(id_field, cursor[id_field_idx]) for row in cursor
+                                if cursor[TRTMTHD1] not in ['PLANT','SEED','SEEDSIP']""" + trt2_check + trt3_check + " \
+                                if cursor[SP1] not in vnull or cursor[SP2] not in vnull]"
+                exec(command)
+                cursor.reset()
+                if len(errorList) > 0:
+                    errorDetail[lyr].append(errorList)
+                    minorError += 1
+                    recordValCom[lyr].append("Warning on %s record(s): SP1 and SP2 should be null if none of the treatment methods is PLANT, SEED or SEEDSIP."%len(errorList))
+
+            except ValueError:
+                recordValCom[lyr].append("***Unable to run full validation on %s due to missing mandatory field(s)"%lyr)
+                criticalError += 1
+            except NameError:
+                recordValCom[lyr].append("***Unable to run full validation on %s due to unexpected error."%lyr)
+                systemError = True
 
 
 
 
 
-        #     except ValueError:
-        #         recordValCom[lyr].append("***Unable to run full validation on %s due to missing mandatory field(s)"%lyr)
-        #         criticalError += 1
-        #     except NameError:
-        #         recordValCom[lyr].append("***Unable to run full validation on %s due to unexpected error."%lyr)
-        #         systemError = True
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 #    Still in this for loop: "for lyr in summarytbl.keys():"
