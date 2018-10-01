@@ -1689,12 +1689,82 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
 
 
 
+        ###########################  Checking SCT   ############################
 
+        if lyrAcro == "SCT":
+            try:
 
+            # SLASHPIL
+                # The population of this attribute is mandatory
+                # The attribute population must follow the coding scheme
+                errorList = ["Error on %s %s: SLASHPIL must be populated with Y or N."%(id_field, cursor[id_field_idx]) for row in cursor
+                                if cursor[SLASHPIL] not in ['Y','N']]
+                cursor.reset()
+                if len(errorList) > 0:
+                    errorDetail[lyr].append(errorList)
+                    criticalError += 1
+                    recordValCom[lyr].append("Error on %s record(s): SLASHPIL must be populated with Y or N."%len(errorList))
 
+            # CHIPPIL
+                # The population of this attribute is mandatory
+                # The attribute population must follow the coding scheme
+                errorList = ["Error on %s %s: CHIPPIL must be populated with Y or N."%(id_field, cursor[id_field_idx]) for row in cursor
+                                if cursor[CHIPPIL] not in ['Y','N']]
+                cursor.reset()
+                if len(errorList) > 0:
+                    errorDetail[lyr].append(errorList)
+                    criticalError += 1
+                    recordValCom[lyr].append("Error on %s record(s): CHIPPIL must be populated with Y or N."%len(errorList))
 
+            # BURN
+                # The population of this attribute is mandatory
+                # The attribute population must follow the coding scheme
+                errorList = ["Error on %s %s: BURN must be populated with Y or N."%(id_field, cursor[id_field_idx]) for row in cursor
+                                if cursor[BURN] not in ['Y','N']]
+                cursor.reset()
+                if len(errorList) > 0:
+                    errorDetail[lyr].append(errorList)
+                    criticalError += 1
+                    recordValCom[lyr].append("Error on %s record(s): BURN must be populated with Y or N."%len(errorList))
 
+            # MECHANIC
+                # The population of this attribute is mandatory
+                # The attribute population must follow the coding scheme
+                errorList = ["Error on %s %s: MECHANIC must be populated with Y or N."%(id_field, cursor[id_field_idx]) for row in cursor
+                                if cursor[MECHANIC] not in ['Y','N']]
+                cursor.reset()
+                if len(errorList) > 0:
+                    errorDetail[lyr].append(errorList)
+                    criticalError += 1
+                    recordValCom[lyr].append("Error on %s record(s): MECHANIC must be populated with Y or N."%len(errorList))
 
+            # REMOVAL
+                # The population of this attribute is mandatory
+                # The attribute population must follow the coding scheme
+                errorList = ["Error on %s %s: REMOVAL must be populated with Y or N."%(id_field, cursor[id_field_idx]) for row in cursor
+                                if cursor[REMOVAL] not in ['Y','N']]
+                cursor.reset()
+                if len(errorList) > 0:
+                    errorDetail[lyr].append(errorList)
+                    criticalError += 1
+                    recordValCom[lyr].append("Error on %s record(s): REMOVAL must be populated with Y or N."%len(errorList))                    
+
+            # SLASHPIL, CHIPPIL, BURN, MECHANIC and REMOVAL
+                # At minimum, one of Slash Piling, Chip Piling, Slash Burning, Onsite MEchanical PRocessing or Removal Offsite for Processing must occur for each record.
+                errorList = ["Error on %s %s: At minimum, one of SLASHPIL, CHIPPIL, BURN, MECHANIC and REMOVAL must occur."%(id_field, cursor[id_field_idx]) for row in cursor
+                                if 'Y' not in [cursor[SLASHPIL], cursor[CHIPPIL], cursor[BURN], cursor[MECHANIC], cursor[REMOVAL]]]
+                cursor.reset()
+                if len(errorList) > 0:
+                    errorDetail[lyr].append(errorList)
+                    criticalError += 1
+                    recordValCom[lyr].append("Error on %s record(s): At minimum, one of SLASHPIL, CHIPPIL, BURN, MECHANIC and REMOVAL must occur."%len(errorList))     
+
+            except ValueError:
+                recordValCom[lyr].append("***Unable to run full validation on %s due to missing mandatory field(s)"%lyr)
+                criticalError += 1
+            except NameError:
+                recordValCom[lyr].append("***Unable to run full validation on %s due to unexpected error."%lyr)
+                systemError = True
 
 
 
