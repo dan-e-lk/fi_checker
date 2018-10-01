@@ -1814,13 +1814,21 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
                     criticalError += 1
                     recordValCom[lyr].append("Error on %s record(s): TRIAL must be populated with Y or N."%len(errorList))
 
-
             except ValueError:
                 recordValCom[lyr].append("***Unable to run full validation on %s due to missing mandatory field(s)"%lyr)
                 criticalError += 1
             except NameError:
                 recordValCom[lyr].append("***Unable to run full validation on %s due to unexpected error."%lyr)
                 systemError = True
+
+
+
+
+
+
+
+
+
 
 
 
