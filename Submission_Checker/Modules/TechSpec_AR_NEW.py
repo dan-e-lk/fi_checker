@@ -1768,9 +1768,59 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
 
 
 
+        ###########################  Checking SGR   ############################
+
+        if lyrAcro == "SGR":
+            try:
+
+            # SGR
+                # A blank or null value is not a valid value.
+                errorList = ["Error on %s %s: SGR must be populated."%(id_field, cursor[id_field_idx]) for row in cursor
+                                if cursor[SGR] in vnull]
+                cursor.reset()
+                if len(errorList) > 0:
+                    errorDetail[lyr].append(errorList)
+                    criticalError += 1
+                    recordValCom[lyr].append("Error on %s record(s): SGR must be populated."%len(errorList))
+
+            # TARGETFU
+                # A blank or null value is not a valid value.
+                errorList = ["Error on %s %s: TARGETFU must be populated."%(id_field, cursor[id_field_idx]) for row in cursor
+                                if cursor[TARGETFU] in vnull]
+                cursor.reset()
+                if len(errorList) > 0:
+                    errorDetail[lyr].append(errorList)
+                    criticalError += 1
+                    recordValCom[lyr].append("Error on %s record(s): TARGETFU must be populated."%len(errorList))
+
+            # TARGETYD
+                # A blank or null value is not a valid value.
+                errorList = ["Error on %s %s: TARGETYD must be populated."%(id_field, cursor[id_field_idx]) for row in cursor
+                                if cursor[TARGETYD] in vnull]
+                cursor.reset()
+                if len(errorList) > 0:
+                    errorDetail[lyr].append(errorList)
+                    criticalError += 1
+                    recordValCom[lyr].append("Error on %s record(s): TARGETYD must be populated."%len(errorList))
+
+            # TRIAL
+                # The population of this attribute is mandatory
+                # The attribute population must follow the coding scheme
+                errorList = ["Error on %s %s: TRIAL must be populated with Y or N."%(id_field, cursor[id_field_idx]) for row in cursor
+                                if cursor[TRIAL] not in ['Y','N']]
+                cursor.reset()
+                if len(errorList) > 0:
+                    errorDetail[lyr].append(errorList)
+                    criticalError += 1
+                    recordValCom[lyr].append("Error on %s record(s): TRIAL must be populated with Y or N."%len(errorList))
 
 
-
+            except ValueError:
+                recordValCom[lyr].append("***Unable to run full validation on %s due to missing mandatory field(s)"%lyr)
+                criticalError += 1
+            except NameError:
+                recordValCom[lyr].append("***Unable to run full validation on %s due to unexpected error."%lyr)
+                systemError = True
 
 
 
