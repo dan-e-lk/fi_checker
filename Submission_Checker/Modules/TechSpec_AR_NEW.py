@@ -1416,10 +1416,10 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
                 # For TRTMTHD1, 2 or 3, the population of one of these attributes is mandatory.
                 opt_flds = ['TRTMTHD2','TRTMTHD3'] # optional fields
                 command = """errorList = ["Error on %s %s: For TRTMTHD1, TRTMTHD2 and TRTMTHD3, the population of one of these attributes is mandatory."%(id_field, cursor[id_field_idx]) for row in cursor
-                                    if cursor[TRTMTHD1] not in ['CLAAG','NATURAL','HARP','PLANT','SCARIFY','SEED','SEEDSIP','SEEDTREE','STRIPCUT']"""
+                                    if cursor[TRTMTHD1] in vnull"""
                 for opt_fld in opt_flds:
                     if opt_fld in f:
-                        command += """ and cursor[""" + opt_fld + """] not in ['CLAAG','NATURAL','HARP','PLANT','SCARIFY','SEED','SEEDSIP','SEEDTREE','STRIPCUT']"""
+                        command += """ and cursor[""" + opt_fld + """] in vnull"""
                 command += ']'
                 exec(command)
                 cursor.reset()
