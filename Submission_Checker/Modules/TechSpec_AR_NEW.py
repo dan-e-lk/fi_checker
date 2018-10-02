@@ -40,8 +40,8 @@ lyrInfo = {
     "RGN":  ["Regeneration Treatment",                  ['TRTMTHD1','TRTCAT1','ESTAREA','SP1','SP2'],               'polygon',  '4.3.11',       R.findPDF('FIM_AR_TechSpec_2017.pdf#page=59')],
     "SCT":  ["Slash and Chip Treatment",                ['SLASHPIL','CHIPPIL','BURN','MECHANIC','REMOVAL'],         'arc',      '4.3.20',       R.findPDF('FIM_AR_TechSpec_2017.pdf#page=122')],
     "SGR":  ["Silvicultural Ground Rule Update",        ['SGR','TARGETFU','TARGETYD','TRIAL'],                      'polygon',  '4.3.19',       R.findPDF('FIM_AR_TechSpec_2017.pdf#page=118')],
-    "SIP":  ["Site Preparation Treatment",              ['TRTMTHD1','TRTCAT1','PRODTYPE','RATE_AI','APPNUM'],       'polygon',  '4.3.12',       R.findPDF('FIM_AR_TechSpec_2017.pdf#page=68')],
-    "TND":  ["Tending Treatment",                       ['TRTMTHD1','TRTCAT1','PRODTYPE','RATE_AI','APPNUM'],       'polygon',  '4.3.13',       R.findPDF('FIM_AR_TechSpec_2017.pdf#page=74')],
+    "SIP":  ["Site Preparation Treatment",              ['TRTMTHD1','TRTCAT1'],                                     'polygon',  '4.3.12',       R.findPDF('FIM_AR_TechSpec_2017.pdf#page=68')],
+    "TND":  ["Tending Treatment",                       ['TRTMTHD1','TRTCAT1'],                                     'polygon',  '4.3.13',       R.findPDF('FIM_AR_TechSpec_2017.pdf#page=74')],
     "WTX":  ["Water Crossings",                         ['WATXID','WATXTYPE','CONSTRCT','MONITOR','REMOVE',
                                                             'REPLACE','REVIEW','ROADID','TRANS'],                   'point',    '4.3.10',       R.findPDF('FIM_AR_TechSpec_2017.pdf#page=52')]
         }
@@ -1028,10 +1028,10 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
                 # For TRTMTHD1, 2 or 3, the population of one of these attributes is mandatory.
                 opt_flds = ['TRTMTHD2','TRTMTHD3'] # optional fields
                 command = """errorList = ["Error on %s %s: For TRTMTHD1, TRTMTHD2 and TRTMTHD3, the population of one of these attributes is mandatory."%(id_field, cursor[id_field_idx]) for row in cursor
-                                    if cursor[TRTMTHD1] not in ['PCHEMA','PCHEMG','PMANUAL']"""
+                                    if cursor[TRTMTHD1] in vnull"""
                 for opt_fld in opt_flds:
                     if opt_fld in f:
-                        command += """ and cursor[""" + opt_fld + """] not in ['PCHEMA','PCHEMG','PMANUAL']"""
+                        command += """ and cursor[""" + opt_fld + """] in vnull"""
                 command += ']'
                 exec(command)
                 cursor.reset()
@@ -1820,6 +1820,266 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
             except NameError:
                 recordValCom[lyr].append("***Unable to run full validation on %s due to unexpected error."%lyr)
                 systemError = True
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        ###########################  Checking SIP   ############################
+
+        if lyrAcro == "SIP":
+            try: # need try and except block here for cases such as not having mandatory fields.
+
+            # TRTMTHD1
+                # The attribute population must follow the correct coding scheme
+                errorList = ["Error on %s %s: TRTMTHD1 must follow the correct coding scheme, if populated."%(id_field, cursor[id_field_idx]) for row in cursor
+                                if cursor[TRTMTHD1] not in vnull + ['SIPMECH','SIPCHEMA','SIPCHEMG','SIPPB']]
+                cursor.reset()
+                if len(errorList) > 0:
+                    errorDetail[lyr].append(errorList)
+                    criticalError += 1
+                    recordValCom[lyr].append("Error on %s record(s): TRTMTHD1 must follow the correct coding scheme, if populated."%len(errorList))
+
+            # TRTMTHD2
+                # The attribute population must follow the correct coding scheme
+                if 'TRTMTHD2' in f:
+                    errorList = ["Error on %s %s: TRTMTHD2 must follow the correct coding scheme if populated."%(id_field, cursor[id_field_idx]) for row in cursor
+                                    if cursor[TRTMTHD2] not in vnull + ['SIPMECH','SIPCHEMA','SIPCHEMG','SIPPB']]
+                    cursor.reset()
+                    if len(errorList) > 0:
+                        errorDetail[lyr].append(errorList)
+                        criticalError += 1
+                        recordValCom[lyr].append("Error on %s record(s): TRTMTHD2 must follow the correct coding scheme if populated."%len(errorList))
+
+            # TRTMTHD3
+                # The attribute population must follow the correct coding scheme
+                if 'TRTMTHD3' in f:
+                    errorList = ["Error on %s %s: TRTMTHD3 must follow the correct coding scheme if populated."%(id_field, cursor[id_field_idx]) for row in cursor
+                                    if cursor[TRTMTHD3] not in vnull + ['SIPMECH','SIPCHEMA','SIPCHEMG','SIPPB']]
+                    cursor.reset()
+                    if len(errorList) > 0:
+                        errorDetail[lyr].append(errorList)
+                        criticalError += 1
+                        recordValCom[lyr].append("Error on %s record(s): TRTMTHD3 must follow the correct coding scheme if populated."%len(errorList))
+
+            # TRTMTHD1, 2 and 3
+                # For TRTMTHD1, 2 or 3, the population of one of these attributes is mandatory.
+                opt_flds = ['TRTMTHD2','TRTMTHD3'] # optional fields
+                command = """errorList = ["Error on %s %s: For TRTMTHD1, TRTMTHD2 and TRTMTHD3, the population of one of these attributes is mandatory."%(id_field, cursor[id_field_idx]) for row in cursor
+                                    if cursor[TRTMTHD1] in vnull"""
+                for opt_fld in opt_flds:
+                    if opt_fld in f:
+                        command += """ and cursor[""" + opt_fld + """] in vnull"""
+                command += ']'
+                exec(command)
+                cursor.reset()
+
+                if len(errorList) > 0:
+                    errorDetail[lyr].append(errorList)
+                    criticalError += 1
+                    recordValCom[lyr].append("Error on %s record(s): For TRTMTHD1, TRTMTHD2 and TRTMTHD3, the population of one of these attributes is mandatory."%len(errorList))
+
+
+            # TRTCAT1 and TRTMTHD1
+                # If the treatment method is populated (TRTMTHD# != Null) then the associated treatment category must also be populated.
+                # The attribute population must follow the correct coding scheme.
+                errorList = ["Error on %s %s: TRTCAT1 must be populated and must follow the correct coding scheme if TRTMTHD1 is populated."%(id_field, cursor[id_field_idx]) for row in cursor
+                                if cursor[TRTMTHD1] not in vnull
+                                if cursor[TRTCAT1] not in ['REG','RET','SUP']]
+                cursor.reset()
+                if len(errorList) > 0:
+                    errorDetail[lyr].append(errorList)
+                    criticalError += 1
+                    recordValCom[lyr].append("Error on %s record(s): TRTCAT1 must be populated and must follow the correct coding scheme if TRTMTHD1 is populated."%len(errorList))
+
+            # TRTCAT2 and TRTMTHD2
+                # If the treatment method is populated (TRTMTHD# != Null) then the associated treatment category must also be populated.
+                if 'TRTMTHD2' in f:
+                    if 'TRTCAT2' in f:
+                        errorList = ["Error on %s %s: TRTCAT2 must be populated and must follow the correct coding scheme if TRTMTHD2 is populated."%(id_field, cursor[id_field_idx]) for row in cursor
+                                        if cursor[TRTMTHD2] not in vnull
+                                        if cursor[TRTCAT2] not in ['REG','RET','SUP']]
+                        cursor.reset()
+                        if len(errorList) > 0:
+                            errorDetail[lyr].append(errorList)
+                            criticalError += 1
+                            recordValCom[lyr].append("Error on %s record(s): TRTCAT2 must be populated and must follow the correct coding scheme if TRTMTHD2 is populated."%len(errorList))
+                    else:
+                        fieldValComUpdate[lyr].append("Missing TRTCAT2: The presence of TRTCAT2 field is mandatory if TRTMTHD2 exists.")
+                        fieldValUpdate[lyr] = 'Invalid'          
+
+            # TRTCAT3 and TRTMTHD3
+                # If the treatment method is populated (TRTMTHD# != Null) then the associated treatment category must also be populated.
+                if 'TRTMTHD3' in f:
+                    if 'TRTCAT3' in f:
+                        errorList = ["Error on %s %s: TRTCAT3 must be populated and must follow the correct coding scheme if TRTMTHD3 is populated."%(id_field, cursor[id_field_idx]) for row in cursor
+                                        if cursor[TRTMTHD3] not in vnull
+                                        if cursor[TRTCAT3] not in ['REG','RET','SUP']]
+                        cursor.reset()
+                        if len(errorList) > 0:
+                            errorDetail[lyr].append(errorList)
+                            criticalError += 1
+                            recordValCom[lyr].append("Error on %s record(s): TRTCAT3 must be populated and must follow the correct coding scheme if TRTMTHD3 is populated."%len(errorList))
+                    else:
+                        fieldValComUpdate[lyr].append("Missing TRTCAT3: The presence of TRTCAT3 field is mandatory if TRTMTHD3 exists.")
+                        fieldValUpdate[lyr] = 'Invalid'  
+
+            # TRTMTHD chemical count
+                # PRODTYPE, RATE_AI, and APPNUM fields become mandatory fields when any of the TRTMTHD are either SIPCHEMA or SIPCHEMG.
+                trtmthd1_chem = ['y' for row in cursor if cursor[TRTMTHD1] in ['SIPCHEMA','SIPCHEMG']]
+                cursor.reset()
+
+                if 'TRTMTHD2' in f:
+                    trtmthd2_chem = ['y' for row in cursor if cursor[TRTMTHD2] in ['SIPCHEMA','SIPCHEMG']]
+                else:
+                    trtmthd2_chem = []
+                cursor.reset()
+
+                if 'TRTMTHD3' in f:
+                    trtmthd3_chem = ['y' for row in cursor if cursor[TRTMTHD3] in ['SIPCHEMA','SIPCHEMG']]
+                else:
+                    trtmthd3_chem = []
+                cursor.reset()
+
+                trtmthd_chem_count = len(trtmthd1_chem + trtmthd2_chem + trtmthd3_chem)
+
+            # PRODTYPE
+                if 'PRODTYPE' in f:
+                    # The product type attribute must be present and populated when any of the treatment methods are mechanical or prescribed burn.
+                    trt2_check = " or cursor[TRTMTHD2] in ['SIPCHEMA','SIPCHEMG']" if "TRTMTHD2" in f else ""
+                    trt3_check = " or cursor[TRTMTHD3] in ['SIPCHEMA','SIPCHEMG']" if "TRTMTHD3" in f else ""
+
+                    command = """errorList = ["Error on %s %s: PRODTYPE must be populated when any of the treatment methods are chemical."%(id_field, cursor[id_field_idx]) for row in cursor
+                                    if cursor[PRODTYPE] in vnull
+                                    if cursor[TRTMTHD1] in ['SIPCHEMA','SIPCHEMG']""" + trt2_check + trt3_check + "]"
+                    exec(command)
+                    cursor.reset()
+                    if len(errorList) > 0:
+                        errorDetail[lyr].append(errorList)
+                        criticalError += 1
+                        recordValCom[lyr].append("Error on %s record(s): PRODTYPE must be populated when any of the treatment methods are chemical."%len(errorList))
+
+                    # The product type must be null when all the treatment methods are mechanical or prescribed burn. (when none of the treatment methods are chemial)
+                    trt2_check = " and cursor[TRTMTHD2] not in ['SIPCHEMA','SIPCHEMG']" if "TRTMTHD2" in f else ""
+                    trt3_check = " and cursor[TRTMTHD3] not in ['SIPCHEMA','SIPCHEMG']" if "TRTMTHD3" in f else ""
+
+                    command = """errorList = ["Error on %s %s: PRODTYPE must be null when none of the treatment methods are chemical."%(id_field, cursor[id_field_idx]) for row in cursor
+                                    if cursor[PRODTYPE] not in vnull
+                                    if cursor[TRTMTHD1] not in ['SIPCHEMA','SIPCHEMG']""" + trt2_check + trt3_check + "]"
+                    exec(command)
+                    cursor.reset()
+                    if len(errorList) > 0:
+                        errorDetail[lyr].append(errorList)
+                        criticalError += 1
+                        recordValCom[lyr].append("Error on %s record(s): PRODTYPE must be null when none of the treatment methods are chemical."%len(errorList))
+
+                elif trtmthd_chem_count > 0:
+                    # The product type attribute must be present and populated when any of the treatment methods are aerial or ground chemial
+                    fieldValComUpdate[lyr].append("Missing PRODTYPE: The presence of PRODTYPE field is mandatory when any of the treatment methods are chemical.")
+                    fieldValUpdate[lyr] = 'Invalid'
+
+            # RATE_AI
+                if 'RATE_AI' in f:
+                    # The product quantity attribute must be present and populated when any of the treatment methods are aerial or ground chemial
+                    trt2_check = " or cursor[TRTMTHD2] in ['SIPCHEMA','SIPCHEMG']" if "TRTMTHD2" in f else ""
+                    trt3_check = " or cursor[TRTMTHD3] in ['SIPCHEMA','SIPCHEMG']" if "TRTMTHD3" in f else ""
+
+                    command = """errorList = ["Error on %s %s: RATE_AI must be greater than 0 and less than or equal to 9.99 when any of the treatment methods are chemical."%(id_field, cursor[id_field_idx]) for row in cursor
+                                    if cursor[RATE_AI] in vnull or cursor[RATE_AI] <= 0 or cursor[RATE_AI] > 9.99
+                                    if cursor[TRTMTHD1] in ['SIPCHEMA','SIPCHEMG']""" + trt2_check + trt3_check + "]"
+                    exec(command)
+                    cursor.reset()
+                    if len(errorList) > 0:
+                        errorDetail[lyr].append(errorList)
+                        criticalError += 1
+                        recordValCom[lyr].append("Error on %s record(s): RATE_AI must be greater than 0 and less than or equal to 9.99 when any of the treatment methods are chemical."%len(errorList))
+
+                    # The product quantity must be zero (or null) when all the treatment methods are mechanical or prescribed burn. (when none of the treatment methods are chemial)
+                    trt2_check = " and cursor[TRTMTHD2] not in ['SIPCHEMA','SIPCHEMG']" if "TRTMTHD2" in f else ""
+                    trt3_check = " and cursor[TRTMTHD3] not in ['SIPCHEMA','SIPCHEMG']" if "TRTMTHD3" in f else ""
+
+                    command = """errorList = ["Error on %s %s: RATE_AI must be zero or null when none of the treatment methods are chemical."%(id_field, cursor[id_field_idx]) for row in cursor
+                                    if cursor[RATE_AI] not in [None, 0]
+                                    if cursor[TRTMTHD1] not in ['SIPCHEMA','SIPCHEMG']""" + trt2_check + trt3_check + "]"
+                    exec(command)
+                    cursor.reset()
+                    if len(errorList) > 0:
+                        errorDetail[lyr].append(errorList)
+                        criticalError += 1
+                        recordValCom[lyr].append("Error on %s record(s): RATE_AI must be zero or null when none of the treatment methods are chemical."%len(errorList))
+
+                elif trtmthd_chem_count > 0:
+                    # The product quantity attribute must be present and populated when any of the treatment methods are aerial or ground chemial
+                    fieldValComUpdate[lyr].append("Missing RATE_AI: The presence of RATE_AI field is mandatory when any of the treatment methods are chemical.")
+                    fieldValUpdate[lyr] = 'Invalid'
+
+            # APPNUM
+                if 'APPNUM' in f:
+                    # The number of application attribute must be present and greater than 0 when any of the treatment methods are aerial or ground chemial
+                    trt2_check = " or cursor[TRTMTHD2] in ['SIPCHEMA','SIPCHEMG']" if "TRTMTHD2" in f else ""
+                    trt3_check = " or cursor[TRTMTHD3] in ['SIPCHEMA','SIPCHEMG']" if "TRTMTHD3" in f else ""
+
+                    command = """errorList = ["Error on %s %s: APPNUM must be greater than 0 and less than or equal to 9 when any of the treatment methods are chemical."%(id_field, cursor[id_field_idx]) for row in cursor
+                                    if cursor[APPNUM] in vnull or cursor[APPNUM] <= 0 or cursor[APPNUM] > 9
+                                    if cursor[TRTMTHD1] in ['SIPCHEMA','SIPCHEMG']""" + trt2_check + trt3_check + "]"
+                    exec(command)
+                    cursor.reset()
+                    if len(errorList) > 0:
+                        errorDetail[lyr].append(errorList)
+                        criticalError += 1
+                        recordValCom[lyr].append("Error on %s record(s): APPNUM must be greater than 0 and less than or equal to 9 when any of the treatment methods are chemical."%len(errorList))
+
+                    # The number of application must be zero (or null) when all the treatment methods are mechanical or prescribed burn. (when none of the treatment methods are chemial)
+                    trt2_check = " and cursor[TRTMTHD2] not in ['SIPCHEMA','SIPCHEMG']" if "TRTMTHD2" in f else ""
+                    trt3_check = " and cursor[TRTMTHD3] not in ['SIPCHEMA','SIPCHEMG']" if "TRTMTHD3" in f else ""
+
+                    command = """errorList = ["Error on %s %s: APPNUM must be zero or null when none of the treatment methods are chemical."%(id_field, cursor[id_field_idx]) for row in cursor
+                                    if cursor[APPNUM] not in [None, 0]
+                                    if cursor[TRTMTHD1] not in ['SIPCHEMA','SIPCHEMG']""" + trt2_check + trt3_check + "]"
+                    exec(command)
+                    cursor.reset()
+                    if len(errorList) > 0:
+                        errorDetail[lyr].append(errorList)
+                        criticalError += 1
+                        recordValCom[lyr].append("Error on %s record(s): APPNUM must be zero or null when none of the treatment methods are chemical."%len(errorList))
+
+                elif trtmthd_chem_count > 0:
+                    # The number of application attribute must be present and populated when any of the treatment methods are aerial or ground chemial
+                    fieldValComUpdate[lyr].append("Missing APPNUM: The presence of APPNUM field is mandatory when any of the treatment methods are chemical.")
+                    fieldValUpdate[lyr] = 'Invalid'
+
+            except ValueError:
+                recordValCom[lyr].append("***Unable to run full validation on %s due to missing mandatory field(s)"%lyr)
+                criticalError += 1
+            except NameError:
+                recordValCom[lyr].append("***Unable to run full validation on %s due to unexpected error."%lyr)
+                systemError = True
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
