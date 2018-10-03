@@ -2053,23 +2053,6 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
                 systemError = True
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
         ###########################  Checking TND   ############################
 
         if lyrAcro == "TND":
