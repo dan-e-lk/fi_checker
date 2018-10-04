@@ -264,13 +264,46 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
                 # The population of this attribute is mandatory
                 # The attribute population must follow the correct coding scheme
                 # A blank or null value is not a valid code
-                errorList = ["Error on %s %s: ARDSTGRP must be populated with HARV or NAT."%(id_field, cursor[id_field_idx]) for row in cursor
+                errorList = ["Error on %s %s: ARDSTGRP must be populated with HARV or NAT, and a blank or null is not a valid code."%(id_field, cursor[id_field_idx]) for row in cursor
                                 if cursor[ARDSTGRP] not in ['HARV','NAT']]
                 cursor.reset()
                 if len(errorList) > 0:
                     errorDetail[lyr].append(errorList)
                     criticalError += 1
-                    recordValCom[lyr].append("Error on %s record(s): ARDSTGRP must be populated with HARV or NAT."%len(errorList))
+                    recordValCom[lyr].append("Error on %s record(s): ARDSTGRP must be populated with HARV or NAT, and a blank or null is not a valid code."%len(errorList))
+
+                # The annual report disturbance group will be harvest (ARDSTGRP = HARV) where the silviculture system is shelterwood or selection (SILVSYS = SH or SE)
+                errorList = ["Error on %s %s: ARDSTGRP must be HARV if SILVSYS is equal to SH or SE."%(id_field, cursor[id_field_idx]) for row in cursor
+                                if cursor[ARDSTGRP] != 'HARV'
+                                if cursor[SILVSYS] in ['SH','SE']]
+                cursor.reset()
+                if len(errorList) > 0:
+                    errorDetail[lyr].append(errorList)
+                    criticalError += 1
+                    recordValCom[lyr].append("Error on %s record(s): ARDSTGRP must be HARV if SILVSYS is equal to SH or SE."%len(errorList))
+
+            # SILVSYS
+                # The population of this attribute is mandatory
+                # The attribute population must follow the correct coding scheme
+                # A blank or null value is not a valid code
+                errorList = ["Error on %s %s: SILVSYS must be populated with CC, SE or SH, and a blank or null is not a valid code."%(id_field, cursor[id_field_idx]) for row in cursor
+                                if cursor[SILVSYS] not in ['CC','SE','SH']]
+                cursor.reset()
+                if len(errorList) > 0:
+                    errorDetail[lyr].append(errorList)
+                    criticalError += 1
+                    recordValCom[lyr].append("Error on %s record(s): SILVSYS must be populated with CC, SE or SH, and a blank or null is not a valid code."%len(errorList))
+
+            # AGEEST
+                # The population of this attribute is mandatory where SILVSYS != SE
+                errorList = ["Error on %s %s: AGEEST must be greater than zero when SILVSYS is not equal to SE."%(id_field, cursor[id_field_idx]) for row in cursor
+                                if cursor[SILVSYS] != 'SE'
+                                if cursor[AGEEST] == None or cursor[AGEEST] <= 0]
+                cursor.reset()
+                if len(errorList) > 0:
+                    errorDetail[lyr].append(errorList)
+                    criticalError += 1
+                    recordValCom[lyr].append("Error on %s record(s): AGEEST must be greater than zero when SILVSYS is not equal to SE."%len(errorList))
 
             # YRDEP
                 # The population of this attribute is mandatory
@@ -283,16 +316,6 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
                     errorDetail[lyr].append(errorList)
                     criticalError += 1
                     recordValCom[lyr].append("Error on %s record(s): YRDEP must be populated with the correct format (YYYY) and a zero or Null is not a valid value."%len(errorList))
-
-                # The year of last disturbance should be greater than the annual report start year minus twenty (the error occurs when YRDEP <= ARYEAR - 20)
-                errorList = ["Warning on %s %s: YRDEP should be greater than AR year minus 20."%(id_field, cursor[id_field_idx]) for row in cursor
-                                if cursor[YRDEP] not in vnull
-                                if cursor[YRDEP] > 999 and cursor[YRDEP] <= year - 20 ] # "cursor[YRDEP] > 999" check prevents catching the same error as above
-                cursor.reset()
-                if len(errorList) > 0:
-                    errorDetail[lyr].append(errorList)
-                    minorError += 1
-                    recordValCom[lyr].append("Warning on %s record(s): YRDEP should be greater than AR year minus 20."%len(errorList))
 
             # DSTBFU
                 # The population of this attribute is mandatory
@@ -327,51 +350,67 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
                     criticalError += 1
                     recordValCom[lyr].append("Error on %s record(s): TARGETFU must be populated."%len(errorList))
 
-            # FTG
+            # TARGETYD
                 # The population of this attribute is mandatory
-                # The attribute population must follow the correct coding scheme.
-                # A blank or null value is not a valid code
-                errorList = ["Error on %s %s: FTG must be populated with Y or N."%(id_field, cursor[id_field_idx]) for row in cursor
-                                if cursor[FTG] not in ['Y','N']]
+                # A blank or null value is not a valid code.            
+                errorList = ["Error on %s %s: TARGETYD must be populated."%(id_field, cursor[id_field_idx]) for row in cursor
+                                if cursor[TARGETYD] in vnull]
                 cursor.reset()
                 if len(errorList) > 0:
                     errorDetail[lyr].append(errorList)
                     criticalError += 1
-                    recordValCom[lyr].append("Error on %s record(s): FTG must be populated with Y or N."%len(errorList))
+                    recordValCom[lyr].append("Error on %s record(s): TARGETYD must be populated."%len(errorList))
 
-            # FTG - Y counter
-                ftg_y = ["y" for row in cursor if cursor[FTG] =='Y']
+            # ESTIND
+                # The population of this attribute is mandatory
+                # The attribute population must follow the correct coding scheme.
+                # A blank or null value is not a valid code
+                errorList = ["Error on %s %s: ESTIND must be populated with Y or N."%(id_field, cursor[id_field_idx]) for row in cursor
+                                if cursor[ESTIND] not in ['Y','N']]
                 cursor.reset()
-                ftg_y_count = len(ftg_y)
+                if len(errorList) > 0:
+                    errorDetail[lyr].append(errorList)
+                    criticalError += 1
+                    recordValCom[lyr].append("Error on %s record(s): ESTIND must be populated with Y or N."%len(errorList))
 
-            # FTGFU
-                # Where FTG = Y: The population of this attribute is mandatory
-                # Where FTG = Y: A blank or null value is not a valid code.             
-                if 'FTGFU' in f:
-                    errorList = ["Error on %s %s: FTGFU must be populated where FTG = Y."%(id_field, cursor[id_field_idx]) for row in cursor
-                                    if cursor[FTGFU] in vnull and cursor[FTG] == 'Y']
-                    cursor.reset()
-                    if len(errorList) > 0:
-                        errorDetail[lyr].append(errorList)
-                        criticalError += 1
-                        recordValCom[lyr].append("Error on %s record(s): FTGFU must be populated where FTG = Y."%len(errorList))
+            # ESTFU
+                # Where ESTIND = Y: The population of this attribute is mandatory
+                # Where ESTIND != Y: A blank or null value is a valid code.             
+                errorList = ["Error on %s %s: ESTFU must be populated where ESTIND = Y."%(id_field, cursor[id_field_idx]) for row in cursor
+                                if cursor[ESTFU] in vnull and cursor[ESTIND] == 'Y']
+                cursor.reset()
+                if len(errorList) > 0:
+                    errorDetail[lyr].append(errorList)
+                    criticalError += 1
+                    recordValCom[lyr].append("Error on %s record(s): ESTFU must be populated where ESTIND = Y."%len(errorList))
 
-                # The presence of thie attribute in the file structure of the layer is mandatory (where FTG=Y)
-                elif ftg_y_count > 0:
-                    fieldValComUpdate[lyr].append("Missing FTGFU: FTGFU field is mandatory where FTG = Y.")
-                    fieldValUpdate[lyr] = 'Invalid'
+            # ESTYIELD
+                # Where ESTIND = Y: The population of this attribute is mandatory
+                # Where ESTIND != Y: A blank or null value is a valid code.             
+                errorList = ["Error on %s %s: ESTYIELD must be populated where ESTIND = Y."%(id_field, cursor[id_field_idx]) for row in cursor
+                                if cursor[ESTYIELD] in vnull and cursor[ESTIND] == 'Y']
+                cursor.reset()
+                if len(errorList) > 0:
+                    errorDetail[lyr].append(errorList)
+                    criticalError += 1
+                    recordValCom[lyr].append("Error on %s record(s): ESTYIELD must be populated where ESTIND = Y."%len(errorList))
+
+            # ESTIND - Y counter
+                estind_y = ["y" for row in cursor if cursor[ESTIND] =='Y']
+                cursor.reset()
+                estind_y_count = len(estind_y)
 
             # SPCOMP
                 if 'SPCOMP' in f:
-                    # The population of this attribute is mandatory where FTG = Y
-                    errorList = ["Error on %s %s: SPCOMP must be populated when FTG = Y."%(id_field, cursor[id_field_idx]) for row in cursor
-                                    if cursor[FTG] == 'Y'
+                    # The population of this attribute is mandatory where ESTIND = Y
+                    errorList = ["Error on %s %s: SPCOMP must be populated when ESTIND = Y."%(id_field, cursor[id_field_idx]) for row in cursor
+                                    if cursor[ESTIND] == 'Y'
                                     if cursor[SPCOMP] in vnull]
                     cursor.reset()
                     if len(errorList) > 0:
                         errorDetail[lyr].append(errorList)
                         criticalError += 1
-                        recordValCom[lyr].append("Error on %s record(s): SPCOMP must be populated when FTG = Y."%len(errorList))
+                        recordValCom[lyr].append("Error on %s record(s): SPCOMP must be populated when ESTIND = Y."%len(errorList))
 
                     # The attribute population must follow the correct format
                     ## code to check spcomp
@@ -406,68 +445,89 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
                         errorDetail[lyr].append(w1List)
                         recordValCom[lyr].append("Warning on %s record(s):%s."%(len(w1List),w1List[0][w1List[0].find(':')+1:]))
 
-                # The presence of this attribute in the file structure of the layer is mandatory where FTG = Y
-                elif ftg_y_count > 0:
-                    fieldValComUpdate[lyr].append("Missing SPCOMP: SPCOMP field is mandatory where FTG = Y.")
+                # The presence of this attribute in the file structure of the layer is mandatory where ESTIND = Y
+                elif estind_y_count > 0:
+                    fieldValComUpdate[lyr].append("Missing SPCOMP: SPCOMP field is mandatory where ESTIND = Y.")
                     fieldValUpdate[lyr] = 'Invalid'
 
             # HT
-                if 'HT' in f:
-                    # The attribute population must follow the correct format
-                    errorList = ["Error on %s %s: HT must be between 0 and 40 if populated."%(id_field, cursor[id_field_idx]) for row in cursor
-                                    if cursor[HT] not in vnull
-                                    if cursor[HT] < 0 or cursor[HT] > 40]
-                    cursor.reset()
-                    if len(errorList) > 0:
-                        errorDetail[lyr].append(errorList)
-                        criticalError += 1
-                        recordValCom[lyr].append("Error on %s record(s): HT must be between 0 and 40 if populated."%len(errorList))
+                # The attribute population must follow the correct format (if populated)
+                errorList = ["Error on %s %s: HT must be between 0 and 40 if populated."%(id_field, cursor[id_field_idx]) for row in cursor
+                                if cursor[HT] not in vnull
+                                if cursor[HT] < 0 or cursor[HT] > 40]
+                cursor.reset()
+                if len(errorList) > 0:
+                    errorDetail[lyr].append(errorList)
+                    criticalError += 1
+                    recordValCom[lyr].append("Error on %s record(s): HT must be between 0 and 40 if populated."%len(errorList))
 
-                    # Where FTG = Y: The population of this attribute is mandatory
-                    # Where FTG = Y: A zero (or null) value is not a valid code
-                    # Where FTG = Y: When the free-to-grow indicator is yes (FTG = Y) then the height must be greater than or equal ot 80cm
-                    errorList = ["Error on %s %s: HT must be greater than or equal to 0.8 when FTG = Y."%(id_field, cursor[id_field_idx]) for row in cursor
-                                    if cursor[FTG] == 'Y'
-                                    if cursor[HT] in vnull or cursor[HT] < 0.8]
-                    cursor.reset()
-                    if len(errorList) > 0:
-                        errorDetail[lyr].append(errorList)
-                        criticalError += 1
-                        recordValCom[lyr].append("Error on %s record(s): HT must be greater than or equal to 0.8 when FTG = Y."%len(errorList))
+                # Where ESTIND = Y and SILVSYS = CC or SH:  The population of this attribute is mandatory
+                # Where ESTIND = Y and SILVSYS = CC or SH:  HT must be greater than zero.
+                # Where ESTIND = N and SILVSYS = SE:        HT can be zero.
+                errorList = ["Error on %s %s: HT must be greater than 0 when ESTIND = Y and SILVSYS = CC or SH."%(id_field, cursor[id_field_idx]) for row in cursor
+                                if cursor[ESTIND] == 'Y' and cursor[SILVSYS] in ['CC','SH']
+                                if cursor[HT] in vnull or cursor[HT] <= 0]
+                cursor.reset()
+                if len(errorList) > 0:
+                    errorDetail[lyr].append(errorList)
+                    criticalError += 1
+                    recordValCom[lyr].append("Error on %s record(s): HT must be greater than 0 when ESTIND = Y and SILVSYS = CC or SH."%len(errorList))
 
-                # Where FTG = Y: The presence of this attribute in the file structure of the layer is mandatory
-                elif ftg_y_count > 0:
-                    fieldValComUpdate[lyr].append("Missing HT: HT field is mandatory where FTG = Y.")
-                    fieldValUpdate[lyr] = 'Invalid'
+            # DENSITY
+                # The attribute population must follow the correct format (if populated)
+                errorList = ["Error on %s %s: DENSITY must be between 0 and 99999 if populated."%(id_field, cursor[id_field_idx]) for row in cursor
+                                if cursor[DENSITY] not in vnull
+                                if cursor[DENSITY] < 0 or cursor[DENSITY] > 99999]
+                cursor.reset()
+                if len(errorList) > 0:
+                    errorDetail[lyr].append(errorList)
+                    criticalError += 1
+                    recordValCom[lyr].append("Error on %s record(s): DENSITY must be between 0 and 99999 if populated."%len(errorList))
+
+                # # A zero value is a valid code where ESTIND = Y and the area is not density managed. (DENSITY must be greater than zero when ESTIND = Y and STKG = 0)
+                # errorList = ["Error on %s %s: DENSITY must be greater than zero when ESTIND = Y and STKG = 0."%(id_field, cursor[id_field_idx]) for row in cursor
+                #                 if cursor[ESTIND] == 'Y' and cursor[STKG] in [0, None]
+                #                 if cursor[DENSITY] in [0, None]]
+                # cursor.reset()
+                # if len(errorList) > 0:
+                #     errorDetail[lyr].append(errorList)
+                #     criticalError += 1
+                #     recordValCom[lyr].append("Error on %s record(s): DENSITY must be greater than zero when ESTIND = Y and STKG = 0."%len(errorList))
 
             # STKG
-                if 'STKG' in f:
-                    # The attribute population must follow the correct format
-                    errorList = ["Error on %s %s: STKG must be between 0 and 4 if populated."%(id_field, cursor[id_field_idx]) for row in cursor
-                                    if cursor[STKG] not in vnull
-                                    if cursor[STKG] < 0 or cursor[STKG] > 4]
-                    cursor.reset()
-                    if len(errorList) > 0:
-                        errorDetail[lyr].append(errorList)
-                        criticalError += 1
-                        recordValCom[lyr].append("Error on %s record(s): STKG must be between 0 and 4 if populated."%len(errorList))
+                # The attribute population must follow the correct format (if populated)
+                errorList = ["Error on %s %s: STKG must be between 0 and 1 if populated."%(id_field, cursor[id_field_idx]) for row in cursor
+                                if cursor[STKG] not in vnull
+                                if cursor[STKG] < 0 or cursor[STKG] > 1]
+                cursor.reset()
+                if len(errorList) > 0:
+                    errorDetail[lyr].append(errorList)
+                    criticalError += 1
+                    recordValCom[lyr].append("Error on %s record(s): STKG must be between 0 and 99999 if populated."%len(errorList))
 
-                    # Where FTG = Y: The population of this attribute is mandatory
-                    # Where FTG = Y: A zero (or null) value is not a valid code
-                    # Where FTG = Y: The stocking must be greater than or equal to forty percent (STKG >= 0.4)
-                    errorList = ["Error on %s %s: STKG must be greater than or equal to 0.4 when FTG = Y."%(id_field, cursor[id_field_idx]) for row in cursor
-                                    if cursor[FTG] == 'Y'
-                                    if cursor[STKG] in vnull or cursor[STKG] < 0.4]
-                    cursor.reset()
-                    if len(errorList) > 0:
-                        errorDetail[lyr].append(errorList)
-                        criticalError += 1
-                        recordValCom[lyr].append("Error on %s record(s): STKG must be greater than or equal to 0.4 when FTG = Y."%len(errorList))
+                # # (STKG must be greater than zero when ESTIND = Y and DENSITY = 0)
+                # errorList = ["Error on %s %s: STKG must be greater than zero when ESTIND = Y and STKG = 0."%(id_field, cursor[id_field_idx]) for row in cursor
+                #                 if cursor[ESTIND] == 'Y' and cursor[DENSITY] in [0, None]
+                #                 if cursor[STKG] in [0, None]]
+                # cursor.reset()
+                # if len(errorList) > 0:
+                #     errorDetail[lyr].append(errorList)
+                #     criticalError += 1
+                #     recordValCom[lyr].append("Error on %s record(s): STKG must be greater than zero when ESTIND = Y and STKG = 0."%len(errorList))
 
-                # Where FTG = Y: The presence of this attribute in the file structure of the layer is mandatory
-                elif ftg_y_count > 0:
-                    fieldValComUpdate[lyr].append("Missing STKG: STKG field is mandatory where FTG = Y.")
-                    fieldValUpdate[lyr] = 'Invalid'
+
+
+            # DENSITY and STKG
+                # Where STKG is populated, DENSITY will be equal to zero
+                # Where DENSITY is populated, STKG will be equal to zero
+                # bascially means STKG and DENSITY cannot be both populated.
+                errorList = ["Error on %s %s: STKG and DENSITY cannot be both populated."%(id_field, cursor[id_field_idx]) for row in cursor
+                                if cursor[DENSITY] > 0 and cursor[STKG] > 0]
+                cursor.reset()
+                if len(errorList) > 0:
+                    errorDetail[lyr].append(errorList)
+                    criticalError += 1
+                    recordValCom[lyr].append("Error on %s record(s): STKG and DENSITY cannot be both populated."%len(errorList))
 
 
             except ValueError:
