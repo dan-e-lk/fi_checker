@@ -413,7 +413,7 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
                         recordValCom[lyr].append("Error on %s record(s): SPCOMP must be populated when ESTIND = Y."%len(errorList))
 
                     # The attribute population must follow the correct format
-                    ## code to check spcomp
+                    ## code to check spcomp (returns no messeage when SPCOMP is blank or null)
                     fieldname = "SPCOMP"
                     e1List, e2List, e3List, e4List, w1List = [],[],[],[],[]
                     for row in cursor:
@@ -484,16 +484,6 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
                     criticalError += 1
                     recordValCom[lyr].append("Error on %s record(s): DENSITY must be between 0 and 99999 if populated."%len(errorList))
 
-                # # A zero value is a valid code where ESTIND = Y and the area is not density managed. (DENSITY must be greater than zero when ESTIND = Y and STKG = 0)
-                # errorList = ["Error on %s %s: DENSITY must be greater than zero when ESTIND = Y and STKG = 0."%(id_field, cursor[id_field_idx]) for row in cursor
-                #                 if cursor[ESTIND] == 'Y' and cursor[STKG] in [0, None]
-                #                 if cursor[DENSITY] in [0, None]]
-                # cursor.reset()
-                # if len(errorList) > 0:
-                #     errorDetail[lyr].append(errorList)
-                #     criticalError += 1
-                #     recordValCom[lyr].append("Error on %s record(s): DENSITY must be greater than zero when ESTIND = Y and STKG = 0."%len(errorList))
-
             # STKG
                 # The attribute population must follow the correct format (if populated)
                 errorList = ["Error on %s %s: STKG must be between 0 and 1 if populated."%(id_field, cursor[id_field_idx]) for row in cursor
@@ -504,18 +494,6 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
                     errorDetail[lyr].append(errorList)
                     criticalError += 1
                     recordValCom[lyr].append("Error on %s record(s): STKG must be between 0 and 99999 if populated."%len(errorList))
-
-                # # (STKG must be greater than zero when ESTIND = Y and DENSITY = 0)
-                # errorList = ["Error on %s %s: STKG must be greater than zero when ESTIND = Y and STKG = 0."%(id_field, cursor[id_field_idx]) for row in cursor
-                #                 if cursor[ESTIND] == 'Y' and cursor[DENSITY] in [0, None]
-                #                 if cursor[STKG] in [0, None]]
-                # cursor.reset()
-                # if len(errorList) > 0:
-                #     errorDetail[lyr].append(errorList)
-                #     criticalError += 1
-                #     recordValCom[lyr].append("Error on %s record(s): STKG must be greater than zero when ESTIND = Y and STKG = 0."%len(errorList))
-
-
 
             # DENSITY and STKG
                 # Where STKG is populated, DENSITY will be equal to zero
@@ -529,6 +507,15 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
                     criticalError += 1
                     recordValCom[lyr].append("Error on %s record(s): STKG and DENSITY cannot be both populated."%len(errorList))
 
+                # Either DENSITY or STKG must be populated when ESTIND = Y
+                errorList = ["Error on %s %s: Either DENSITY or STKG must be populated when ESTIND = Y."%(id_field, cursor[id_field_idx]) for row in cursor
+                                if cursor[ESTIND] == 'Y'
+                                if cursor[DENSITY] in [None, 0] and cursor[STKG] in [None, 0]]
+                cursor.reset()
+                if len(errorList) > 0:
+                    errorDetail[lyr].append(errorList)
+                    criticalError += 1
+                    recordValCom[lyr].append("Error on %s record(s): Either DENSITY or STKG must be populated when ESTIND = Y."%len(errorList))
 
             except ValueError:
                 recordValCom[lyr].append("***Unable to run full validation on %s due to missing mandatory field(s)"%lyr)
@@ -536,31 +523,6 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
             except NameError:
                 recordValCom[lyr].append("***Unable to run full validation on %s due to unexpected error."%lyr)
                 systemError = True
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
         ###########################  Checking FTG   ############################
@@ -905,7 +867,7 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
                 # A blank or null value is a valid code
                 errorList = ["Error on %s %s: MGMTSTG must follow the correct coding scheme if populated."%(id_field, cursor[id_field_idx]) for row in cursor
                                 if cursor[MGMTSTG] not in vnull
-                                if cursor[MGMTSTG] not in ['PREPCUT','SEEDCUT','FIRSTCUT','LASTCUT']]
+                                if cursor[MGMTSTG] not in ['PREPCUT','SEEDCUT','IRREGULR','FIRSTCUT','LASTCUT']]
                 cursor.reset()
                 if len(errorList) > 0:
                     errorDetail[lyr].append(errorList)
@@ -1654,16 +1616,6 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
                     criticalError += 1
                     recordValCom[lyr].append("Error on %s record(s): CONTROL1 must follow the correct coding scheme if populated."%len(errorList))
 
-                # When the road access control status is apply or both, then the control type must be a code other than null (CONTROL1 is not null)
-                errorList = ["Error on %s %s: CONTROL1 must be populated with the correct coding scheme where ACCESS is 'APPLY' or 'BOTH'."%(id_field, cursor[id_field_idx]) for row in cursor
-                                if cursor[ACCESS] in ['APPLY','BOTH']
-                                if cursor[CONTROL1] not in ['BERM','GATE','PRIV','SCAR','SIGN','SLSH','WATX']]
-                cursor.reset()
-                if len(errorList) > 0:
-                    errorDetail[lyr].append(errorList)
-                    criticalError += 1
-                    recordValCom[lyr].append("Error on %s record(s): CONTROL1 must be populated with the correct coding scheme where ACCESS is 'APPLY' or 'BOTH'."%len(errorList))
-
             # CONTROL2
                 # The attribute population must follow the correct coding scheme.
                 # A blank or null value IS A VALID code.             
@@ -1676,6 +1628,16 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
                     recordValCom[lyr].append("Error on %s record(s): CONTROL2 must follow the correct coding scheme if populated."%len(errorList))
 
             # CONTROL 1 and 2
+                # When the road access control status is apply or both, then the control type must be a code other than null (CONTROL1 or CONTROL2 is not null)
+                errorList = ["Error on %s %s: CONTROL1 or 2 must be populated with the correct coding scheme where ACCESS is 'APPLY' or 'BOTH'."%(id_field, cursor[id_field_idx]) for row in cursor
+                                if cursor[ACCESS] in ['APPLY','BOTH']
+                                if cursor[CONTROL1] not in ['BERM','GATE','PRIV','SCAR','SIGN','SLSH','WATX'] and cursor[CONTROL2] not in ['BERM','GATE','PRIV','SCAR','SIGN','SLSH','WATX']]
+                cursor.reset()
+                if len(errorList) > 0:
+                    errorDetail[lyr].append(errorList)
+                    criticalError += 1
+                    recordValCom[lyr].append("Error on %s record(s): CONTROL1 or 2 must be populated with the correct coding scheme where ACCESS is 'APPLY' or 'BOTH'."%len(errorList))
+
                 # Stage 2: When the road access control status is remove, then the control type should be null (CONTROL1 = null and CONTROL2 = null)
                 errorList = ["Warning on %s %s: CONTROL1 and CONTROL2 should be null when ACCESS = REMOVE."%(id_field, cursor[id_field_idx]) for row in cursor
                                 if cursor[ACCESS] == 'REMOVE'
@@ -1685,6 +1647,7 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
                     errorDetail[lyr].append(errorList)
                     minorError += 1
                     recordValCom[lyr].append("Warning on %s record(s): CONTROL1 and CONTROL2 should be null when ACCESS = REMOVE."%len(errorList))                
+
 
             except ValueError:
                 recordValCom[lyr].append("***Unable to run full validation on %s due to missing mandatory field(s)"%lyr)
