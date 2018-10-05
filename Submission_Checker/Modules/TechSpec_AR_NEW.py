@@ -243,18 +243,6 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
                 systemError = True
 
 
-
-
-
-
-
-
-
-
-
-
-
-
         ###########################  Checking EST   ############################
 
         if lyrAcro == "EST":
@@ -2709,7 +2697,6 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
             except NameError:
                 recordValCom[lyr].append("***Unable to run full validation on %s due to unexpected error."%lyr)
                 systemError = True
-
 
 
 
