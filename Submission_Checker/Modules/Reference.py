@@ -61,7 +61,7 @@ static_db = {
 # spcomp list in 2017 tech spec
 ##spcList2017 = ['AX', 'AB', 'AW', 'PL', 'PT', 'BD', 'BE', 'BW', 'BY', 'BN', 'CE', 'CR', 'CH', 'CB', 'OC', 'EX', 'EW', 'BF', 'OH', 'HE', 'HI', 'IW', 'LA', 'MH', 'MR', 'MS', 'MR', 'MH', 'OB', 'OR', 'OW', 'PN', 'PJ', 'PR', 'PS', 'PW', 'PO', 'PB', 'SX', 'SB', 'SR', 'SW', 'LA']
 
-SpcListInterp = ['AX', 'AB', 'AW', 'PL', 'PT', 'BD', 'BE', 'BG', 'BW', 'BY', 'BN', 'CE', 'CR', 'CW', 'CH', 'CB', 'CD', 'OC', 'PD', 'EX', 'EW', 'BF', 'OH', 'HE', 'HI', 'IW', 'LO', 'MX', 'MH', 'MR', 'MS', 'OX', 'OR', 'OW', 'PX', 'PJ', 'PR', 'PS', 'PW', 'PO', 'PB', 'SX', 'SB', 'SW', 'LA', 'WB', 'WI']
+SpcListInterp = ['AB', 'AW', 'AX', 'BD', 'BE', 'BF', 'BG', 'BN', 'BW', 'BY', 'CB', 'CD', 'CE', 'CH', 'CR', 'CW', 'EW', 'EX', 'HE', 'HI', 'IW', 'LA', 'LO', 'MH', 'MR', 'MS', 'MX', 'OC', 'OH', 'OR', 'OW', 'OX', 'PB', 'PD', 'PJ', 'PL', 'PO', 'PR', 'PS', 'PT', 'PW', 'PX', 'SB', 'SW', 'SX', 'WB', 'WI']
 
 SpcListOther = ['AL', 'AQ', 'AP', 'AG', 'BC', 'BP', 'GB', 'BB', 'CAT', 'CC', 'CM', 'CP', 'CS', 'CT', 'ER', 'EU', 'HK', 'HT', 'HL', 'HB', 'HM', 'HP', 'HS', 'HC', 'KK', 'LE', 'LJ', 'BL', 'LL', 'LB', 'GT', 'MB', 'MF', 'MM', 'MT', 'MN', 'MP', 'AM', 'EMA', 'MO', 'OBL', 'OB', 'OCH', 'OP', 'OS', 'OSW', 'PA', 'PN', 'PP', 'PC', 'PH', 'PE', 'RED', 'SS', 'SC', 'SK', 'SN', 'SR', 'SY', 'TP', 'HAZ']
 

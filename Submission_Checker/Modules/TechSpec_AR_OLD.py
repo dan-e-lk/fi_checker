@@ -50,8 +50,10 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
         criticalError = 0
         minorError = 0
         systemError = False
+        # summarytbl[lyr][3] is a list of existing mandatory fields and summarytbl[lyr][4] is a list of existing other fields
         f = summarytbl[lyr][4] + summarytbl[lyr][3] ## f is the list of all fields found in lyr. eg. ['PIT_ID', 'PIT_OPEN', 'PITCLOSE', 'CAT9APP', 'OBJECTID', 'MU110_17AGP00_', 'MU110_17AGP00_ID', 'PIT_NAME']
 
+        # each fieldname is a new variable where the value is its index number - for example, OBJECTID = 0.
         for i in range(len(f)):
             try:
                 exec(f[i] + "=" + str(i)) ## POLYID = 0, POLYTYPE = 1, etc.
@@ -62,7 +64,6 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
         id_field = R.find_IdField(f, dataformat) # *23408  This will normally return OBJECTID for feature classes and FID for shapefile and coverage.
         id_field_idx = f.index(id_field)
 
-        cursor = arcpy.da.SearchCursor(lyr,f)
         recordCount = len(list(cursor))
         cursor.reset()
 
@@ -192,12 +193,9 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
                     criticalError += 1
                     recordValCom[lyr].append("Error on %s record(s): PITCLOSE attribute must follow the correct format (A1.10.5)."%len(errorList))
 
-            except ValueError:
+            except (IndexError, NameError) as e:
                 recordValCom[lyr].append("***Unable to run full validation on %s due to missing mandatory field(s)"%lyr)
                 criticalError += 1
-            except NameError:
-                recordValCom[lyr].append("***Unable to run full validation on %s due to unexpected error."%lyr)
-                systemError = True
 
 
 
@@ -381,12 +379,9 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
                     fieldValUpdate[lyr] = 'Invalid'
 
 
-            except ValueError:
+            except (IndexError, NameError) as e:
                 recordValCom[lyr].append("***Unable to run full validation on %s due to missing mandatory field(s)"%lyr)
                 criticalError += 1
-            except NameError:
-                recordValCom[lyr].append("***Unable to run full validation on %s due to unexpected error."%lyr)
-                systemError = True
 
 
 
@@ -548,13 +543,9 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
                     recordValCom[lyr].append("Error on %s record(s): DSTBFU must be populated (A1.2.7)."%len(errorList))
 
 
-            except ValueError:
+            except (IndexError, NameError) as e:
                 recordValCom[lyr].append("***Unable to run full validation on %s due to missing mandatory field(s)"%lyr)
                 criticalError += 1
-            except NameError:
-                recordValCom[lyr].append("***Unable to run full validation on %s due to unexpected error."%lyr)
-                systemError = True
-
 
 
         ###########################  Checking NDB   ############################
@@ -607,12 +598,9 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
                     criticalError += 1
                     recordValCom[lyr].append("Error on %s record(s): DSTBFU must be populated (A1.1.4)."%len(errorList))
 
-            except ValueError:
+            except (IndexError, NameError) as e:
                 recordValCom[lyr].append("***Unable to run full validation on %s due to missing mandatory field(s)"%lyr)
                 criticalError += 1
-            except NameError:
-                recordValCom[lyr].append("***Unable to run full validation on %s due to unexpected error."%lyr)
-                systemError = True
 
 
         ###########################  Checking PRT   ############################
@@ -726,12 +714,9 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
                    fieldValUpdate[lyr] = 'Invalid'
 
 
-            except ValueError:
+            except (IndexError, NameError) as e:
                 recordValCom[lyr].append("***Unable to run full validation on %s due to missing mandatory field(s)"%lyr)
                 criticalError += 1
-            except NameError:
-                recordValCom[lyr].append("***Unable to run full validation on %s due to unexpected error."%lyr)
-                systemError = True
 
 
 
@@ -890,13 +875,9 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
                         minorError += 1
                         recordValCom[lyr].append("Warning on %s record(s): CONTROL1 and 2 should be null if ACCESS = REMOVE (A1.3.5)."%len(errorList))
 
-            except ValueError:
+            except (IndexError, NameError) as e:
                 recordValCom[lyr].append("***Unable to run full validation on %s due to missing mandatory field(s)"%lyr)
                 criticalError += 1
-            except NameError:
-                recordValCom[lyr].append("***Unable to run full validation on %s due to unexpected error."%lyr)
-                systemError = True
-
 
 
 
@@ -1177,17 +1158,10 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
                             recordValCom[lyr].append("Error on %s record(s): SP1 must be populated if TRTMTHD# = PLANT (A1.5.4)."%len(errorList))
 
 
-
-
-
-
-
-            except ValueError:
+            except (IndexError, NameError) as e:
                 recordValCom[lyr].append("***Unable to run full validation on %s due to missing mandatory field(s)"%lyr)
                 criticalError += 1
-            except NameError:
-                recordValCom[lyr].append("***Unable to run full validation on %s due to unexpected error."%lyr)
-                systemError = True
+
 
 
 #    Still in this for loop: "for lyr in summarytbl.keys():"

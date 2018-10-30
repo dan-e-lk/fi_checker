@@ -279,8 +279,10 @@ class Check():
         # self.lyrs is a list of all the spatial layers that the tool will be checking.
         self.summarytbl.update(dict(zip(self.lyrs,[[] for i in self.lyrs]))) ## eg. {'C:\ALGOMA_AWS_E00\E00\MU615_18AGP00\POINT': [], 'C:\ALGOMA_AWS_E00\E00\MU615_18SAC01\POLYGON': [],..}
         for key in list(self.summarytbl.keys()):
+            # for example key = 'C:\\TESTERS\\OLDAR\\GC2015\\MU438_15FTG00\\POLYGON'
+            filename = os.path.split(os.path.split(key)[0])[1] # filename = 'MU438_15FTG00'
             for i in self.LyrAcronyms:
-                if i in key: # for example, if 'SAC' in 'MU96518SAC003'
+                if i in filename: # for example, if 'FTG' in 'MU438_15FTG00'
                     self.summarytbl[key].append(i)
                     self.summarytbl[key].append(self.TechSpec.lyrInfo[i][0]) ## eg. {'C:\ALGOMA_AWS_E00\E00\MU615_18AGP00\POINT': ['AGP', 'Existing Forestry Aggregate Pits'], 'C:\ALGOMA_AWS_E00\E00\MU615_18SAC01\POLYGON': ['SAC', 'Scheduled Area Of Concern'],
 
@@ -318,7 +320,12 @@ class Check():
         self.fieldDefComments = dict(zip(self.lyrs,[[] for i in self.lyrs])) ## eg. {'MU110_17SAC10': [], 'MU110_17SAC11': [],...}
         for i in self.LyrAcronyms:
             for lyr in self.lyrs: # self.lyrs is a list of all the spatial layers that the tool will be checking.
-                if i in lyr:
+                # lyr can be 'MU110_17SAC10' for fc and shp, but it can be 'C:\\TESTERS\\OLDAR\\GC2015\\MU438_15FTG00\\POLYGON' for coverages.
+                if self.dataformat == 'coverage':
+                    filename = os.path.split(os.path.split(lyr)[0])[1] # filename = 'MU438_15FTG00'
+                else:
+                    filename = lyr
+                if i in filename:
                     manFields = self.TechSpec.lyrInfo[i][1] ##eg. ['PIT_ID', 'PIT_OPEN', 'PITCLOSE', 'CAT9APP']
                     self.testingFields = [str(f.name).upper() for f in arcpy.ListFields(lyr)] ##eg. ['OBJECTID', 'Shape', 'AREA', 'PERIMETER', 'MU110_17AGP00_', 'MU110_17AGP00_ID', 'PIT_ID', 'PIT_NAME', 'PIT_OPEN', 'PITCLOSE', 'CAT9APP', 'POLYGONID', 'SCALE', 'ANGLE']
                     self.testingFields = [f for f in self.testingFields if f not in removeList] ##eg. ['OBJECTID', 'MU110_17AGP00_', 'MU110_17AGP00_ID', 'PIT_ID', 'PIT_NAME', 'PIT_OPEN', 'PITCLOSE', 'CAT9APP']

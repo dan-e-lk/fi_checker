@@ -1,5 +1,5 @@
 ### This script is for testing only!!
-checker_version = '2.3.4a'
+checker_version = '2.4a'
 
 def test_all(parameters):
 	import traceback
@@ -30,13 +30,13 @@ def test_all(parameters):
 
 if __name__ == '__main__':
 	parameters = {
-	# 'FMP_NEW_COV': 	['fmp',	'Dog_River_Matawin', 	2019, 	2019, 	r'C:\testers\FMP_NEW_COV\Dog_River_Mat_DraftPlan_2019_no_inventories', 		'coverage', 		'2017', 	50, 	checker_version, 	'test_aug21'],
-	'FMP_NEW_GDB_AE':['fmp','Dog_River_Matawin', 	2020, 	2020, 	r'C:\testers\FMP_NEW_GDB_AllError\mu999_2020.gdb', 							'feature classes', 	'2017', 	50, 	checker_version, 	'test_aug21'],
-	'FMP_NEW_GDB_BMI':['fmp','Gordon_Cosens', 		2020, 	2020, 	r'C:\testers\FMP_NEW_GDB_BMI_PCI\Gordon_Cosens_BMI_PCI.gdb', 				'feature classes', 	'2017', 	50, 	checker_version, 	'test_aug21'],
-	'FMP_NEW_GDB_noBMI':['fmp','Romeo_Malette',		2019, 	2019, 	r'C:\testers\FMP_NEW_GDB_Except_BMI_PCI\Romeo_DraftPlan2019_Shortened.gdb',	'feature classes', 	'2017', 	50, 	checker_version, 	'test_aug21'],	
-	'FMP_NEW_SHP':	['fmp','Hearst',				2019, 	2019, 	r'C:\testers\FMP_NEW_SHP\Hearst_DraftPlan_2019_shortened',					'shapefile', 	'2017', 	50, 	checker_version, 	'test_aug21'],
-	'AWS_NEW_COV':	['aws','Algoma',				2018, 	2009, 	r'C:\testers\AWS_NEW_COV\Algoma_AWS_2018',									'coverage', 	'2017', 	50, 	checker_version, 	'test_aug21'],
-	'AWS_NEW_GDB':	['aws','Hearst',				2018, 	2009, 	r'C:\testers\AWS_NEW_GDB\Hearst_AWS2018.gdb',								'feature classes', 	'2017', 	50, 	checker_version, 	'test_aug21'],
+	'AR_NEW_GDB': 	['ar',	'Martel', 				2011, 	2017, 	r'C:\testers\AR_NEW_GDB\MU509_17AR_testers.gdb', 							'feature classes', 	'2017', 	50, 	checker_version, 	'test_Oct5'],
+	'FMP_NEW_GDB_AE':['fmp','Dog_River_Matawin', 	2020, 	2020, 	r'C:\testers\FMP_NEW_GDB_AllError\mu999_2020.gdb', 							'feature classes', 	'2017', 	50, 	checker_version, 	'test_Oct5'],
+	'FMP_NEW_GDB_BMI':['fmp','Gordon_Cosens', 		2020, 	2020, 	r'C:\testers\FMP_NEW_GDB_BMI_PCI\Gordon_Cosens_BMI_PCI.gdb', 				'feature classes', 	'2017', 	50, 	checker_version, 	'test_Oct5'],
+	'FMP_NEW_GDB_noBMI':['fmp','Romeo_Malette',		2019, 	2019, 	r'C:\testers\FMP_NEW_GDB_Except_BMI_PCI\Romeo_DraftPlan2019_Shortened.gdb',	'feature classes', 	'2017', 	50, 	checker_version, 	'test_Oct5'],	
+	'FMP_NEW_SHP':	['fmp','Hearst',				2019, 	2019, 	r'C:\testers\FMP_NEW_SHP\Hearst_DraftPlan_2019_shortened',					'shapefile', 	'2017', 	50, 	checker_version, 		'test_Oct5'],
+	'AWS_NEW_COV':	['aws','Algoma',				2018, 	2009, 	r'C:\testers\AWS_NEW_COV\Algoma_AWS_2018',									'coverage', 	'2017', 	50, 	checker_version, 		'test_Oct5'],
+	'AWS_NEW_GDB':	['aws','Hearst',				2018, 	2009, 	r'C:\testers\AWS_NEW_GDB\Hearst_AWS2018.gdb',								'feature classes', 	'2017', 	50, 	checker_version, 	'test_Oct5'],
 
 	}
 
