@@ -64,6 +64,7 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
         id_field = R.find_IdField(f, dataformat) # *23408  This will normally return OBJECTID for feature classes and FID for shapefile and coverage.
         id_field_idx = f.index(id_field)
 
+        cursor = arcpy.da.SearchCursor(lyr,f) # this line was missing in version 2.4a *24b03
         recordCount = len(list(cursor))
         cursor.reset()
 
