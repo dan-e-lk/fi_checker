@@ -126,10 +126,9 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
                     recordValCom[lyr].append("Error on %s record(s): The PITID attribute must contain a unique value."%duplicateCount)
 
             # REHABREQ
-                # The attribute population must follow the correct format (must be between 0 and 9.9) * The checker accepts null as zero.
-                errorList = ["Error on %s %s: REHABREQ must be a number of hectares between 0 and 9.9."%(id_field, cursor[id_field_idx]) for row in cursor
-                                if cursor[REHABREQ] not in vnull
-                                if cursor[REHABREQ] < 0 or cursor[REHABREQ] > 9.9]
+                # The attribute population must follow the correct format (must be between 0 and 9.9) 
+                errorList = ["Error on %s %s: REHABREQ must be a number of hectares between 0 and 9.9 (Null is not allowed)."%(id_field, cursor[id_field_idx]) for row in cursor
+                                if cursor[REHABREQ] in vnull or cursor[REHABREQ] < 0 or cursor[REHABREQ] > 9.9] # *24b04
                 cursor.reset()
                 if len(errorList) > 0:
                     errorDetail[lyr].append(errorList)
@@ -159,10 +158,9 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
 
             # REHAB
                 # The attribute population must follow the correct format
-                # A zero value is a valid code. *the checker also accepts null value as zero.
-                errorList = ["Error on %s %s: REHAB must be a number of hectares between 0 and 9.9."%(id_field, cursor[id_field_idx]) for row in cursor
-                                if cursor[REHAB] not in vnull
-                                if cursor[REHAB] < 0 or cursor[REHAB] > 9.9]
+                # A zero value is a valid code.
+                errorList = ["Error on %s %s: REHAB must be a number of hectares between 0 and 9.9 (Null is not allowed)."%(id_field, cursor[id_field_idx]) for row in cursor
+                                if cursor[REHAB] in vnull or cursor[REHAB] < 0 or cursor[REHAB] > 9.9] # *24b04
                 cursor.reset()
                 if len(errorList) > 0:
                     errorDetail[lyr].append(errorList)

@@ -786,7 +786,7 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
 
                     errorList = ["Error on %s %s: UYRORG should be greater than OYRORG when POLYTYPE is FOR and VERT is TO, TU, MO or MU."%(id_field, cursor[id_field_idx]) for row in cursor
                                     if cursor[f.index('POLYTYPE')] == 'FOR' and cursor[f.index('VERT')] in ['TO','TU','MO','MU']
-                                    if cursor[f.index('UYRORG')] < cursor[f.index('OYRORG')] ] # *23414
+                                    if cursor[f.index('UYRORG')] <= cursor[f.index('OYRORG')] ] # *23414 *24b05
                     cursor.reset()
                     if len(errorList) > 0:
                         errorDetail[lyr].append(errorList)
@@ -1058,14 +1058,15 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
                         criticalError += 1
                         recordValCom[lyr].append("Error on %s record(s): USTKG must be between 0 and 4.0 (when POLYTYPE = FOR)."%len(errorList))
 
-                    errorList = ["Warning on %s %s: USTKG should not be 0 when VERT is TO, TU, MO or MU."%(id_field, cursor[id_field_idx]) for row in cursor
+                    errorList = ["Warning on %s %s: USTKG should not be 0 when VERT is TO, TU, MO or MU (does not apply when DEVSTAGE is DEPHARV or DEPNAT)."%(id_field, cursor[id_field_idx]) for row in cursor
+                                    if cursor[f.index('DEVSTAGE')] not in ['DEPHARV','DEPNAT']
                                     if cursor[f.index('VERT')] in ['TO','TU','MO','MU']
-                                    if cursor[f.index('USTKG')] <= 0]
+                                    if cursor[f.index('USTKG')] <= 0] # *24b06
                     cursor.reset()
                     if len(errorList) > 0:
                         errorDetail[lyr].append(errorList)
                         minorError += 1
-                        recordValCom[lyr].append("Warning on %s record(s): USTKG should not be 0 when VERT is TO, TU, MO or MU."%len(errorList))
+                        recordValCom[lyr].append("Warning on %s record(s): USTKG should not be 0 when VERT is TO, TU, MO or MU (does not apply when DEVSTAGE is DEPHARV or DEPNAT)."%len(errorList))
 
                     ## The following validation is being checked in the OSTKG section: "If DEVSTAGE attribute starts with DEP, then OSTKG + USTKG = 0"
 
