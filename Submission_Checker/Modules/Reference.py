@@ -10,6 +10,7 @@
 #-------------------------------------------------------------------------------
 import os, datetime, time
 
+# plan start year and region information is not being used by the checker tool, but the fmu and the code are being used.
 static_db = {
 #           fmu                     code        plan start years    region
         'Abitibi_River':        [   '110',      [2012, 2022],       'NE'    ],
@@ -35,13 +36,14 @@ static_db = {
         'Lakehead':             [   '796',      [2007, 2017],       'NW'    ],
         'Magpie':               [   '565',      [2009, 2019],       'NE'    ],
         'Martel':               [   '509',      [2011, 2021],       'NE'    ],
+        'Martel_Magpie':        [   '574',      [2021],             'NE'    ],  # new amalgamation      
         'Mazinaw_Lanark':       [   '140',      [2011, 2021],       'S'     ],
         'Nagagami':             [   '390',      [2011, 2021],       'NE'    ],
         'Nipissing':            [   '754',      [2009, 2019],       'NE'    ],
         'Northshore':           [   '680',      [2010, 2020],       'NE'    ],
         'Ogoki':                [   '415',      [2008, 2018],       'NW'    ],
         'Ottawa_Valley':        [   '780',      [2011, 2021],       'S'     ],
-        'Pic_Forest':           [   '966',      [2019],             'NE'    ], # Amalgamation of Big_Pic and Pic_River as of 2019 plan
+        'Pic_Forest':           [   '966',      [2021],             'NE'    ], # Amalgamation of Big_Pic and Pic_River as of 2019 plan. Pic's new start year is now 2021
         'Pic_River':            [   '965',      [2006, 2013],       'NE'    ], # will be a part of Pic_Forest in 2019
         'Pineland':             [   '421',      [2011, 2021],       'NW'    ],
         'Red_Lake':             [   '840',      [2008, 2018],       'NW'    ],

@@ -147,14 +147,14 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
                         recordValCom[lyr].append("Error on %s record(s): PITCLOSE should be null if REHABREQ > 0 (error when both PITCLOSE and REHABREQ are populated)."%len(errorList))
 
                 # The hectares requiring rehabilitation should be less than or equal to three.
-                errorList = ["Error on %s %s: REHABREQ should be less than or equal to 3."%(id_field, cursor[id_field_idx]) for row in cursor
+                errorList = ["Warning on %s %s: REHABREQ should be less than or equal to 3."%(id_field, cursor[id_field_idx]) for row in cursor
                                 if cursor[REHABREQ] not in vnull
-                                if cursor[REHABREQ] > 3 ]
+                                if cursor[REHABREQ] > 3 ] #*24b10
                 cursor.reset()
                 if len(errorList) > 0:
                     errorDetail[lyr].append(errorList)
                     minorError += 1
-                    recordValCom[lyr].append("Error on %s record(s): REHABREQ should be less than or equal to 3."%len(errorList))
+                    recordValCom[lyr].append("Warning on %s record(s): REHABREQ should be less than or equal to 3."%len(errorList))
 
             # REHAB
                 # The attribute population must follow the correct format
@@ -224,8 +224,7 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
                 # The attribute population must follow the correct format
                 # A zero value is a valid code
                 errorList = ["Error on %s %s: TONNES must be a number between 0 and 99,999,999."%(id_field, cursor[id_field_idx]) for row in cursor
-                                if cursor[TONNES] not in vnull
-                                if cursor[TONNES] < 0 or cursor[TONNES] > 99999999]
+                                if cursor[TONNES] in vnull or cursor[TONNES] < 0 or cursor[TONNES] > 99999999] #*24b09
                 cursor.reset()
                 if len(errorList) > 0:
                     errorDetail[lyr].append(errorList)
@@ -280,7 +279,7 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
                 # The population of this attribute is mandatory where SILVSYS != SE
                 errorList = ["Error on %s %s: AGEEST must be greater than zero when SILVSYS is not equal to SE."%(id_field, cursor[id_field_idx]) for row in cursor
                                 if cursor[SILVSYS] != 'SE'
-                                if cursor[AGEEST] == None or cursor[AGEEST] <= 0]
+                                if cursor[AGEEST] in vnull or cursor[AGEEST] <= 0 or cursor[AGEEST] > 9999] # having this upper limit check also catches string/unicode values *24b09
                 cursor.reset()
                 if len(errorList) > 0:
                     errorDetail[lyr].append(errorList)
@@ -435,8 +434,8 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
             # HT
                 # The attribute population must follow the correct format (if populated)
                 errorList = ["Error on %s %s: HT must be between 0 and 40 if populated."%(id_field, cursor[id_field_idx]) for row in cursor
-                                if cursor[HT] not in vnull
-                                if cursor[HT] < 0 or cursor[HT] > 40]
+                                if cursor[HT] != None
+                                if cursor[HT] < 0 or cursor[HT] > 40] #*24b09
                 cursor.reset()
                 if len(errorList) > 0:
                     errorDetail[lyr].append(errorList)
@@ -458,8 +457,8 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
             # DENSITY
                 # The attribute population must follow the correct format (if populated)
                 errorList = ["Error on %s %s: DENSITY must be between 0 and 99999 if populated."%(id_field, cursor[id_field_idx]) for row in cursor
-                                if cursor[DENSITY] not in vnull
-                                if cursor[DENSITY] < 0 or cursor[DENSITY] > 99999]
+                                if cursor[DENSITY] != None
+                                if cursor[DENSITY] < 0 or cursor[DENSITY] > 99999] #*24b09
                 cursor.reset()
                 if len(errorList) > 0:
                     errorDetail[lyr].append(errorList)
@@ -469,8 +468,8 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
             # STKG
                 # The attribute population must follow the correct format (if populated)
                 errorList = ["Error on %s %s: STKG must be between 0 and 1 if populated."%(id_field, cursor[id_field_idx]) for row in cursor
-                                if cursor[STKG] not in vnull
-                                if cursor[STKG] < 0 or cursor[STKG] > 1]
+                                if cursor[STKG] != None
+                                if cursor[STKG] < 0 or cursor[STKG] > 1] #*24b09
                 cursor.reset()
                 if len(errorList) > 0:
                     errorDetail[lyr].append(errorList)
@@ -829,9 +828,9 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
                     recordValCom[lyr].append("Error on %s record(s): HARVMTHD: THINCOM is valid only if SILVSYS is CC or SH."%len(errorList))
 
             # MGMTSTG
-                # The population of this attribute is mandatory where SILVSYS = SH
+                # The population of this attribute is mandatory where SILVSYS = SH (with an exception where HARVMTHD = THINCOM) *24b08
                 errorList = ["Error on %s %s: MGMTSTG must be populated if SILVSYS = SH."%(id_field, cursor[id_field_idx]) for row in cursor
-                                if cursor[SILVSYS] == 'SH'
+                                if cursor[SILVSYS] == 'SH' and cursor[HARVMTHD] != 'THINCOM'
                                 if cursor[MGMTSTG] in vnull]
                 cursor.reset()
                 if len(errorList) > 0:
