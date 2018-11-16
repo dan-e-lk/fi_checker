@@ -663,8 +663,8 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
                 if 'HT' in f:
                     # The attribute population must follow the correct format
                     errorList = ["Error on %s %s: HT must be between 0 and 40 if populated."%(id_field, cursor[id_field_idx]) for row in cursor
-                                    if cursor[HT] not in vnull
-                                    if cursor[HT] < 0 or cursor[HT] > 40]
+                                    if cursor[HT] != None
+                                    if cursor[HT] < 0 or cursor[HT] > 40] #*24b09
                     cursor.reset()
                     if len(errorList) > 0:
                         errorDetail[lyr].append(errorList)
@@ -676,7 +676,7 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
                     # Where FTG = Y: When the free-to-grow indicator is yes (FTG = Y) then the height must be greater than or equal ot 80cm
                     errorList = ["Error on %s %s: HT must be greater than or equal to 0.8 when FTG = Y."%(id_field, cursor[id_field_idx]) for row in cursor
                                     if cursor[FTG] == 'Y'
-                                    if cursor[HT] in vnull or cursor[HT] < 0.8]
+                                    if cursor[HT] == None or cursor[HT] < 0.8] #*24b09
                     cursor.reset()
                     if len(errorList) > 0:
                         errorDetail[lyr].append(errorList)
@@ -692,8 +692,8 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
                 if 'STKG' in f:
                     # The attribute population must follow the correct format
                     errorList = ["Error on %s %s: STKG must be between 0 and 4 if populated."%(id_field, cursor[id_field_idx]) for row in cursor
-                                    if cursor[STKG] not in vnull
-                                    if cursor[STKG] < 0 or cursor[STKG] > 4]
+                                    if cursor[STKG] != None
+                                    if cursor[STKG] < 0 or cursor[STKG] > 4] #*24b09
                     cursor.reset()
                     if len(errorList) > 0:
                         errorDetail[lyr].append(errorList)
@@ -705,7 +705,7 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
                     # Where FTG = Y: The stocking must be greater than or equal to forty percent (STKG >= 0.4)
                     errorList = ["Error on %s %s: STKG must be greater than or equal to 0.4 when FTG = Y."%(id_field, cursor[id_field_idx]) for row in cursor
                                     if cursor[FTG] == 'Y'
-                                    if cursor[STKG] in vnull or cursor[STKG] < 0.4]
+                                    if cursor[STKG] == None or cursor[STKG] < 0.4] #*24b09
                     cursor.reset()
                     if len(errorList) > 0:
                         errorDetail[lyr].append(errorList)
@@ -864,7 +864,7 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
                 # A zero (or null) value is not a valid code
                 # The attibute population must follow the correct format (if populated)
                 errorList = ["Error on %s %s: ESTAREA must be between 0.01 and 1 and zero or null is not a valid code."%(id_field, cursor[id_field_idx]) for row in cursor
-                                if cursor[ESTAREA] in vnull or cursor[ESTAREA] < 0.01 or cursor[ESTAREA] > 1]
+                                if cursor[ESTAREA] == None or cursor[ESTAREA] < 0.01 or cursor[ESTAREA] > 1] #*24b09
                 cursor.reset()
                 if len(errorList) > 0:
                     errorDetail[lyr].append(errorList)
@@ -932,7 +932,7 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
                 # The attribute population must follow the correct coding scheme
                 # A blank or null value is not a valid code            
                 errorList = ["Error on %s %s: LOGMTHD must be populated with FT, CL or TL and blank or null value is not a valid code."%(id_field, cursor[id_field_idx]) for row in cursor
-                                if cursor[LOGMTHD] in vnull]
+                                if cursor[LOGMTHD] not in ['FT','CL','TL']] #*24b12
                 cursor.reset()
                 if len(errorList) > 0:
                     errorDetail[lyr].append(errorList)
@@ -965,8 +965,8 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
             # VOLCON
                 # The attribute population must follow the correct format
                 errorList = ["Error on %s %s: VOLCON must be between 0 and 9,999,999 if populated."%(id_field, cursor[id_field_idx]) for row in cursor
-                                if cursor[VOLCON] not in vnull
-                                if cursor[VOLCON] < 0 or cursor[VOLCON] > 9999999 ]
+                                if cursor[VOLCON] != None
+                                if cursor[VOLCON] < 0 or cursor[VOLCON] > 9999999 ] #*24b09
                 cursor.reset()
                 if len(errorList) > 0:
                     errorDetail[lyr].append(errorList)
@@ -976,8 +976,8 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
             # VOLHWD
                 # The attribute population must follow the correct format            
                 errorList = ["Error on %s %s: VOLHWD must be between 0 and 9,999,999 if populated."%(id_field, cursor[id_field_idx]) for row in cursor
-                                if cursor[VOLHWD] not in vnull
-                                if cursor[VOLHWD] < 0 or cursor[VOLHWD] > 9999999 ]
+                                if cursor[VOLHWD] != None
+                                if cursor[VOLHWD] < 0 or cursor[VOLHWD] > 9999999 ] #*24b09
                 cursor.reset()
                 if len(errorList) > 0:
                     errorDetail[lyr].append(errorList)
@@ -1095,8 +1095,8 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
 
                 # The attribute population must follow the correct format
                 errorList = ["Error on %s %s: BHA must range from 0 to 99."%(id_field, cursor[id_field_idx]) for row in cursor
-                                if cursor[BHA] not in vnull
-                                if cursor[BHA] < 0 or cursor[BHA] > 99]
+                                if cursor[BHA] != None
+                                if cursor[BHA] < 0 or cursor[BHA] > 99] #*24b09
                 cursor.reset()
                 if len(errorList) > 0:
                     errorDetail[lyr].append(errorList)
@@ -1116,8 +1116,8 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
 
                 # The attribute population must follow the correct format
                 errorList = ["Error on %s %s: HT must range from 0 to 40."%(id_field, cursor[id_field_idx]) for row in cursor
-                                if cursor[HT] not in vnull
-                                if cursor[HT] < 0 or cursor[HT] > 40]
+                                if cursor[HT] != None
+                                if cursor[HT] < 0 or cursor[HT] > 40] #*24b09
                 cursor.reset()
                 if len(errorList) > 0:
                     errorDetail[lyr].append(errorList)
@@ -1127,7 +1127,7 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
             # DENSITY
                 # The population of this attribute is mandatory (where STKG is not populated and) where SILVSYS = CC and SH
                 errorList = ["Error on %s %s: DENSITY must be populated where STKG is not populated and SILVSYS is CC or SH."%(id_field, cursor[id_field_idx]) for row in cursor
-                                if cursor[SILVSYS] in ['CC','SH'] and cursor[STKG] in vnull
+                                if cursor[SILVSYS] in ['CC','SH'] and cursor[STKG] in [None, 0] #*24b09
                                 if cursor[DENSITY] in [0, None]]
                 cursor.reset()
                 if len(errorList) > 0:
@@ -1147,7 +1147,7 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
 
                 # (The attribute population must follow the correct format)
                 errorList = ["Error on %s %s: DENSITY must range from 0 to 99999."%(id_field, cursor[id_field_idx]) for row in cursor
-                                if cursor[DENSITY] not in vnull
+                                if cursor[DENSITY] != None
                                 if cursor[DENSITY] < 0 or cursor[DENSITY] > 99999]
                 cursor.reset()
                 if len(errorList) > 0:
@@ -1158,7 +1158,7 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
             # STKG
                 # The population of this attribute is mandatory (where DENSITY is not populated and) where SILVSYS = CC and SH
                 errorList = ["Error on %s %s: STKG must be populated where DENSITY is not populated and SILVSYS is CC or SH."%(id_field, cursor[id_field_idx]) for row in cursor
-                                if cursor[SILVSYS] in ['CC','SH'] and cursor[DENSITY] in vnull
+                                if cursor[SILVSYS] in ['CC','SH'] and cursor[DENSITY] in [None, 0] #*24b09
                                 if cursor[STKG] in [0, None]]
                 cursor.reset()
                 if len(errorList) > 0:
@@ -1178,7 +1178,7 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
 
                 # (The attribute population must follow the correct format)
                 errorList = ["Error on %s %s: STKG must range from 0 to 4."%(id_field, cursor[id_field_idx]) for row in cursor
-                                if cursor[STKG] not in vnull
+                                if cursor[STKG] != None
                                 if cursor[STKG] < 0 or cursor[STKG] > 4]
                 cursor.reset()
                 if len(errorList) > 0:
@@ -1189,8 +1189,8 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
             # AGS
                 # The attribute population must follow the correct format
                 errorList = ["Error on %s %s: AGS must range from 0 to 100."%(id_field, cursor[id_field_idx]) for row in cursor
-                                if cursor[AGS] not in vnull
-                                if cursor[AGS] < 0 or cursor[AGS] > 100]
+                                if cursor[AGS] != None
+                                if cursor[AGS] < 0 or cursor[AGS] > 100] #*24b09
                 cursor.reset()
                 if len(errorList) > 0:
                     errorDetail[lyr].append(errorList)
@@ -1211,8 +1211,8 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
             # UGS
                 # The attribute population must follow the correct format
                 errorList = ["Error on %s %s: UGS must range from 0 to 100."%(id_field, cursor[id_field_idx]) for row in cursor
-                                if cursor[UGS] not in vnull
-                                if cursor[UGS] < 0 or cursor[UGS] > 100]
+                                if cursor[UGS] != None
+                                if cursor[UGS] < 0 or cursor[UGS] > 100] #*24b09
                 cursor.reset()
                 if len(errorList) > 0:
                     errorDetail[lyr].append(errorList)
@@ -1380,8 +1380,8 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
                     trt3_check = " or cursor[TRTMTHD3] in ['PCHEMA','PCHEMG']" if "TRTMTHD3" in f else ""
 
                     command = """errorList = ["Error on %s %s: RATE_AI must be greater than 0 and less than or equal to 9.99 when any of the treatment methods are chemical."%(id_field, cursor[id_field_idx]) for row in cursor
-                                    if cursor[RATE_AI] in vnull or cursor[RATE_AI] <= 0 or cursor[RATE_AI] > 9.99
-                                    if cursor[TRTMTHD1] in ['PCHEMA','PCHEMG']""" + trt2_check + trt3_check + "]"
+                                    if cursor[RATE_AI] == None or cursor[RATE_AI] <= 0 or cursor[RATE_AI] > 9.99
+                                    if cursor[TRTMTHD1] in ['PCHEMA','PCHEMG']""" + trt2_check + trt3_check + "]" #*24b09
                     exec(command)
                     cursor.reset()
                     if len(errorList) > 0:
@@ -1415,8 +1415,8 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
                     trt3_check = " or cursor[TRTMTHD3] in ['PCHEMA','PCHEMG']" if "TRTMTHD3" in f else ""
 
                     command = """errorList = ["Error on %s %s: APPNUM must be greater than 0 and less than or equal to 9 when any of the treatment methods are chemical."%(id_field, cursor[id_field_idx]) for row in cursor
-                                    if cursor[APPNUM] in vnull or cursor[APPNUM] <= 0 or cursor[APPNUM] > 9
-                                    if cursor[TRTMTHD1] in ['PCHEMA','PCHEMG']""" + trt2_check + trt3_check + "]"
+                                    if cursor[APPNUM] == None or cursor[APPNUM] <= 0 or cursor[APPNUM] > 9
+                                    if cursor[TRTMTHD1] in ['PCHEMA','PCHEMG']""" + trt2_check + trt3_check + "]" #*24b09
                     exec(command)
                     cursor.reset()
                     if len(errorList) > 0:
@@ -1670,6 +1670,37 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
                     errorDetail[lyr].append(errorList)
                     criticalError += 1
                     recordValCom[lyr].append("Error on %s record(s): For TRTMTHD1, TRTMTHD2 and TRTMTHD3, the population of one of these attributes is mandatory."%len(errorList))
+
+            # TRTCAT1
+                # The attribute population must follow the correct coding scheme
+                # A blank or null value is a valid code
+                errorList = ["Error on %s %s: TRTCAT1 must be populated with the correct coding scheme if populated."%(id_field, cursor[id_field_idx]) for row in cursor
+                                if cursor[TRTCAT1] not in ['REG','RET','SUP'] + vnull] #*24b15
+                cursor.reset()
+                if len(errorList) > 0:
+                    errorDetail[lyr].append(errorList)
+                    criticalError += 1
+                    recordValCom[lyr].append("Error on %s record(s): TRTCAT1 must be populated with the correct coding scheme if populated."%len(errorList))
+
+            # TRTCAT2
+                if 'TRTCAT2' in f:
+                    errorList = ["Error on %s %s: TRTCAT2 must be populated with the correct coding scheme if populated."%(id_field, cursor[id_field_idx]) for row in cursor
+                                    if cursor[TRTCAT2] not in ['REG','RET','SUP'] + vnull] #*24b15
+                    cursor.reset()
+                    if len(errorList) > 0:
+                        errorDetail[lyr].append(errorList)
+                        criticalError += 1
+                        recordValCom[lyr].append("Error on %s record(s): TRTCAT2 must be populated with the correct coding scheme if populated."%len(errorList))
+
+            # TRTCAT3
+                if 'TRTCAT3' in f:
+                    errorList = ["Error on %s %s: TRTCAT3 must be populated with the correct coding scheme if populated."%(id_field, cursor[id_field_idx]) for row in cursor
+                                    if cursor[TRTCAT3] not in ['REG','RET','SUP'] + vnull] #*24b15
+                    cursor.reset()
+                    if len(errorList) > 0:
+                        errorDetail[lyr].append(errorList)
+                        criticalError += 1
+                        recordValCom[lyr].append("Error on %s record(s): TRTCAT3 must be populated with the correct coding scheme if populated."%len(errorList))
 
             # TRTCAT1 and TRTMTHD1
                 # If the treatment method is populated (TRTMTHD# != Null) then the associated treatment category must also be populated.
@@ -2109,6 +2140,36 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
                     criticalError += 1
                     recordValCom[lyr].append("Error on %s record(s): For TRTMTHD1, TRTMTHD2 and TRTMTHD3, the population of one of these attributes is mandatory."%len(errorList))
 
+            # TRTCAT1
+                # The attribute population must follow the correct coding scheme
+                # A blank or null value is a valid code
+                errorList = ["Error on %s %s: TRTCAT1 must be populated with the correct coding scheme if populated."%(id_field, cursor[id_field_idx]) for row in cursor
+                                if cursor[TRTCAT1] not in ['REG','RET','SUP'] + vnull] #*24b15
+                cursor.reset()
+                if len(errorList) > 0:
+                    errorDetail[lyr].append(errorList)
+                    criticalError += 1
+                    recordValCom[lyr].append("Error on %s record(s): TRTCAT1 must be populated with the correct coding scheme if populated."%len(errorList))
+
+            # TRTCAT2
+                if 'TRTCAT2' in f:
+                    errorList = ["Error on %s %s: TRTCAT2 must be populated with the correct coding scheme if populated."%(id_field, cursor[id_field_idx]) for row in cursor
+                                    if cursor[TRTCAT2] not in ['REG','RET','SUP'] + vnull] #*24b15
+                    cursor.reset()
+                    if len(errorList) > 0:
+                        errorDetail[lyr].append(errorList)
+                        criticalError += 1
+                        recordValCom[lyr].append("Error on %s record(s): TRTCAT2 must be populated with the correct coding scheme if populated."%len(errorList))
+
+            # TRTCAT3
+                if 'TRTCAT3' in f:
+                    errorList = ["Error on %s %s: TRTCAT3 must be populated with the correct coding scheme if populated."%(id_field, cursor[id_field_idx]) for row in cursor
+                                    if cursor[TRTCAT3] not in ['REG','RET','SUP'] + vnull] #*24b15
+                    cursor.reset()
+                    if len(errorList) > 0:
+                        errorDetail[lyr].append(errorList)
+                        criticalError += 1
+                        recordValCom[lyr].append("Error on %s record(s): TRTCAT3 must be populated with the correct coding scheme if populated."%len(errorList))
 
             # TRTCAT1 and TRTMTHD1
                 # If the treatment method is populated (TRTMTHD# != Null) then the associated treatment category must also be populated.
@@ -2215,8 +2276,8 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
                     trt3_check = " or cursor[TRTMTHD3] in ['SIPCHEMA','SIPCHEMG']" if "TRTMTHD3" in f else ""
 
                     command = """errorList = ["Error on %s %s: RATE_AI must be greater than 0 and less than or equal to 9.99 when any of the treatment methods are chemical."%(id_field, cursor[id_field_idx]) for row in cursor
-                                    if cursor[RATE_AI] in vnull or cursor[RATE_AI] <= 0 or cursor[RATE_AI] > 9.99
-                                    if cursor[TRTMTHD1] in ['SIPCHEMA','SIPCHEMG']""" + trt2_check + trt3_check + "]"
+                                    if cursor[RATE_AI] == None or cursor[RATE_AI] <= 0 or cursor[RATE_AI] > 9.99
+                                    if cursor[TRTMTHD1] in ['SIPCHEMA','SIPCHEMG']""" + trt2_check + trt3_check + "]" #*24b09
                     exec(command)
                     cursor.reset()
                     if len(errorList) > 0:
@@ -2250,8 +2311,8 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
                     trt3_check = " or cursor[TRTMTHD3] in ['SIPCHEMA','SIPCHEMG']" if "TRTMTHD3" in f else ""
 
                     command = """errorList = ["Error on %s %s: APPNUM must be greater than 0 and less than or equal to 9 when any of the treatment methods are chemical."%(id_field, cursor[id_field_idx]) for row in cursor
-                                    if cursor[APPNUM] in vnull or cursor[APPNUM] <= 0 or cursor[APPNUM] > 9
-                                    if cursor[TRTMTHD1] in ['SIPCHEMA','SIPCHEMG']""" + trt2_check + trt3_check + "]"
+                                    if cursor[APPNUM] == None or cursor[APPNUM] <= 0 or cursor[APPNUM] > 9
+                                    if cursor[TRTMTHD1] in ['SIPCHEMA','SIPCHEMG']""" + trt2_check + trt3_check + "]" #*24b09
                     exec(command)
                     cursor.reset()
                     if len(errorList) > 0:
@@ -2336,6 +2397,33 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
                     errorDetail[lyr].append(errorList)
                     criticalError += 1
                     recordValCom[lyr].append("Error on %s record(s): For TRTMTHD1, TRTMTHD2 and TRTMTHD3, the population of one of these attributes is mandatory."%len(errorList))
+
+            # TRTCAT1, 2 and 3 - The attribute population must follow the correct coding scheme if populated.
+                errorList = ["Error on %s %s: TRTCAT1 must follow the correct coding scheme if populated."%(id_field, cursor[id_field_idx]) for row in cursor
+                                if cursor[TRTCAT1] not in vnull + ['REG','RET','SUP']] #*24b15
+                cursor.reset()
+                if len(errorList) > 0:
+                    errorDetail[lyr].append(errorList)
+                    criticalError += 1
+                    recordValCom[lyr].append("Error on %s record(s): TRTCAT1 must be populated and must follow the correct coding scheme if TRTMTHD1 is populated."%len(errorList))
+
+                if 'TRTCAT2' in f:
+                    errorList = ["Error on %s %s: TRTCAT2 must follow the correct coding scheme if populated."%(id_field, cursor[id_field_idx]) for row in cursor
+                                    if cursor[TRTCAT2] not in vnull + ['REG','RET','SUP']] #*24b15
+                    cursor.reset()
+                    if len(errorList) > 0:
+                        errorDetail[lyr].append(errorList)
+                        criticalError += 1
+                        recordValCom[lyr].append("Error on %s record(s): TRTCAT2 must be populated and must follow the correct coding scheme if TRTMTHD1 is populated."%len(errorList))
+
+                if 'TRTCAT3' in f:
+                    errorList = ["Error on %s %s: TRTCAT3 must follow the correct coding scheme if populated."%(id_field, cursor[id_field_idx]) for row in cursor
+                                    if cursor[TRTCAT3] not in vnull + ['REG','RET','SUP']] #*24b15
+                    cursor.reset()
+                    if len(errorList) > 0:
+                        errorDetail[lyr].append(errorList)
+                        criticalError += 1
+                        recordValCom[lyr].append("Error on %s record(s): TRTCAT3 must be populated and must follow the correct coding scheme if TRTMTHD1 is populated."%len(errorList))
 
             # TRTCAT1 and TRTMTHD1
                 # If the treatment method is populated (TRTMTHD# != Null) then the associated treatment category must also be populated.
@@ -2442,8 +2530,8 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
                     trt3_check = " or cursor[TRTMTHD3] in ['CLCHEMA','CLCHEMG']" if "TRTMTHD3" in f else ""
 
                     command = """errorList = ["Error on %s %s: RATE_AI must be greater than 0 and less than or equal to 9.99 when any of the treatment methods are chemical."%(id_field, cursor[id_field_idx]) for row in cursor
-                                    if cursor[RATE_AI] in vnull or cursor[RATE_AI] <= 0 or cursor[RATE_AI] > 9.99
-                                    if cursor[TRTMTHD1] in ['CLCHEMA','CLCHEMG']""" + trt2_check + trt3_check + "]"
+                                    if cursor[RATE_AI] == None or cursor[RATE_AI] <= 0 or cursor[RATE_AI] > 9.99
+                                    if cursor[TRTMTHD1] in ['CLCHEMA','CLCHEMG']""" + trt2_check + trt3_check + "]" #*24b09
                     exec(command)
                     cursor.reset()
                     if len(errorList) > 0:
@@ -2477,8 +2565,8 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
                     trt3_check = " or cursor[TRTMTHD3] in ['CLCHEMA','CLCHEMG']" if "TRTMTHD3" in f else ""
 
                     command = """errorList = ["Error on %s %s: APPNUM must be greater than 0 and less than or equal to 9 when any of the treatment methods are chemical."%(id_field, cursor[id_field_idx]) for row in cursor
-                                    if cursor[APPNUM] in vnull or cursor[APPNUM] <= 0 or cursor[APPNUM] > 9
-                                    if cursor[TRTMTHD1] in ['CLCHEMA','CLCHEMG']""" + trt2_check + trt3_check + "]"
+                                    if cursor[APPNUM] == None or cursor[APPNUM] <= 0 or cursor[APPNUM] > 9
+                                    if cursor[TRTMTHD1] in ['CLCHEMA','CLCHEMG']""" + trt2_check + trt3_check + "]" #*24b09
                     exec(command)
                     cursor.reset()
                     if len(errorList) > 0:

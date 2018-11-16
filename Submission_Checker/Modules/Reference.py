@@ -99,9 +99,9 @@ def spcVal(data, fieldname, version = 2017): #sample data: 'Cw  70La  20Sb  10'
                 else:
                     return ["Error2","%s does not add up to 100"%fieldname]
             else:
-                return ["Error1", "%s does not follow the SSSPPPSSSPPP patern"%fieldname]
+                return ["Error1", "%s does not follow the SSSPPPSSSPPP pattern"%fieldname] #*24b11
         except:
-            return ["Error1", "%s does not follow the SSSPPPSSSPPP patern"%fieldname]
+            return ["Error1", "%s does not follow the SSSPPPSSSPPP pattern"%fieldname] #*24b11
 
 
 def findLeadSpc(spcomp):
