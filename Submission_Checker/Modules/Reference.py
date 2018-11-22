@@ -90,7 +90,7 @@ def spcVal(data, fieldname, version = 2017): #sample data: 'Cw  70La  20Sb  10'
                             if sorted(percentList,reverse=True) == percentList:
                                 return None
                             else:
-                                return ["Warning1","%s values are not in descending order. This might be an issue when assigning LEADSPC"%fieldname]
+                                return ["Warning1","%s values are not in descending order."%fieldname]
                         else:
                             wrongList = list(set(spcList) - set(correctList))
                             return ["Error4","%s has invalid species code(s)"%fieldname]

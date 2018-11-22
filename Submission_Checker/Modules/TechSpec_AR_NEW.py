@@ -168,23 +168,23 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
                     recordValCom[lyr].append("Error on %s record(s): REHAB must be a number of hectares between 0 and 9.9."%len(errorList))
 
                 # If the area rehabilitated is zero (REHAB = 0) then the tonnes of aggregate extracted should not be zero (TONNES != 0)
-                errorList = ["Error on %s %s: If REHAB is zero or null then the TONNES should not be zero or null."%(id_field, cursor[id_field_idx]) for row in cursor
+                errorList = ["Warning on %s %s: If REHAB is zero or null then the TONNES should not be zero or null."%(id_field, cursor[id_field_idx]) for row in cursor
                                 if cursor[REHAB] in [0, None] and cursor[TONNES] in [0, None]]
                 cursor.reset()
                 if len(errorList) > 0:
                     errorDetail[lyr].append(errorList)
                     minorError += 1
-                    recordValCom[lyr].append("Error on %s record(s): If REHAB is zero or null then the TONNES should not be zero or null."%len(errorList))
+                    recordValCom[lyr].append("Warning on %s record(s): If REHAB is zero or null then the TONNES should not be zero or null."%len(errorList))
 
                 # The hectares rehabilitated should be less than or equal to three.
-                errorList = ["Error on %s %s: REHAB should be less than or equal to 3."%(id_field, cursor[id_field_idx]) for row in cursor
+                errorList = ["Warning on %s %s: REHAB should be less than or equal to 3."%(id_field, cursor[id_field_idx]) for row in cursor
                                 if cursor[REHAB] not in vnull
                                 if cursor[REHAB] > 3 ]
                 cursor.reset()
                 if len(errorList) > 0:
                     errorDetail[lyr].append(errorList)
                     minorError += 1
-                    recordValCom[lyr].append("Error on %s record(s): REHAB should be less than or equal to 3."%len(errorList))
+                    recordValCom[lyr].append("Warning on %s record(s): REHAB should be less than or equal to 3."%len(errorList))
 
             # PITCLOSE
                 if 'PITCLOSE' in f:
@@ -2683,15 +2683,15 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
                     criticalError += 1
                     recordValCom[lyr].append("Error on %s record(s): REPLACE must be populated with Y or N."%len(errorList))
 
-            # CONSTRCT, REMOVE, MONITOR, and REPLACE
+            # CONSTRCT, REMOVE, MONITOR, and REPLACE and TRANS   *24b18
                 # At a minimum, one of Construction, Removal, Monitoring or Replacement must occur for each record.
-                errorList = ["Error on %s %s: At a minimum, one of Construction, Removal, Monitoring or Replacement must occur for each record."%(id_field, cursor[id_field_idx]) for row in cursor
-                                if 'Y' not in [cursor[CONSTRCT], cursor[MONITOR], cursor[REMOVE], cursor[REPLACE]]]
+                errorList = ["Error on %s %s: At a minimum, one of Construction, Removal, Monitoring, Replacement, or Transfer must occur for each record."%(id_field, cursor[id_field_idx]) for row in cursor
+                                if 'Y' not in [cursor[CONSTRCT], cursor[MONITOR], cursor[REMOVE], cursor[REPLACE], cursor[TRANS]]]
                 cursor.reset()
                 if len(errorList) > 0:
                     errorDetail[lyr].append(errorList)
                     criticalError += 1
-                    recordValCom[lyr].append("Error on %s record(s): At a minimum, one of Construction, Removal, Monitoring or Replacement must occur for each record."%len(errorList))
+                    recordValCom[lyr].append("Error on %s record(s): At a minimum, one of Construction, Removal, Monitoring, Replacement, or Transfer must occur for each record."%len(errorList))
 
             # REVIEW
                 # The population of this attribute is mandatory where CONSTRCT = Y or REMOVE = Y or REPLACE = Y.
