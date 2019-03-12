@@ -299,7 +299,7 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
             # BLOCKID
                 errorList = ["Error on %s %s: The population of BLOCKID is mandatory where plan start year is greater than or equal to 2019."
                                 %(id_field, cursor[id_field_idx]) for row in cursor
-                                if fmpStartYear >= 2019 and cursor[f.index('BLOCKID')]]
+                                if fmpStartYear >= 2019 and cursor[f.index('BLOCKID')] in vnull] #*24c03
                 cursor.reset()
                 if len(errorList) > 0:
                     errorDetail[lyr].append(errorList)
@@ -368,9 +368,10 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
                     recordValCom[lyr].append("Error on %s record(s): HARVCAT = BRIDGING is only available when the AWS start year is equal to the first year of the plan period."%len(errorList))
 
             # FUELWOOD
-                errorList = ["Error on %s %s: The population of FUELWOOD is mandatory and must follow the correct coding scheme.  *FUELWOOD = [%s]"
+                errorList = ["Error on %s %s: The population of FUELWOOD is mandatory and must follow the correct coding scheme where AWS_YR = submission year.  *FUELWOOD = [%s]"
                                 %(id_field, cursor[id_field_idx],cursor[f.index('FUELWOOD')]) for row in cursor
-                                if cursor[f.index('FUELWOOD')] not in ['Y','N']]
+                                if cursor[f.index('AWS_YR')] == year
+                                if cursor[f.index('FUELWOOD')] not in ['Y','N']] # *24c08
                 cursor.reset()
                 if len(errorList) > 0:
                     errorDetail[lyr].append(errorList)

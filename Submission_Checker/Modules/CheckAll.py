@@ -25,7 +25,7 @@ class Check():
         self.year = year
         self.fmpStartYear = fmpStartYear
         self.workspace = workspace ## N:\WORK-DATA\FMPDS\Abitibi_River\AWS\2017\_data\FMP_Schema.gdb
-        self.dataformat = dataformat # eg. 'shapefile','feature classes' or 'coverage'
+        self.dataformat = dataformat # eg. 'shapefile','feature class' or 'coverage'
         self.tech_spec_version = tech_spec_version
         self.old_or_new = 'NEW' if tech_spec_version == '2017' else 'OLD'
         self.subID = subID
@@ -48,7 +48,7 @@ class Check():
         print("\nWorking on " + self.workspace)
         arcpy.AddMessage("\nWorking on " + self.workspace)
 
-        if self.dataformat == 'feature classes':
+        if self.dataformat == 'feature class':
             self.mainFolder = os.path.split(self.workspace)[0] ## The report will be saved in this folder: N:\WORK-DATA\FMPDS\Abitibi_River\AWS\2017\_data
         else:
             self.mainFolder = self.workspace ## The report will be saved in this folder: N:\WORK-DATA\FMPDS\Abitibi_River\AWS\2017\shp

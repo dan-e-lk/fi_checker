@@ -366,6 +366,28 @@ def getOntarioLogo():
     return 'https://www.ontario.ca/sites/all/themes/odpm/images/ontario.png'
 
 
+def findDuplicateID(idList, idfieldname):
+    """
+    you must first check if the idList is not a blank list before using this function.
+    This function will check the idList for any duplicates.
+    It will then output the duplicate ID in a string format.
+    """
+    unique_id_list = []
+    duplicate_id_list = []
+    duplicate_counter = 0
+    for i in idList:
+        if i in unique_id_list:
+            duplicate_id_list.append(i)
+            duplicate_counter += 1
+        else:
+            unique_id_list.append(i)
+
+
+
+
+
+
+
 
 
 if __name__ == '__main__':

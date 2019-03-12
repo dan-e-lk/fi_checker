@@ -1,7 +1,7 @@
 #-------------------------------------------------------------------------------
 # Name:        	checker_v2
 
-checker_version = '2.4b'
+checker_version = '2.4c'
 
 # Purpose:	   	This tool checks the FMP, AR or AWS submission (according to the 
 #				FIM Technical Specifications 2009 or 2017) and outputs a validation report 
@@ -30,7 +30,7 @@ fmu = arcpy.GetParameterAsText(1) ## case-sensitive. can't have spaces - ie Big_
 year = int(arcpy.GetParameterAsText(2)) ## must be an integer
 fmpStartYear = int(arcpy.GetParameterAsText(3)) ## must be an integer
 workspace = arcpy.GetParameterAsText(4) ## gdb where the submission feature classes are stored.
-dataformat = arcpy.GetParameterAsText(5) # eg. 'shapefile','feature classes' or 'coverage'
+dataformat = arcpy.GetParameterAsText(5) # eg. 'shapefile','feature class' or 'coverage'
 tech_spec_version = arcpy.GetParameterAsText(6) # "Old (2009)" or "New (2017)"
 tech_spec_version = "2017" if tech_spec_version == "New (2017)" else "2009"
 SubID = arcpy.GetParameterAsText(7) # optional. cant have special character since the filename will include submission id. Also, the Reference.findSubID will try to find the submission ID in fmu/plan/year/ folder.

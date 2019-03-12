@@ -1,7 +1,7 @@
 #-------------------------------------------------------------------------------
 # Name:        	checker_v2
 
-checker_version = '2.4b'
+checker_version = '2.4c'
 
 # Purpose:	   	This tool checks the FMP, AR or AWS submission (according to the 
 #				FIM Technical Specifications 2009 or 2017) and outputs a validation report 
@@ -29,7 +29,7 @@ workspace = sys.argv[5] ## gdb/folder where the submission feature classes are s
 
 
 dataformat = sys.argv[6] # has to be 'shp','fc','cov'.
-dataformat_dict = {'shp':'shapefile', 'fc':'feature classes', 'cov':'coverage'}
+dataformat_dict = {'shp':'shapefile', 'fc':'feature class', 'cov':'coverage'}
 dataformat = dataformat_dict[dataformat]
 
 
