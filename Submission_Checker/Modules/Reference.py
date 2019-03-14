@@ -382,17 +382,34 @@ def findDuplicateID(idList, idfieldname):
         else:
             unique_id_list.append(i)
 
+    summary_msg = ''
+    error_msg_list = []
+    if duplicate_counter == 0:
+        pass # the length of both summary_msg and error_msg_list stays zero.
+    else:
+        duplicates = set(duplicate_id_list)
+        msg1 = "Error on %s record(s): The %s attribute must contain a unique value."%(duplicate_counter,idfieldname)
+        summary_msg += msg1
+        error_msg_list.append(msg1)
+        error_msg_list.append('List of duplicate %s:'%idfieldname)
+        error_msg_list.append(str(list(duplicates)))
 
-
-
-
+    return summary_msg, error_msg_list
 
 
 
 
 if __name__ == '__main__':
 
-    findPDF('FIM_AWS_TechSpec_2017.pdf#page=50')
+    # testing findDuplicateID
+    idlist = [0,1,2,3,3,4,5,6,7,7,8,9,14,3,7,0,'','',None, None, None, 'abc','abc',999, 999,]
+    idfieldname = 'POLYID'
+    summary, error_list = findDuplicateID(idlist,idfieldname)
+    print(summary)
+    print(error_list)
+
+
+    # findPDF('FIM_AWS_TechSpec_2017.pdf#page=50')
 
 ##    htmlstring = checkWatchFile(r'N:\WORK-DATA\FMPDS\Timiskaming\AWS\2017')
 ##    rep = open(r'N:\WORK-DATA\FMPDS\Timiskaming\AWS\2017\E00\mu280_aws_review_summary.html','w')

@@ -37,7 +37,7 @@ verbose = True
 lyrInfo = {
 # Lyr acronym            name                           mandatory fields                                            Data type   Tech Spec       Tech Spec URL
 
-    "AOC":  ["Area of Concern",                         ["AOCID","AOCTYPE"],                                        'polygon',  '4.2.8',        R.findPDF('FIM_FMP_TechSpec_2017.pdf#page=114')],
+    "AOC":  ["Area of Concern",                         ["AOCID","AOCTYPE"],                                        'polygon',  '4.2.8',        R.findPDF('FIM_FMP_TechSpec_2018.pdf#page=113')],
 
     "BMI":  ["Base Model Inventory",                    ['POLYID', 'POLYTYPE', 'OWNER', 'YRSOURCE',
                                                        'SOURCE', 'FORMOD', 'DEVSTAGE', 'YRDEP', 'DEPTYPE',
@@ -47,14 +47,14 @@ lyrInfo = {
                                                        'PRI_ECO', 'SEC_ECO', 'ACCESS1', 'ACCESS2', 'MGMTCON1',
                                                        'MGMTCON2', 'MGMTCON3', 'YRORG', 'SPCOMP', 'LEADSPC',
                                                        'AGE', 'HT', 'CCLO', 'STKG', 'SC', 'MANAGED', 'SMZ',
-                                                       'PLANFU', 'AU', 'AVAIL', 'SILVSYS', 'NEXTSTG', 'YIELD'],     'polygon',  '4.1.4',        R.findPDF('FIM_FMP_TechSpec_2017.pdf#page=15')],
+                                                       'PLANFU', 'AU', 'AVAIL', 'SILVSYS', 'NEXTSTG', 'YIELD'],     'polygon',  '4.1.4',        R.findPDF('FIM_FMP_TechSpec_2018.pdf#page=15')],
 
     "ERU":  ["Existing Road Use Management Strategies", ['ROADID','ROADCLAS','TRANS','ACYEAR','ACCESS','DECOM',
-                                                        'INTENT','MAINTAIN','MONITOR','RESPONS','CONTROL1'],        'arc',      '4.2.12',       R.findPDF('FIM_FMP_TechSpec_2017.pdf#page=132')],
+                                                        'INTENT','MAINTAIN','MONITOR','RESPONS','CONTROL1'],        'arc',      '4.2.12',       R.findPDF('FIM_FMP_TechSpec_2018.pdf#page=131')],
 
-    "FDP":  ["Forecast Depletions",                     ['FSOURCE','FYRDEP','FDEVSTAGE'],                           'polygon',  '4.1.8',        R.findPDF('FIM_FMP_TechSpec_2017.pdf#page=98')],
+    "FDP":  ["Forecast Depletions",                     ['FSOURCE','FYRDEP','FDEVSTAGE'],                           'polygon',  '4.1.8',        R.findPDF('FIM_FMP_TechSpec_2018.pdf#page=97')],
 
-    "IMP":  ["Tree Improvement",                        ['IMPROVE'],                                                'polygon',  '4.2.15',       R.findPDF('FIM_FMP_TechSpec_2017.pdf#page=148')],
+    "IMP":  ["Tree Improvement",                        ['IMPROVE'],                                                'polygon',  '4.2.15',       R.findPDF('FIM_FMP_TechSpec_2018.pdf#page=147')],
 
     "OPI":  ["Operational Planning Inventory",          ['POLYID', 'POLYTYPE', 'OWNER', 'YRSOURCE',
                                                        'SOURCE', 'FORMOD', 'DEVSTAGE', 'YRDEP', 'DEPTYPE',
@@ -63,27 +63,27 @@ lyrInfo = {
                                                        'MGMTCON2', 'MGMTCON3', 'YRORG', 'SPCOMP', 'LEADSPC',
                                                        'AGE', 'HT', 'CCLO', 'STKG', 'SC', 'MANAGED', 'SMZ',
                                                        'PLANFU', 'AU', 'AVAIL', 'SILVSYS', 'NEXTSTG', 'YIELD',
-                                                        'OMZ', 'SGR'],                                              'polygon',  '4.1.4',        R.findPDF('FIM_FMP_TechSpec_2017.pdf#page=15')],
+                                                        'OMZ', 'SGR'],                                              'polygon',  '4.1.4',        R.findPDF('FIM_FMP_TechSpec_2018.pdf#page=15')],
 
-    "ORB":  ["Operational Road Boundaries",             ['ORBID'],                                                  'polygon',  '4.2.11',       R.findPDF('FIM_FMP_TechSpec_2017.pdf#page=129')],
+    "ORB":  ["Operational Road Boundaries",             ['ORBID'],                                                  'polygon',  '4.2.11',       R.findPDF('FIM_FMP_TechSpec_2018.pdf#page=128')],
 
-    "PAG":  ["Planned Aggregate Extraction Areas",      ['AGAREAID'],                                               'polygon',  '4.2.14',       R.findPDF('FIM_FMP_TechSpec_2017.pdf#page=146')],
+    "PAG":  ["Planned Aggregate Extraction Areas",      ['AGAREAID'],                                               'polygon',  '4.2.14',       R.findPDF('FIM_FMP_TechSpec_2018.pdf#page=145')],
 
     "PCI":  ["Planning Composite",                      ['POLYID', 'POLYTYPE', 'OWNER', 'YRSOURCE',
                                                         'SOURCE', 'FORMOD', 'DEVSTAGE', 'YRDEP', 'DEPTYPE',
                                                         'OYRORG', 'OSPCOMP', 'OLEADSPC', 'OAGE', 'OHT', 'OCCLO',
                                                         'OSTKG', 'OSC', 'UYRORG', 'USPCOMP', 'ULEADSPC', 'UAGE',
                                                         'UHT', 'UCCLO', 'USTKG', 'USC', 'INCIDSPC', 'VERT', 
-                                                        'HORIZ', 'PRI_ECO', 'SEC_ECO', 'ACCESS1', 'MGMTCON1'],      'polygon',  '4.1.4',        R.findPDF('FIM_FMP_TechSpec_2017.pdf#page=15')],
+                                                        'HORIZ', 'PRI_ECO', 'SEC_ECO', 'ACCESS1', 'MGMTCON1'],      'polygon',  '4.1.4',        R.findPDF('FIM_FMP_TechSpec_2018.pdf#page=15')],
 
-    "PHR":  ["Planned Harvest",                         ['BLOCKID','SILVSYS','HARVCAT'],                            'polygon',  '4.2.7',        R.findPDF('FIM_FMP_TechSpec_2017.pdf#page=109')],
+    "PHR":  ["Planned Harvest",                         ['BLOCKID','SILVSYS','HARVCAT'],                            'polygon',  '4.2.7',        R.findPDF('FIM_FMP_TechSpec_2018.pdf#page=108')],
 
     "PRC":  ["Planned Road Corridors",                  ['ROADID','ROADCLAS','TRANS','ACYEAR','ACCESS','DECOM',
-                                                        'INTENT','MAINTAIN','MONITOR','CONTROL1','CONTROL2'],       'polygon',  '4.2.10',       R.findPDF('FIM_FMP_TechSpec_2017.pdf#page=120')], # revisit this. there were a number of errors in the tech spec itself.
+                                                        'INTENT','MAINTAIN','MONITOR','CONTROL1','CONTROL2'],       'polygon',  '4.2.10',       R.findPDF('FIM_FMP_TechSpec_2018.pdf#page=119')], # revisit this. there were a number of errors in the tech spec itself.
 
-    "PRP":  ["Planned Residual Patches",                ['RESID'],                                                  'polygon',  '4.2.9',        R.findPDF('FIM_FMP_TechSpec_2017.pdf#page=118')],
+    "PRP":  ["Planned Residual Patches",                ['RESID'],                                                  'polygon',  '4.2.9',        R.findPDF('FIM_FMP_TechSpec_2018.pdf#page=117')],
 
-    "WXI":  ["Existing Road Water Crossing Inventory",  ['WATXID','WATXTYPE','RESPONS','ROADID'],                   'point',    '4.2.13',       R.findPDF('FIM_FMP_TechSpec_2017.pdf#page=142')],
+    "WXI":  ["Existing Road Water Crossing Inventory",  ['WATXID','WATXTYPE','RESPONS','ROADID'],                   'point',    '4.2.13',       R.findPDF('FIM_FMP_TechSpec_2018.pdf#page=141')],
         }
 
 
@@ -149,11 +149,7 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
 
             # POLYID
             try:
-                current_field = 'POLYID'
-
-                # errorMsg = 'The population of POLYID is mandatory'
-                # errorList = [[current_field, '%s: %s'%(id_field,id_field, cursor[id_field_idx]),errorMsg] for row in cursor
-                #                 if cursor[f.index('POLYID')] in vnull]     
+                current_field = 'POLYID' 
                                 
                 errorList = ["Error on %s %s: The population of POLYID is mandatory."%(id_field, cursor[id_field_idx]) for row in cursor
                                 if cursor[f.index('POLYID')] in vnull]
@@ -163,12 +159,15 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
                     criticalError += 1
                     recordValCom[lyr].append("Error on %s record(s): The population of POLYID is mandatory."%len(errorList))
 
-                polyIDList = [cursor[f.index('POLYID')] for row in cursor if cursor[f.index('POLYID')] not in vnull ]
+                IDList = [str(cursor[f.index(current_field)]) for row in cursor if cursor[f.index(current_field)] not in vnull ]
                 cursor.reset()
-                numDuplicates = len(polyIDList) - len(set(polyIDList))
-                if numDuplicates > 0:
+
+                summary_comments, errorList = R.findDuplicateID(IDList, current_field) #*24c02
+                if len(summary_comments) > 0:
                     criticalError += 1
-                    recordValCom[lyr].append("Error on %s record(s): The POLYID attribute must contain a unique value."%numDuplicates)
+                    recordValCom[lyr].append(summary_comments)
+                    errorDetail[lyr].append(errorList)
+
             except ValueError:
                 recordValCom[lyr].append("***Unable to run full validation on %s field due to value error - most likely due to missing mandatory field(s)"%current_field)
                 arcpy.AddWarning("***Unable to run full validation on %s field due to the following error:\n"%current_field + str(sys.exc_info()[1]))
@@ -784,14 +783,14 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
                         criticalError += 1
                         recordValCom[lyr].append("Error on %s record(s): UYRORG must be zero or null when POLYTYPE is not FOR or if DEVSTAGE is DEPHARV or DEPNAT."%len(errorList))
 
-                    errorList = ["Error on %s %s: UYRORG should be greater than OYRORG when POLYTYPE is FOR and VERT is TO, TU, MO or MU."%(id_field, cursor[id_field_idx]) for row in cursor
+                    errorList = ["Warning on %s %s: UYRORG should be greater than OYRORG when POLYTYPE is FOR and VERT is TO, TU, MO or MU."%(id_field, cursor[id_field_idx]) for row in cursor
                                     if cursor[f.index('POLYTYPE')] == 'FOR' and cursor[f.index('VERT')] in ['TO','TU','MO','MU']
                                     if cursor[f.index('UYRORG')] <= cursor[f.index('OYRORG')] ] # *23414 *24b05
                     cursor.reset()
                     if len(errorList) > 0:
                         errorDetail[lyr].append(errorList)
-                        criticalError += 1
-                        recordValCom[lyr].append("Error on %s record(s): UYRORG should be greater than OYRORG when POLYTYPE is FOR and VERT is TO, TU, MO or MU."%len(errorList))
+                        minorError += 1 #*24c05
+                        recordValCom[lyr].append("Warning on %s record(s): UYRORG should be greater than OYRORG when POLYTYPE is FOR and VERT is TO, TU, MO or MU."%len(errorList))
 
                     errorList = ["Error on %s %s: UYRORG must be greater than 1800 when POLYTYPE is FOR and VERT is TO, TU, MO or MU."%(id_field, cursor[id_field_idx]) for row in cursor
                                     if cursor[f.index('POLYTYPE')] == 'FOR' and cursor[f.index('VERT')] in ['TO','TU','MO','MU']
