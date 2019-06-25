@@ -8,5 +8,6 @@ the arctool, and in the Checker_v2.py script. Change Checker_v2.py script to Che
 
 
 
+
 Note that the details regarding the changes made to the checker tool can be found here:
 \\cihs.ad.gov.on.ca\mnrf\Groups\ROD\RODOpen\Forestry\Tools_and_Scripts\FI_Checker\ChangeLog

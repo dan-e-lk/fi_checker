@@ -1,4 +1,5 @@
-
+:: Rename this file by replacing .txt with .bat extension when you use it.
+::
 :: HOW TO RUN THIS BATCH FILE
 :: <path to ArcGIS python exe> <path to Checker_v2_command_line.py file> <aws, ar or fmp> 
 ::		<fmu name eg.gordon_cosens> <submission year> <plan start year> 
