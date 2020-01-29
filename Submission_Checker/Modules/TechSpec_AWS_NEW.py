@@ -360,7 +360,7 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
                 errorList = ["Error on %s %s: HARVCAT = BRIDGING is only available when the AWS start year is equal to the first year of the plan period."
                                 %(id_field, cursor[id_field_idx]) for row in cursor
                                 if cursor[f.index('HARVCAT')] == 'BRIDGING'
-                                if year != fmpStartYear]
+                                if year != fmpStartYear and cursor[f.index('AWS_YR')] == year] # *24c06
                 cursor.reset()
                 if len(errorList) > 0:
                     errorDetail[lyr].append(errorList)
@@ -718,9 +718,10 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
                     criticalError += 1
                     recordValCom[lyr].append("Error on %s record(s): MONITOR must be populated with the correct coding scheme (Y or N)."%len(errorList))                                        
 
-            # ACCESS, DECOM, MAINTAIN & MONITOR
+            # ACCESS, DECOM, MAINTAIN & MONITOR   #*24c11 added If AWS_YR == year. This was to prevent it from flagging road corridors not planned for this year but still a good-to-have info.
                 errorList = ["Error on %s %s: One of DECOM, MAINTAIN, MONITOR or ACCESS must occur for each record. *DECOM = [%s] *MAINTAIN = [%s] *MONITOR = [%s] *ACCESS = [%s]"
                                 %(id_field, cursor[id_field_idx],cursor[f.index('DECOM')],cursor[f.index('MAINTAIN')],cursor[f.index('MONITOR')],cursor[f.index('ACCESS')]) for row in cursor
+                                if cursor[f.index('AWS_YR')] == year
                                 if cursor[f.index('MAINTAIN')] != 'Y' and cursor[f.index('MONITOR')] != 'Y'
                                 if cursor[f.index('ACCESS')] not in ['APPLY','REMOVE','BOTH']
                                 if cursor[f.index('DECOM')] not in ['BERM','SCAR','SLSH','WATX']]

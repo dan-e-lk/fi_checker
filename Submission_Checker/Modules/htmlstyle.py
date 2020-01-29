@@ -55,7 +55,7 @@ h1 {
     font-size: 1.5em;
     margin: 0;
     font-weight: bold;
-    background: #415634;
+    background: #000000;
     color: white;
     padding: 30px 0 10px 20px;
 }

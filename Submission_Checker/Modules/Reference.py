@@ -363,7 +363,7 @@ def getOntarioLogo():
     this function should test if this ontario logo works before returning it
     However, urllib2.urlopen module doesn't seem to work on OPS network.
     """
-    return 'https://www.ontario.ca/sites/all/themes/odpm/images/ontario.png'
+    return 'https://www.ontario.ca/img/logo-ontario@2x.png'
 
 
 def findDuplicateID(idList, idfieldname):
