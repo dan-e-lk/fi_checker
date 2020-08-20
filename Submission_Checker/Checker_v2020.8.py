@@ -32,7 +32,7 @@ fmpStartYear = int(arcpy.GetParameterAsText(3)) ## must be an integer
 workspace = arcpy.GetParameterAsText(4) ## gdb where the submission feature classes are stored.
 dataformat = arcpy.GetParameterAsText(5) # eg. 'shapefile','feature class' or 'coverage'
 tech_spec_version = arcpy.GetParameterAsText(6) # "Old (2009)" or "New (2017)"
-tech_spec_version = "2017" if tech_spec_version == "New (2017)" else "2009"
+tech_spec_version = "2020" if tech_spec_version == "New (2020)" else "2009"
 SubID = arcpy.GetParameterAsText(7) # optional. cant have special character since the filename will include submission id. Also, the Reference.findSubID will try to find the submission ID in fmu/plan/year/ folder.
 error_limit = str(arcpy.GetParameterAsText(8)) # "Limit to 50 errors per error type" or "Full Report"
 

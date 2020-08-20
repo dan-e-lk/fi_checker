@@ -37,7 +37,7 @@ verbose = True
 lyrInfo = {
 # Lyr acronym            name                           mandatory fields                                            Data type   Tech Spec       Tech Spec URL
 
-    "AOC":  ["Area of Concern",                         ["AOCID","AOCTYPE"],                                        'polygon',  '4.2.8',        R.findPDF('FIM_FMP_TechSpec_2018.pdf#page=113')],
+    "AOC":  ["Area of Concern",                         ["AOCID","AOCTYPE"],                                        'polygon',  '4.2.8',        R.findPDF('FIM_FMP_TechSpec_2020.pdf#page=108')],
 
     "BMI":  ["Base Model Inventory",                    ['POLYID', 'POLYTYPE', 'OWNER', 'YRSOURCE',
                                                        'SOURCE', 'FORMOD', 'DEVSTAGE', 'YRDEP', 'DEPTYPE',
@@ -46,44 +46,46 @@ lyrInfo = {
                                                        'UHT', 'UCCLO', 'USTKG', 'USC', 'INCIDSPC', 'VERT', 'HORIZ',
                                                        'PRI_ECO', 'SEC_ECO', 'ACCESS1', 'ACCESS2', 'MGMTCON1',
                                                        'MGMTCON2', 'MGMTCON3', 'YRORG', 'SPCOMP', 'LEADSPC',
-                                                       'AGE', 'HT', 'CCLO', 'STKG', 'SC', 'MANAGED', 'SMZ',
-                                                       'PLANFU', 'AU', 'AVAIL', 'SILVSYS', 'NEXTSTG', 'YIELD'],     'polygon',  '4.1.4',        R.findPDF('FIM_FMP_TechSpec_2018.pdf#page=15')],
+                                                       'AGE', 'HT', 'CCLO', 'STKG', 'SC', 'MANAGED',
+                                                       'PLANFU', 'AU', 'AVAIL', 'SILVSYS', 'NEXTSTG', 'YIELD'],     'polygon',  '4.1.4',        R.findPDF('FIM_FMP_TechSpec_2020.pdf#page=11')], # Note that 'SMZ' is no longer mandatory
 
     "ERU":  ["Existing Road Use Management Strategies", ['ROADID','ROADCLAS','TRANS','ACYEAR','ACCESS','DECOM',
-                                                        'INTENT','MAINTAIN','MONITOR','RESPONS','CONTROL1'],        'arc',      '4.2.12',       R.findPDF('FIM_FMP_TechSpec_2018.pdf#page=131')],
+                                                        'INTENT','MAINTAIN','MONITOR','RESPONS','CONTROL1'],        'arc',      '4.2.12',       R.findPDF('FIM_FMP_TechSpec_2020.pdf#page=125')],
 
-    "FDP":  ["Forecast Depletions",                     ['FSOURCE','FYRDEP','FDEVSTAGE'],                           'polygon',  '4.1.8',        R.findPDF('FIM_FMP_TechSpec_2018.pdf#page=97')],
+    "FDP":  ["Forecast Depletions",                     ['FSOURCE','FYRDEP','FDEVSTAGE'],                           'polygon',  '4.1.8',        R.findPDF('FIM_FMP_TechSpec_2020.pdf#page=91')],
 
-    "IMP":  ["Tree Improvement",                        ['IMPROVE'],                                                'polygon',  '4.2.15',       R.findPDF('FIM_FMP_TechSpec_2018.pdf#page=147')],
+    "IMP":  ["Tree Improvement",                        ['IMPROVE'],                                                'polygon',  '4.2.15',       R.findPDF('FIM_FMP_TechSpec_2020.pdf#page=141')],
 
     "OPI":  ["Operational Planning Inventory",          ['POLYID', 'POLYTYPE', 'OWNER', 'YRSOURCE',
                                                        'SOURCE', 'FORMOD', 'DEVSTAGE', 'YRDEP', 'DEPTYPE',
                                                        'INCIDSPC', 'VERT', 'HORIZ',
                                                        'PRI_ECO', 'SEC_ECO', 'ACCESS1', 'ACCESS2', 'MGMTCON1',
                                                        'MGMTCON2', 'MGMTCON3', 'YRORG', 'SPCOMP', 'LEADSPC',
-                                                       'AGE', 'HT', 'CCLO', 'STKG', 'SC', 'MANAGED', 'SMZ',
+                                                       'AGE', 'HT', 'CCLO', 'STKG', 'SC', 'MANAGED', 
                                                        'PLANFU', 'AU', 'AVAIL', 'SILVSYS', 'NEXTSTG', 'YIELD',
-                                                        'OMZ', 'SGR'],                                              'polygon',  '4.1.4',        R.findPDF('FIM_FMP_TechSpec_2018.pdf#page=15')],
+                                                        'OMZ', 'SGR'],                                              'polygon',  '4.1.4',        R.findPDF('FIM_FMP_TechSpec_2020.pdf#page=11')], # Note that 'SMZ' is no longer mandatory
 
-    "ORB":  ["Operational Road Boundaries",             ['ORBID'],                                                  'polygon',  '4.2.11',       R.findPDF('FIM_FMP_TechSpec_2018.pdf#page=128')],
+    "ORB":  ["Operational Road Boundaries",             ['ORBID'],                                                  'polygon',  '4.2.11',       R.findPDF('FIM_FMP_TechSpec_2020.pdf#page=122')],
 
-    "PAG":  ["Planned Aggregate Extraction Areas",      ['AGAREAID'],                                               'polygon',  '4.2.14',       R.findPDF('FIM_FMP_TechSpec_2018.pdf#page=145')],
+    "PAG":  ["Planned Aggregate Extraction Areas",      ['AGAREAID'],                                               'polygon',  '4.2.14',       R.findPDF('FIM_FMP_TechSpec_2020.pdf#page=139')],
 
     "PCI":  ["Planning Composite",                      ['POLYID', 'POLYTYPE', 'OWNER', 'YRSOURCE',
                                                         'SOURCE', 'FORMOD', 'DEVSTAGE', 'YRDEP', 'DEPTYPE',
                                                         'OYRORG', 'OSPCOMP', 'OLEADSPC', 'OAGE', 'OHT', 'OCCLO',
                                                         'OSTKG', 'OSC', 'UYRORG', 'USPCOMP', 'ULEADSPC', 'UAGE',
                                                         'UHT', 'UCCLO', 'USTKG', 'USC', 'INCIDSPC', 'VERT', 
-                                                        'HORIZ', 'PRI_ECO', 'SEC_ECO', 'ACCESS1', 'MGMTCON1'],      'polygon',  '4.1.4',        R.findPDF('FIM_FMP_TechSpec_2018.pdf#page=15')],
+                                                        'HORIZ', 'PRI_ECO', 'SEC_ECO', 'ACCESS1', 'MGMTCON1'],      'polygon',  '4.1.4',        R.findPDF('FIM_FMP_TechSpec_2020.pdf#page=11')],
 
-    "PHR":  ["Planned Harvest",                         ['BLOCKID','SILVSYS','HARVCAT'],                            'polygon',  '4.2.7',        R.findPDF('FIM_FMP_TechSpec_2018.pdf#page=108')],
+    "PHR":  ["Planned Harvest",                         ['BLOCKID','SILVSYS','HARVCAT'],                            'polygon',  '4.2.7',        R.findPDF('FIM_FMP_TechSpec_2020.pdf#page=103')],
 
     "PRC":  ["Planned Road Corridors",                  ['ROADID','ROADCLAS','TRANS','ACYEAR','ACCESS','DECOM',
-                                                        'INTENT','MAINTAIN','MONITOR','CONTROL1','CONTROL2'],       'polygon',  '4.2.10',       R.findPDF('FIM_FMP_TechSpec_2018.pdf#page=119')], # revisit this. there were a number of errors in the tech spec itself.
+                                                        'INTENT','MAINTAIN','MONITOR','CONTROL1','CONTROL2'],       'polygon',  '4.2.10',       R.findPDF('FIM_FMP_TechSpec_2020.pdf#page=114')], # revisit this. there were a number of errors in the tech spec itself.
 
-    "PRP":  ["Planned Residual Patches",                ['RESID'],                                                  'polygon',  '4.2.9',        R.findPDF('FIM_FMP_TechSpec_2018.pdf#page=117')],
+    "PRP":  ["Planned Residual Patches",                ['RESID'],                                                  'polygon',  '4.2.9',        R.findPDF('FIM_FMP_TechSpec_2020.pdf#page=112')],
 
-    "WXI":  ["Existing Road Water Crossing Inventory",  ['WATXID','WATXTYPE','RESPONS','ROADID'],                   'point',    '4.2.13',       R.findPDF('FIM_FMP_TechSpec_2018.pdf#page=141')],
+    "WSY":  ["Wood Storage Yard",                       ['WSYID'],                                                  'polygon',  '4.2.16',       R.findPDF('FIM_FMP_TechSpec_2020.pdf#page=143')], # this layer's been added in 2020
+
+    "WXI":  ["Existing Road Water Crossing Inventory",  ['WATXID','WATXTYPE','RESPONS','ROADID'],                   'point',    '4.2.13',       R.findPDF('FIM_FMP_TechSpec_2020.pdf#page=135')],
         }
 
 
@@ -1889,21 +1891,21 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
                 arcpy.AddWarning("***Unable to run full validation on %s field due to the following error:\n"%current_field + str(sys.exc_info()[1]))
                 criticalError += 1
 
-            # SMZ (BMI and OPI only)
-            try:
-                current_field = 'SMZ'            
-                if lyrAcro in ["BMI", "OPI"]:
-                    errorList = ["Error on %s %s: SMZ must be populated."%(id_field, cursor[id_field_idx]) for row in cursor
-                                    if cursor[f.index('SMZ')] in vnull]
-                    cursor.reset()
-                    if len(errorList) > 0:
-                        errorDetail[lyr].append(errorList)
-                        criticalError += 1
-                        recordValCom[lyr].append("Error on %s record(s): SMZ must be populated."%len(errorList))
-            except ValueError:
-                recordValCom[lyr].append("***Unable to run full validation on %s field due to value error - most likely due to missing mandatory field(s)"%current_field)
-                arcpy.AddWarning("***Unable to run full validation on %s field due to the following error:\n"%current_field + str(sys.exc_info()[1]))
-                criticalError += 1
+            # SMZ (BMI and OPI only)  SMZ is no longer a mandatory field in 2020
+            # try:
+            #     current_field = 'SMZ'            
+            #     if lyrAcro in ["BMI", "OPI"]:
+            #         errorList = ["Error on %s %s: SMZ must be populated."%(id_field, cursor[id_field_idx]) for row in cursor
+            #                         if cursor[f.index('SMZ')] in vnull]
+            #         cursor.reset()
+            #         if len(errorList) > 0:
+            #             errorDetail[lyr].append(errorList)
+            #             criticalError += 1
+            #             recordValCom[lyr].append("Error on %s record(s): SMZ must be populated."%len(errorList))
+            # except ValueError:
+            #     recordValCom[lyr].append("***Unable to run full validation on %s field due to value error - most likely due to missing mandatory field(s)"%current_field)
+            #     arcpy.AddWarning("***Unable to run full validation on %s field due to the following error:\n"%current_field + str(sys.exc_info()[1]))
+            #     criticalError += 1
 
             # PLANFU (BMI and OPI only)
             try:
@@ -2868,6 +2870,26 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
                     criticalError += 1
                     recordValCom[lyr].append("Error on %s record(s): RESID must be populated."%len(errorList))
 
+            except ValueError:
+                recordValCom[lyr].append("***Unable to run full validation on %s field due to value error - most likely due to missing mandatory field(s)"%current_field)
+                arcpy.AddWarning("***Unable to run full validation on %s field due to the following error:\n"%current_field + str(sys.exc_info()[1]))
+                criticalError += 1
+
+
+        ########################         Checking WSY        ########################
+
+        if lyrAcro == "WSY":
+
+            # WSYID
+            try:
+                current_field = 'WSYID'            
+                errorList = ["Error on %s %s: WSYID must be populated."%(id_field, cursor[id_field_idx]) for row in cursor
+                                if cursor[f.index('WSYID')] in vnull]
+                cursor.reset()
+                if len(errorList) > 0:
+                    errorDetail[lyr].append(errorList)
+                    criticalError += 1
+                    recordValCom[lyr].append("Error on %s record(s): WSYID must be populated."%len(errorList))
             except ValueError:
                 recordValCom[lyr].append("***Unable to run full validation on %s field due to value error - most likely due to missing mandatory field(s)"%current_field)
                 arcpy.AddWarning("***Unable to run full validation on %s field due to the following error:\n"%current_field + str(sys.exc_info()[1]))

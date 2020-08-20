@@ -27,7 +27,7 @@ class Check():
         self.workspace = workspace ## N:\WORK-DATA\FMPDS\Abitibi_River\AWS\2017\_data\FMP_Schema.gdb
         self.dataformat = dataformat # eg. 'shapefile','feature class' or 'coverage'
         self.tech_spec_version = tech_spec_version
-        self.old_or_new = 'NEW' if tech_spec_version == '2017' else 'OLD'
+        self.old_or_new = 'NEW' if tech_spec_version == '2020' else 'OLD'
         self.subID = subID
         self.error_limit = error_limit
         self.checker_version = checker_version

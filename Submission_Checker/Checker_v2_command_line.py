@@ -37,7 +37,7 @@ tech_spec_version = sys.argv[7] # 'old' or 'new'
 if tech_spec_version == 'old':
 	tech_spec_version = "2009"
 else:
-	tech_spec_version = "2017"
+	tech_spec_version = "2020"
 
 error_limit = sys.argv[8] # 'limit' or 'nolimit'
 if error_limit == 'nolimit':
