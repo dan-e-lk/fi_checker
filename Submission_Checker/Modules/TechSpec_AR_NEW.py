@@ -755,14 +755,15 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
                     criticalError += 1
                     recordValCom[lyr].append("Error on %s record(s): HARVCAT must be populated and follow the correct coding scheme."%len(errorList))
 
+                # The following validation has been removed in 2020 **2020.10.003
                 # Bridging (HARVCAT = BRIDGING) is only available when the AR start year is equal to the first year of the plan period
-                errorList = ["Error on %s %s: HARVCAT = BRIDGING is the only available when AR year is equal to the first year of the plan period."%(id_field, cursor[id_field_idx]) for row in cursor
-                                if cursor[HARVCAT] == 'BRIDGING' and year != fmpStartYear]
-                cursor.reset()
-                if len(errorList) > 0:
-                    errorDetail[lyr].append(errorList)
-                    criticalError += 1
-                    recordValCom[lyr].append("Error on %s record(s): HARVCAT = BRIDGING is the only available when AR year is equal to the first year of the plan period."%len(errorList))
+                # errorList = ["Error on %s %s: HARVCAT = BRIDGING is the only available when AR year is equal to the first year of the plan period."%(id_field, cursor[id_field_idx]) for row in cursor
+                #                 if cursor[HARVCAT] == 'BRIDGING' and year != fmpStartYear]
+                # cursor.reset()
+                # if len(errorList) > 0:
+                #     errorDetail[lyr].append(errorList)
+                #     criticalError += 1
+                #     recordValCom[lyr].append("Error on %s record(s): HARVCAT = BRIDGING is the only available when AR year is equal to the first year of the plan period."%len(errorList))
 
             # SILVSYS
                 # The population of this attribute is mandatory
@@ -798,15 +799,15 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
                     criticalError += 1
                     recordValCom[lyr].append("Error on %s record(s): HARVMTHD = SINGLETREE or GROUPSE is only valid if SILVSYS = SE."%len(errorList))
 
-                # The uniform (UNIFORM), strip (STRIP) and group shelterwood (GROUPSH) are only valide codes when SILVSYS = SH
-                errorList = ["Error on %s %s: HARVMTHD: UNIFORM, STRIP or GROUPSH are only valid codes when SILVSYS = SH."%(id_field, cursor[id_field_idx]) for row in cursor
-                                if cursor[HARVMTHD] in ['UNIFORM','STRIP','GROUPSH']
+                # The uniform (UNIFORM), strip (STRIP) and group shelterwood (GROUPSH) and **IRREGULR are only valide codes when SILVSYS = SH   **2020.10.004
+                errorList = ["Error on %s %s: HARVMTHD: UNIFORM, STRIP, GROUPSH or IRREGULR are only valid codes when SILVSYS = SH."%(id_field, cursor[id_field_idx]) for row in cursor
+                                if cursor[HARVMTHD] in ['UNIFORM','STRIP','GROUPSH','IRREGULR']
                                 if cursor[SILVSYS] != 'SH' ]
                 cursor.reset()
                 if len(errorList) > 0:
                     errorDetail[lyr].append(errorList)
                     criticalError += 1
-                    recordValCom[lyr].append("Error on %s record(s): HARVMTHD: UNIFORM, STRIP or GROUPSH are only valid codes when SILVSYS = SH."%len(errorList))
+                    recordValCom[lyr].append("Error on %s record(s): UNIFORM, STRIP, GROUPSH or IRREGULR are only valid codes when SILVSYS = SH."%len(errorList))
 
                 # The conventional, block or strip, patch, seed-tree and harvesting with regeneration protection (CONVENTION, BLOCKSTRIP, PATCH, SEEDTREE, or HARP) are only valid when SILVSYS = CC
                 errorList = ["Error on %s %s: HARVMTHD: CONVENTION, BLOCKSTRIP, PATCH, SEEDTREE, or HARP is only available when SILVSYS = CC."%(id_field, cursor[id_field_idx]) for row in cursor
@@ -897,26 +898,30 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
 
             # TARGETFU
                 # The population of this attribute is mandatory
-                # A blank or null value is not a valid code            
-                errorList = ["Error on %s %s: TARGETFU must be populated."%(id_field, cursor[id_field_idx]) for row in cursor
-                                if cursor[TARGETFU] in vnull]
+                # A blank or null value is not a valid code
+                # A blank or null value is a valid code where HARVCAT = ROADROW **2020.10.005
+                errorList = ["Error on %s %s: TARGETFU must be populated (except where HARVCAT = ROADROW)."%(id_field, cursor[id_field_idx]) for row in cursor
+                                if cursor[TARGETFU] in vnull
+                                if cursor[HARVCAT] != 'ROADROW']
                 cursor.reset()
                 if len(errorList) > 0:
                     errorDetail[lyr].append(errorList)
                     criticalError += 1
-                    recordValCom[lyr].append("Error on %s record(s): TARGETFU must be populated."%len(errorList))
+                    recordValCom[lyr].append("Error on %s record(s): TARGETFU must be populated (except where HARVCAT = ROADROW)."%len(errorList))
 
             # TARGETYD
                 # The population of this attribute is mandatory where silviculture system is clearcut or shelterwood (SILVSYS = CC or SH)
                 # A blank or null value is not a valid code where silviculture system is clearcut or shelterwood (SILVSYS = CC or SH)        
-                errorList = ["Error on %s %s: TARGETYD must be populated where SILVSYS = CC or SH."%(id_field, cursor[id_field_idx]) for row in cursor
+                # A blank or null value is a valid code where HARVCAT = ROADROW **2020.10.006
+                errorList = ["Error on %s %s: TARGETYD must be populated where SILVSYS = CC or SH (except where HARVCAT = ROADROW)."%(id_field, cursor[id_field_idx]) for row in cursor
                                 if cursor[SILVSYS] in ['CC','SH']
+                                if cursor[HARVCAT] != 'ROADROW'
                                 if cursor[TARGETYD] in vnull]
                 cursor.reset()
                 if len(errorList) > 0:
                     errorDetail[lyr].append(errorList)
                     criticalError += 1
-                    recordValCom[lyr].append("Error on %s record(s): TARGETYD must be populated where SILVSYS = CC or SH."%len(errorList))
+                    recordValCom[lyr].append("Error on %s record(s): TARGETYD must be populated where SILVSYS = CC or SH (except where HARVCAT = ROADROW)."%len(errorList))
 
             # TRIAL
                 # The population of this attribute is mandatory
