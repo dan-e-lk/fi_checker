@@ -43,7 +43,8 @@ lyrInfo = {
     "SIP":  ["Site Preparation Treatment",              ['TRTMTHD1','TRTCAT1'],                                     'polygon',  '4.3.12',       R.findPDF('FIM_AR_TechSpec_2018.pdf#page=70')],
     "TND":  ["Tending Treatment",                       ['TRTMTHD1','TRTCAT1'],                                     'polygon',  '4.3.13',       R.findPDF('FIM_AR_TechSpec_2018.pdf#page=76')],
     "WTX":  ["Water Crossings",                         ['WATXID','WATXTYPE','CONSTRCT','MONITOR','REMOVE',
-                                                            'REPLACE','REVIEW','ROADID','TRANS'],                   'point',    '4.3.10',       R.findPDF('FIM_AR_TechSpec_2018.pdf#page=54')]
+                                                            'REPLACE','REVIEW','ROADID','TRANS'],                   'point',    '4.3.10',       R.findPDF('FIM_AR_TechSpec_2018.pdf#page=54')],
+    "WSY":  ["Wood Storage Yard",                       ['WSYID','TYPE'],                                           'polygon',  '4.3',          R.findPDF('FIM_AR_TechSpec_2018.pdf#page=76')] # This layer is new in 2020
         }
 
 # vnull is used to check if an item is NULL or blank.
@@ -2740,6 +2741,40 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
                 recordValCom[lyr].append("***Unable to run full validation on %s due to missing mandatory field(s)"%lyr)
                 criticalError += 1
 
+
+
+        ###########################  Checking WSY   ############################
+        # This layer is new in 2020
+
+        if lyrAcro == "WSY":
+            try: # need try and except block here for cases such as not having mandatory fields.
+
+            # WSYID
+                # The population of this attribute is mandatory
+                # A blank or null value is not a valid code
+                errorList = ["Error on %s %s: The population of WSYID is mandatory."%(id_field, cursor[id_field_idx]) for row in cursor
+                                if cursor[WSYID] in vnull]
+                cursor.reset()
+                if len(errorList) > 0:
+                    errorDetail[lyr].append(errorList)
+                    criticalError += 1
+                    recordValCom[lyr].append("Error on %s record(s): The population of WSYID is mandatory."%len(errorList))
+
+            # TYPE
+                # The population of this attribute is mandatory
+                # The attribute population must follow the correct coding scheme.
+                # A blank or null value is not a valid code
+                errorList = ["Error on %s %s: TYPE must follow the correct coding scheme and a blank or null value is not a valid code."%(id_field, cursor[id_field_idx]) for row in cursor
+                                if cursor[TYPE] not in ['THY','TMY','LMY']]
+                cursor.reset()
+                if len(errorList) > 0:
+                    errorDetail[lyr].append(errorList)
+                    criticalError += 1
+                    recordValCom[lyr].append("Error on %s record(s): TYPE must follow the correct coding scheme and a blank or null value is not a valid code."%len(errorList))
+
+            except (IndexError, NameError) as e:
+                recordValCom[lyr].append("***Unable to run full validation on %s due to missing mandatory field(s)"%lyr)
+                criticalError += 1
 
 
 #    Still in this for loop: "for lyr in summarytbl.keys():"
