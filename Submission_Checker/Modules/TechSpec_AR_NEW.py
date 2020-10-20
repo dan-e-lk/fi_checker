@@ -168,14 +168,15 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
                     criticalError += 1
                     recordValCom[lyr].append("Error on %s record(s): REHAB must be a number of hectares between 0 and 9.9."%len(errorList))
 
-                # If the area rehabilitated is zero (REHAB = 0) then the tonnes of aggregate extracted should not be zero (TONNES != 0)
-                errorList = ["Warning on %s %s: If REHAB is zero or null then the TONNES should not be zero or null."%(id_field, cursor[id_field_idx]) for row in cursor
-                                if cursor[REHAB] in [0, None] and cursor[TONNES] in [0, None]]
-                cursor.reset()
-                if len(errorList) > 0:
-                    errorDetail[lyr].append(errorList)
-                    minorError += 1
-                    recordValCom[lyr].append("Warning on %s record(s): If REHAB is zero or null then the TONNES should not be zero or null."%len(errorList))
+                # The following validation has been removed in 2020.  *2020.10.009
+                # # If the area rehabilitated is zero (REHAB = 0) then the tonnes of aggregate extracted should not be zero (TONNES != 0)
+                # errorList = ["Warning on %s %s: If REHAB is zero or null then the TONNES should not be zero or null."%(id_field, cursor[id_field_idx]) for row in cursor
+                #                 if cursor[REHAB] in [0, None] and cursor[TONNES] in [0, None]]
+                # cursor.reset()
+                # if len(errorList) > 0:
+                #     errorDetail[lyr].append(errorList)
+                #     minorError += 1
+                #     recordValCom[lyr].append("Warning on %s record(s): If REHAB is zero or null then the TONNES should not be zero or null."%len(errorList))
 
                 # The hectares rehabilitated should be less than or equal to three.
                 errorList = ["Warning on %s %s: REHAB should be less than or equal to 3."%(id_field, cursor[id_field_idx]) for row in cursor
@@ -277,15 +278,15 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
                     recordValCom[lyr].append("Error on %s record(s): SILVSYS must be populated with CC, SE or SH, and a blank or null is not a valid code."%len(errorList))
 
             # AGEEST
-                # The population of this attribute is mandatory where SILVSYS != SE
-                errorList = ["Error on %s %s: AGEEST must be greater than zero when SILVSYS is not equal to SE."%(id_field, cursor[id_field_idx]) for row in cursor
-                                if cursor[SILVSYS] != 'SE'
+                # The population of this attribute is mandatory where SILVSYS != SE *or SILVSYS != SH  *2020.10.007
+                errorList = ["Error on %s %s: AGEEST must be greater than zero when SILVSYS is not equal to SE or SH."%(id_field, cursor[id_field_idx]) for row in cursor
+                                if cursor[SILVSYS] not in ['SE','SH']
                                 if cursor[AGEEST] in vnull or cursor[AGEEST] <= 0 or cursor[AGEEST] > 9999] # having this upper limit check also catches string/unicode values *24b09
                 cursor.reset()
                 if len(errorList) > 0:
                     errorDetail[lyr].append(errorList)
                     criticalError += 1
-                    recordValCom[lyr].append("Error on %s record(s): AGEEST must be greater than zero when SILVSYS is not equal to SE."%len(errorList))
+                    recordValCom[lyr].append("Error on %s record(s): AGEEST must be greater than zero when SILVSYS is not equal to SE or SH."%len(errorList))
 
             # YRDEP
                 # The population of this attribute is mandatory
@@ -445,7 +446,7 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
 
                 # Where ESTIND = Y and SILVSYS = CC or SH:  The population of this attribute is mandatory
                 # Where ESTIND = Y and SILVSYS = CC or SH:  HT must be greater than zero.
-                # Where ESTIND = N and SILVSYS = SE:        HT can be zero.
+                # Where ESTIND = N or SILVSYS = SE or SH:   HT can be zero.
                 errorList = ["Error on %s %s: HT must be greater than 0 when ESTIND = Y and SILVSYS = CC or SH."%(id_field, cursor[id_field_idx]) for row in cursor
                                 if cursor[ESTIND] == 'Y' and cursor[SILVSYS] in ['CC','SH']
                                 if cursor[HT] in vnull or cursor[HT] <= 0]
