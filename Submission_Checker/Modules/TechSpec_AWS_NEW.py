@@ -41,7 +41,8 @@ lyrInfo = {
     "SRP":  ["Scheduled Residual Patches",              ['RESID'],                                                      'polygon',  '4.2.9',        R.findPDF('FIM_AWS_TechSpec_2018.pdf#page=24')   ],# v2017 AWS_YR is not required
     "SSP":  ["Scheduled Site Preparation Treatments",   ['AWS_YR', 'TRTMTHD1'],                                         'polygon',  '4.2.15',       R.findPDF('FIM_AWS_TechSpec_2018.pdf#page=57')   ],# v2017
     "STT":  ["Scheduled Tending Treatments",            ['AWS_YR', 'TRTMTHD1'],                                         'polygon',  '4.2.17',       R.findPDF('FIM_AWS_TechSpec_2018.pdf#page=65')   ],# v2017
-    "SWC":  ["Scheduled Water Crossing Activities",     ['AWS_YR', 'WATXID', 'WATXTYPE','TRANS','ROADID'],              'point',    '4.2.13',       R.findPDF('FIM_AWS_TechSpec_2018.pdf#page=47')   ]# V2017 TRANS is mandatory
+    "SWC":  ["Scheduled Water Crossing Activities",     ['AWS_YR', 'WATXID', 'WATXTYPE','TRANS','ROADID'],              'point',    '4.2.13',       R.findPDF('FIM_AWS_TechSpec_2018.pdf#page=47')   ],# V2017 TRANS is mandatory
+    "WSY":  ["Scheduled Wood Storage Yards",            ['AWS_YR', 'WSYID', 'TYPE'],                                    'polygon',  '4.2.13',       R.findPDF('FIM_AWS_TechSpec_2018.pdf#page=47')   ]# this layer was added in 2020   
     }
 
 
@@ -88,7 +89,7 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
 
         ##################### Checking all the AWS_YR fields ###################
         #ref-AWS_YR
-        if lyrAcro in ['SAG','SEA','SHR','SOR','SPT','SRA','SRC','SRG','SSP','STT','SWC']:
+        if lyrAcro in ['SAG','SEA','SHR','SOR','SPT','SRA','SRC','SRG','SSP','STT','SWC','WSY']:
             try:
                 errorList = ["Error on %s %s: AWS_YR cannot be less than the FMP start year (except for 0 on areas not scheduled) or greater than the plan end year minus 1. *AWS_YR = [%s]"
                                 %(id_field, cursor[id_field_idx],cursor[f.index('AWS_YR')]) for row in cursor
@@ -100,11 +101,12 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
                     criticalError += 1
                     recordValCom[lyr].append("Error on %s record(s): AWS_YR cannot be less than the FMP start year (except for 0 on areas not scheduled) or greater than the plan end year minus 1."%len(errorList))
 
+                # This has been toned down from error to warning since there's no such validation statement in the tech spec *2020.10.011
                 specialList = ['' for row in cursor if cursor[f.index('AWS_YR')] not in vnull and int(cursor[f.index('AWS_YR')]) == year ]
                 cursor.reset()
                 if len(specialList) == 0:
-                    criticalError += 1
-                    recordValCom[lyr].append("Error on AWS_YR attributes: At least one feature must be populated with the AWS start year identified in the FI Portal submission record. ")
+                    minorError += 1
+                    recordValCom[lyr].append("Warning on AWS_YR attributes: At least one feature should be populated with the current AWS year (%s)."%year)
 
             except ValueError:
                 recordValCom[lyr].append("***Unable to run full validation on %s due to missing AWS_YR field"%lyr)
@@ -1085,6 +1087,42 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
             except TypeError:
                 recordValCom[lyr].append("***Unable to run full validation on %s due to unexpected error."%lyr)
                 systemError = True
+
+
+        ###########################  Checking WSY   ############################
+
+        if lyrAcro == "WSY":
+            try:
+            # AWS_YR
+                # AWS_YR attribute from multiple layers are getting checked all at once
+                # To find this code block, search this script for #ref-AWS_YR
+
+            # WSYID
+                errorList = ["Error on %s %s: WSYID must be populated."%(id_field, cursor[id_field_idx]) for row in cursor
+                                if cursor[f.index('WATXID')] in vnull]
+                cursor.reset()
+                if len(errorList) > 0:
+                    errorDetail[lyr].append(errorList)
+                    criticalError += 1
+                    recordValCom[lyr].append("Error on %s record(s): WSYID must be populated."%len(errorList))
+
+            # TYPE
+                errorList = ["Error on %s %s: TYPE must be populated with the correct coding scheme.  *TYPE = [%s]"
+                                %(id_field, cursor[id_field_idx],cursor[f.index('TYPE')]) for row in cursor
+                                if cursor[f.index('TYPE')] not in ['THY','TMY','LMY']]
+                cursor.reset()
+                if len(errorList) > 0:
+                    errorDetail[lyr].append(errorList)
+                    criticalError += 1
+                    recordValCom[lyr].append("Error on %s record(s): TYPE must be populated with the correct coding scheme.."%len(errorList))
+
+            except ValueError:
+                recordValCom[lyr].append("***Unable to run full validation on %s due to missing mandatory field(s)"%lyr)
+                criticalError += 1
+            except TypeError:
+                recordValCom[lyr].append("***Unable to run full validation on %s due to unexpected error."%lyr)
+                systemError = True
+
 
 
 
