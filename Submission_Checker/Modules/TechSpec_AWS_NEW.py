@@ -36,7 +36,7 @@ lyrInfo = {
     "SRA":  ["Scheduled Existing Road Activities",      ['AWS_YR', 'ROADID', 'ROADCLAS','TRANS','ACCESS',
                                                          'DECOM','CONTROL1'],                                           'arc',      '4.2.12',       R.findPDF('FIM_AWS_TechSpec_2018.pdf#page=39')   ],# v2017 TRANS, ACCESS, CONTROL1 and DECOM are now mandatory
     "SRC":  ["Scheduled Road Corridors",                ['AWS_YR', 'ROADID', 'ROADCLAS','TRANS','ACYEAR',
-                                                         'ACCESS','DECOM','INTENT','MAINTAIN','MONITOR','CONTROL1'],    'polygon',  '4.2.10',       R.findPDF('FIM_AWS_TechSpec_2018.pdf#page=26')   ],# v2017 most of the fields are now mandatory
+                                                         'ACCESS','DECOM','INTENT','CONTROL1'],                         'polygon',  '4.2.10',       R.findPDF('FIM_AWS_TechSpec_2018.pdf#page=26')   ],# v2020 Maintain and Monitor attributes are not mandatory
     "SRG":  ["Scheduled Regeneration Treatments",       ['AWS_YR', 'TRTMTHD1'],                                         'polygon',  '4.2.16',       R.findPDF('FIM_AWS_TechSpec_2018.pdf#page=61')   ],# v2017
     "SRP":  ["Scheduled Residual Patches",              ['RESID'],                                                      'polygon',  '4.2.9',        R.findPDF('FIM_AWS_TechSpec_2018.pdf#page=24')   ],# v2017 AWS_YR is not required
     "SSP":  ["Scheduled Site Preparation Treatments",   ['AWS_YR', 'TRTMTHD1'],                                         'polygon',  '4.2.15',       R.findPDF('FIM_AWS_TechSpec_2018.pdf#page=57')   ],# v2017
@@ -358,16 +358,16 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
                     criticalError += 1
                     recordValCom[lyr].append("Error on %s record(s): The population of HARVCAT is mandatory except when FUELWOOD = Y."%len(errorList))
 
-
-                errorList = ["Error on %s %s: HARVCAT = BRIDGING is only available when the AWS start year is equal to the first year of the plan period."
-                                %(id_field, cursor[id_field_idx]) for row in cursor
-                                if cursor[f.index('HARVCAT')] == 'BRIDGING'
-                                if year != fmpStartYear and cursor[f.index('AWS_YR')] == year] # *24c06
-                cursor.reset()
-                if len(errorList) > 0:
-                    errorDetail[lyr].append(errorList)
-                    criticalError += 1
-                    recordValCom[lyr].append("Error on %s record(s): HARVCAT = BRIDGING is only available when the AWS start year is equal to the first year of the plan period."%len(errorList))
+                # The following validation has been removed in 2020.  *2020.10.012
+                # errorList = ["Error on %s %s: HARVCAT = BRIDGING is only available when the AWS start year is equal to the first year of the plan period."
+                #                 %(id_field, cursor[id_field_idx]) for row in cursor
+                #                 if cursor[f.index('HARVCAT')] == 'BRIDGING'
+                #                 if year != fmpStartYear and cursor[f.index('AWS_YR')] == year] # *24c06
+                # cursor.reset()
+                # if len(errorList) > 0:
+                #     errorDetail[lyr].append(errorList)
+                #     criticalError += 1
+                #     recordValCom[lyr].append("Error on %s record(s): HARVCAT = BRIDGING is only available when the AWS start year is equal to the first year of the plan period."%len(errorList))
 
             # FUELWOOD
                 errorList = ["Error on %s %s: The population of FUELWOOD is mandatory and must follow the correct coding scheme where AWS_YR = submission year.  *FUELWOOD = [%s]"
@@ -702,36 +702,37 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
                     criticalError += 1
                     recordValCom[lyr].append("Error on %s record(s): DECOM must follow the correct coding scheme if populated."%len(errorList))
 
-            # MAINTAIN
-                errorList = ["Error on %s %s: MAINTAIN must be populated with the correct coding scheme (Y or N)."%(id_field, cursor[id_field_idx]) for row in cursor
-                                if cursor[f.index('MAINTAIN')] not in ['Y','N']]
-                cursor.reset()
-                if len(errorList) > 0:
-                    errorDetail[lyr].append(errorList)
-                    criticalError += 1
-                    recordValCom[lyr].append("Error on %s record(s): MAINTAIN must be populated with the correct coding scheme (Y or N)."%len(errorList))
+            # these validations have been removed in 2020. *2020.10.014 *2020.10.013
+            # # MAINTAIN
+            #     errorList = ["Error on %s %s: MAINTAIN must be populated with the correct coding scheme (Y or N)."%(id_field, cursor[id_field_idx]) for row in cursor
+            #                     if cursor[f.index('MAINTAIN')] not in ['Y','N']]
+            #     cursor.reset()
+            #     if len(errorList) > 0:
+            #         errorDetail[lyr].append(errorList)
+            #         criticalError += 1
+            #         recordValCom[lyr].append("Error on %s record(s): MAINTAIN must be populated with the correct coding scheme (Y or N)."%len(errorList))
 
-            # MONITOR
-                errorList = ["Error on %s %s: MONITOR must be populated with the correct coding scheme (Y or N)."%(id_field, cursor[id_field_idx]) for row in cursor
-                                if cursor[f.index('MONITOR')] not in ['Y','N']]
-                cursor.reset()
-                if len(errorList) > 0:
-                    errorDetail[lyr].append(errorList)
-                    criticalError += 1
-                    recordValCom[lyr].append("Error on %s record(s): MONITOR must be populated with the correct coding scheme (Y or N)."%len(errorList))                                        
+            # # MONITOR
+            #     errorList = ["Error on %s %s: MONITOR must be populated with the correct coding scheme (Y or N)."%(id_field, cursor[id_field_idx]) for row in cursor
+            #                     if cursor[f.index('MONITOR')] not in ['Y','N']]
+            #     cursor.reset()
+            #     if len(errorList) > 0:
+            #         errorDetail[lyr].append(errorList)
+            #         criticalError += 1
+            #         recordValCom[lyr].append("Error on %s record(s): MONITOR must be populated with the correct coding scheme (Y or N)."%len(errorList))                                        
 
-            # ACCESS, DECOM, MAINTAIN & MONITOR   #*24c11 added If AWS_YR == year. This was to prevent it from flagging road corridors not planned for this year but still a good-to-have info.
-                errorList = ["Error on %s %s: One of DECOM, MAINTAIN, MONITOR or ACCESS must occur for each record. *DECOM = [%s] *MAINTAIN = [%s] *MONITOR = [%s] *ACCESS = [%s]"
-                                %(id_field, cursor[id_field_idx],cursor[f.index('DECOM')],cursor[f.index('MAINTAIN')],cursor[f.index('MONITOR')],cursor[f.index('ACCESS')]) for row in cursor
-                                if cursor[f.index('AWS_YR')] == year
-                                if cursor[f.index('MAINTAIN')] != 'Y' and cursor[f.index('MONITOR')] != 'Y'
-                                if cursor[f.index('ACCESS')] not in ['APPLY','REMOVE','BOTH']
-                                if cursor[f.index('DECOM')] not in ['BERM','SCAR','SLSH','WATX']]
-                cursor.reset()
-                if len(errorList) > 0:
-                    errorDetail[lyr].append(errorList)
-                    criticalError += 1
-                    recordValCom[lyr].append("Error on %s record(s):  One of DECOM, MAINTAIN, MONITOR or ACCESS must occur for each record.."%len(errorList))
+            # # ACCESS, DECOM, MAINTAIN & MONITOR   #*24c11 added If AWS_YR == year. This was to prevent it from flagging road corridors not planned for this year but still a good-to-have info.
+            #     errorList = ["Error on %s %s: One of DECOM, MAINTAIN, MONITOR or ACCESS must occur for each record. *DECOM = [%s] *MAINTAIN = [%s] *MONITOR = [%s] *ACCESS = [%s]"
+            #                     %(id_field, cursor[id_field_idx],cursor[f.index('DECOM')],cursor[f.index('MAINTAIN')],cursor[f.index('MONITOR')],cursor[f.index('ACCESS')]) for row in cursor
+            #                     if cursor[f.index('AWS_YR')] == year
+            #                     if cursor[f.index('MAINTAIN')] != 'Y' and cursor[f.index('MONITOR')] != 'Y'
+            #                     if cursor[f.index('ACCESS')] not in ['APPLY','REMOVE','BOTH']
+            #                     if cursor[f.index('DECOM')] not in ['BERM','SCAR','SLSH','WATX']]
+            #     cursor.reset()
+            #     if len(errorList) > 0:
+            #         errorDetail[lyr].append(errorList)
+            #         criticalError += 1
+            #         recordValCom[lyr].append("Error on %s record(s):  One of DECOM, MAINTAIN, MONITOR or ACCESS must occur for each record.."%len(errorList))
 
             # INTENT & TRANS
                 errorList = ["Error on %s %s: INTENT must be populated if TRANS value is populated."%(id_field, cursor[id_field_idx]) for row in cursor
@@ -1099,7 +1100,7 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
 
             # WSYID
                 errorList = ["Error on %s %s: WSYID must be populated."%(id_field, cursor[id_field_idx]) for row in cursor
-                                if cursor[f.index('WATXID')] in vnull]
+                                if cursor[f.index('WSYID')] in vnull]
                 cursor.reset()
                 if len(errorList) > 0:
                     errorDetail[lyr].append(errorList)
@@ -1122,8 +1123,6 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
             except TypeError:
                 recordValCom[lyr].append("***Unable to run full validation on %s due to unexpected error."%lyr)
                 systemError = True
-
-
 
 
 
