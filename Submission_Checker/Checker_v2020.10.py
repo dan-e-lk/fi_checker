@@ -1,7 +1,7 @@
 #-------------------------------------------------------------------------------
 # Name:        	checker_v2
 
-checker_version = '2020.8'
+checker_version = '2020.10'
 
 # Purpose:	   	This tool checks the FMP, AR or AWS submission (according to the 
 #				FIM Technical Specifications 2009 or 2017) and outputs a validation report 

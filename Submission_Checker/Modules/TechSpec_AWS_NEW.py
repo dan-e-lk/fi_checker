@@ -173,17 +173,17 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
                     criticalError += 1
                     recordValCom[lyr].append("Error on %s record(s): CAT9APP must be either NULL or follow the correct coding scheme."%len(errorList))
 
-
-                errorList = ["Error on %s %s: CAT9APP date cannot be greater than 10 years from PITOPEN date.  *CAT9APP = [%s] *PITOPEN = [%s]"
-                                %(id_field, cursor[id_field_idx],cursor[f.index('CAT9APP')],cursor[f.index('PITOPEN')]) for row in cursor
-                                if R.fimdate(cursor[f.index('CAT9APP')]) is not None
-                                and R.fimdate(cursor[f.index('PITOPEN')]) is not None
-                                and R.fimdate(cursor[f.index('CAT9APP')]) > (R.fimdate(str(int(cursor[f.index('PITOPEN')][:4]) + 10) +  cursor[f.index('PITOPEN')][4:]))]
-                cursor.reset()
-                if len(errorList) > 0:
-                    errorDetail[lyr].append(errorList)
-                    criticalError += 1
-                    recordValCom[lyr].append("Error on %s record(s): The CAT9APP date cannot be greater than 10 years from PITOPEN date."%len(errorList))
+                # The following statement has been removed in 2020.  *2020.10.015
+                # errorList = ["Error on %s %s: CAT9APP date cannot be greater than 10 years from PITOPEN date.  *CAT9APP = [%s] *PITOPEN = [%s]"
+                #                 %(id_field, cursor[id_field_idx],cursor[f.index('CAT9APP')],cursor[f.index('PITOPEN')]) for row in cursor
+                #                 if R.fimdate(cursor[f.index('CAT9APP')]) is not None
+                #                 and R.fimdate(cursor[f.index('PITOPEN')]) is not None
+                #                 and R.fimdate(cursor[f.index('CAT9APP')]) > (R.fimdate(str(int(cursor[f.index('PITOPEN')][:4]) + 10) +  cursor[f.index('PITOPEN')][4:]))]
+                # cursor.reset()
+                # if len(errorList) > 0:
+                #     errorDetail[lyr].append(errorList)
+                #     criticalError += 1
+                #     recordValCom[lyr].append("Error on %s record(s): The CAT9APP date cannot be greater than 10 years from PITOPEN date."%len(errorList))
 
                 errorList = ["Error on %s %s: CAT9APP must be NULL if PITCLOSE is Y.  *PITCLOSE = [%s]  *CAT9APP = [%s]"
                                 %(id_field, cursor[id_field_idx],cursor[f.index('PITCLOSE')],cursor[f.index('CAT9APP')]) for row in cursor
