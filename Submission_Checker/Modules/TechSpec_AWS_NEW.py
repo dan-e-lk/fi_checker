@@ -26,23 +26,23 @@ vnull = [None,'',' '] # vnull is used to check if an item is NULL or blank.
 lyrInfo = {
 # Dictionary of lists of lists
 # Layer acronym            name                           mandatory fields                                              Data Type   Tech Spec  Tech Spec URL
-    "AGP":  ["Existing Forestry Aggregate Pits",        ['PITID', 'PITOPEN', 'PITCLOSE', 'CAT9APP'],                    'point',    '4.2.19',       R.findPDF('FIM_AWS_TechSpec_2018.pdf#page=73')   ],# v2017 used to have PIT_ID, PIT_OPEN
+    "AGP":  ["Existing Forestry Aggregate Pits",        ['PITID', 'PITOPEN', 'PITCLOSE', 'CAT9APP'],                    'point',    '4.2.19',       R.findPDF('FIM_AWS_TechSpec_2018.pdf#page=71')   ],# v2017 used to have PIT_ID, PIT_OPEN
     "SAC":  ["Scheduled Area Of Concern",               ['AOCID', 'AOCTYPE'],                                           'polygon',  '4.2.8',        R.findPDF('FIM_AWS_TechSpec_2018.pdf#page=21')   ],# v2017
-    "SAG":  ["Scheduled Aggregate Extraction",          ['AWS_YR', 'AGAREAID'],                                         'polygon',  '4.2.14',       R.findPDF('FIM_AWS_TechSpec_2018.pdf#page=54')   ],# v2017
-    "SEA":  ["Scheduled Establishment Assessment",      ['AWS_YR', 'YRDEP', 'TARGETFU', 'TARGETYD'],                    'polygon',  '4.2.20',       R.findPDF('FIM_AWS_TechSpec_2018.pdf#page=77')   ],# v2017 this is a new layer in 2017 spec
+    "SAG":  ["Scheduled Aggregate Extraction",          ['AWS_YR', 'AGAREAID'],                                         'polygon',  '4.2.14',       R.findPDF('FIM_AWS_TechSpec_2018.pdf#page=52')   ],# v2017
+    "SEA":  ["Scheduled Establishment Assessment",      ['AWS_YR', 'YRDEP', 'TARGETFU', 'TARGETYD'],                    'polygon',  '4.2.20',       R.findPDF('FIM_AWS_TechSpec_2018.pdf#page=75')   ],# v2017 this is a new layer in 2017 spec
     "SHR":  ["Scheduled Harvest",                       ['AWS_YR', 'BLOCKID', 'SILVSYS', 'HARVCAT','FUELWOOD'],         'polygon',  '4.2.7',        R.findPDF('FIM_AWS_TechSpec_2018.pdf#page=15')   ],# v2017 Addition of BLOCKID
-    "SOR":  ["Scheduled Operational Road Boundaries",   ['AWS_YR', 'ORBID'],                                            'polygon',  '4.2.11',       R.findPDF('FIM_AWS_TechSpec_2018.pdf#page=36')   ],# v2017
-    "SPT":  ["Scheduled Protection Treatment",          ['AWS_YR', 'TRTMTHD1'],                                         'polygon',  '4.2.18',       R.findPDF('FIM_AWS_TechSpec_2018.pdf#page=69')   ],# v2017
+    "SOR":  ["Scheduled Operational Road Boundaries",   ['AWS_YR', 'ORBID'],                                            'polygon',  '4.2.11',       R.findPDF('FIM_AWS_TechSpec_2018.pdf#page=34')   ],# v2017
+    "SPT":  ["Scheduled Protection Treatment",          ['AWS_YR', 'TRTMTHD1'],                                         'polygon',  '4.2.18',       R.findPDF('FIM_AWS_TechSpec_2018.pdf#page=67')   ],# v2017
     "SRA":  ["Scheduled Existing Road Activities",      ['AWS_YR', 'ROADID', 'ROADCLAS','TRANS','ACCESS',
-                                                         'DECOM','CONTROL1'],                                           'arc',      '4.2.12',       R.findPDF('FIM_AWS_TechSpec_2018.pdf#page=39')   ],# v2017 TRANS, ACCESS, CONTROL1 and DECOM are now mandatory
+                                                         'DECOM','CONTROL1'],                                           'arc',      '4.2.12',       R.findPDF('FIM_AWS_TechSpec_2018.pdf#page=37')   ],# v2017 TRANS, ACCESS, CONTROL1 and DECOM are now mandatory
     "SRC":  ["Scheduled Road Corridors",                ['AWS_YR', 'ROADID', 'ROADCLAS','TRANS','ACYEAR',
-                                                         'ACCESS','DECOM','INTENT','CONTROL1'],                         'polygon',  '4.2.10',       R.findPDF('FIM_AWS_TechSpec_2018.pdf#page=26')   ],# v2020 Maintain and Monitor attributes are not mandatory
-    "SRG":  ["Scheduled Regeneration Treatments",       ['AWS_YR', 'TRTMTHD1'],                                         'polygon',  '4.2.16',       R.findPDF('FIM_AWS_TechSpec_2018.pdf#page=61')   ],# v2017
-    "SRP":  ["Scheduled Residual Patches",              ['RESID'],                                                      'polygon',  '4.2.9',        R.findPDF('FIM_AWS_TechSpec_2018.pdf#page=24')   ],# v2017 AWS_YR is not required
-    "SSP":  ["Scheduled Site Preparation Treatments",   ['AWS_YR', 'TRTMTHD1'],                                         'polygon',  '4.2.15',       R.findPDF('FIM_AWS_TechSpec_2018.pdf#page=57')   ],# v2017
-    "STT":  ["Scheduled Tending Treatments",            ['AWS_YR', 'TRTMTHD1'],                                         'polygon',  '4.2.17',       R.findPDF('FIM_AWS_TechSpec_2018.pdf#page=65')   ],# v2017
-    "SWC":  ["Scheduled Water Crossing Activities",     ['AWS_YR', 'WATXID', 'WATXTYPE','TRANS','ROADID'],              'point',    '4.2.13',       R.findPDF('FIM_AWS_TechSpec_2018.pdf#page=47')   ],# V2017 TRANS is mandatory
-    "WSY":  ["Scheduled Wood Storage Yards",            ['AWS_YR', 'WSYID', 'TYPE'],                                    'polygon',  '4.2.13',       R.findPDF('FIM_AWS_TechSpec_2018.pdf#page=47')   ]# this layer was added in 2020   
+                                                         'ACCESS','DECOM','INTENT','CONTROL1'],                         'polygon',  '4.2.10',       R.findPDF('FIM_AWS_TechSpec_2018.pdf#page=24')   ],# v2020 Maintain and Monitor attributes are not mandatory
+    "SRG":  ["Scheduled Regeneration Treatments",       ['AWS_YR', 'TRTMTHD1'],                                         'polygon',  '4.2.16',       R.findPDF('FIM_AWS_TechSpec_2018.pdf#page=59')   ],# v2017
+    "SRP":  ["Scheduled Residual Patches",              ['RESID'],                                                      'polygon',  '4.2.9',        R.findPDF('FIM_AWS_TechSpec_2018.pdf#page=22')   ],# v2017 AWS_YR is not required
+    "SSP":  ["Scheduled Site Preparation Treatments",   ['AWS_YR', 'TRTMTHD1'],                                         'polygon',  '4.2.15',       R.findPDF('FIM_AWS_TechSpec_2018.pdf#page=55')   ],# v2017
+    "STT":  ["Scheduled Tending Treatments",            ['AWS_YR', 'TRTMTHD1'],                                         'polygon',  '4.2.17',       R.findPDF('FIM_AWS_TechSpec_2018.pdf#page=63')   ],# v2017
+    "SWC":  ["Scheduled Water Crossing Activities",     ['AWS_YR', 'WATXID', 'WATXTYPE','TRANS','ROADID'],              'point',    '4.2.13',       R.findPDF('FIM_AWS_TechSpec_2018.pdf#page=45')   ],# V2017 TRANS is mandatory
+    "WSY":  ["Scheduled Wood Storage Yards",            ['AWS_YR', 'WSYID', 'TYPE'],                                    'polygon',  '4.2.13',       R.findPDF('FIM_AWS_TechSpec_2018.pdf#page=79')   ]# this layer was added in 2020   
     }
 
 

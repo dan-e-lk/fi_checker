@@ -83,7 +83,7 @@ lyrInfo = {
 
     "PRP":  ["Planned Residual Patches",                ['RESID'],                                                  'polygon',  '4.2.9',        R.findPDF('FIM_FMP_TechSpec_2020.pdf#page=112')],
 
-    "WSY":  ["Wood Storage Yard",                       ['WSYID'],                                                  'polygon',  '4.2.16',       R.findPDF('FIM_FMP_TechSpec_2020.pdf#page=143')], # this layer's been added in 2020
+    "WSY":  ["Wood Storage Yard",                       ['WSYID','TYPE'],                                                 'polygon',  '4.2.16',       R.findPDF('FIM_FMP_TechSpec_2020.pdf#page=143')], # this layer's been added in 2020
 
     "WXI":  ["Existing Road Water Crossing Inventory",  ['WATXID','WATXTYPE','RESPONS','ROADID'],                   'point',    '4.2.13',       R.findPDF('FIM_FMP_TechSpec_2020.pdf#page=135')],
         }
@@ -2890,6 +2890,17 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
                     errorDetail[lyr].append(errorList)
                     criticalError += 1
                     recordValCom[lyr].append("Error on %s record(s): WSYID must be populated."%len(errorList))
+
+            # TYPE **2020.08.002
+                current_field = 'TYPE'            
+                errorList = ["Error on %s %s: TYPE must be populated with the correct coding scheme."%(id_field, cursor[id_field_idx]) for row in cursor
+                                if cursor[f.index('TYPE')] not in ['THY','TMY','LMY']]
+                cursor.reset()
+                if len(errorList) > 0:
+                    errorDetail[lyr].append(errorList)
+                    criticalError += 1
+                    recordValCom[lyr].append("Error on %s record(s): TYPE must be populated with the correct coding scheme."%len(errorList))
+
             except ValueError:
                 recordValCom[lyr].append("***Unable to run full validation on %s field due to value error - most likely due to missing mandatory field(s)"%current_field)
                 arcpy.AddWarning("***Unable to run full validation on %s field due to the following error:\n"%current_field + str(sys.exc_info()[1]))
