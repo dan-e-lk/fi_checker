@@ -444,17 +444,17 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
                     criticalError += 1
                     recordValCom[lyr].append("Error on %s record(s): HT must be between 0 and 40 if populated."%len(errorList))
 
-                # Where ESTIND = Y and SILVSYS = CC or SH:  The population of this attribute is mandatory
-                # Where ESTIND = Y and SILVSYS = CC or SH:  HT must be greater than zero.
+                # Where ESTIND = Y and SILVSYS = CC:  The population of this attribute is mandatory *2020.10.008
+                # Where ESTIND = Y and SILVSYS = CC:  HT must be greater than zero.
                 # Where ESTIND = N or SILVSYS = SE or SH:   HT can be zero.
-                errorList = ["Error on %s %s: HT must be greater than 0 when ESTIND = Y and SILVSYS = CC or SH."%(id_field, cursor[id_field_idx]) for row in cursor
-                                if cursor[ESTIND] == 'Y' and cursor[SILVSYS] in ['CC','SH']
+                errorList = ["Error on %s %s: HT must be greater than 0 when ESTIND = Y and SILVSYS = CC."%(id_field, cursor[id_field_idx]) for row in cursor
+                                if cursor[ESTIND] == 'Y' and cursor[SILVSYS] == 'CC'
                                 if cursor[HT] in vnull or cursor[HT] <= 0]
                 cursor.reset()
                 if len(errorList) > 0:
                     errorDetail[lyr].append(errorList)
                     criticalError += 1
-                    recordValCom[lyr].append("Error on %s record(s): HT must be greater than 0 when ESTIND = Y and SILVSYS = CC or SH."%len(errorList))
+                    recordValCom[lyr].append("Error on %s record(s): HT must be greater than 0 when ESTIND = Y and SILVSYS = CC."%len(errorList))
 
             # DENSITY
                 # The attribute population must follow the correct format (if populated)
@@ -783,7 +783,7 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
                 # The attribute population must follow the correct coding scheme
                 # A blank or null value is not a valid code
                 errorList = ["Error on %s %s: HARVMTHD must be populated with the correct coding scheme."%(id_field, cursor[id_field_idx]) for row in cursor
-                                if cursor[HARVMTHD] not in ['CONVENTION','BLOCKSTRIP','PATCH','SEEDTREE','HARP','THINCOM','UNIFORM','STRIP','GROUPSH','SINGLETREE','GROUPSE']]
+                                if cursor[HARVMTHD] not in ['CONVENTION','BLOCKSTRIP','PATCH','SEEDTREE','HARP','THINCOM','UNIFORM','STRIP','GROUPSH','IRREGULR','SINGLETREE','GROUPSE']]
                 cursor.reset()
                 if len(errorList) > 0:
                     errorDetail[lyr].append(errorList)
