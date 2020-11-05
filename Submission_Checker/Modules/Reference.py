@@ -11,29 +11,31 @@
 import os, datetime, time
 
 # plan start year and region information is not being used by the checker tool, but the fmu and the code are being used.
+# https://www.ontario.ca/page/management-units-and-forest-management-plan-renewal-schedules#section-1
 static_db = {
 #           fmu                     code        plan start years    region
         'Abitibi_River':        [   '110',      [2012, 2022],       'NE'    ],
         'Algoma':               [   '615',      [2010, 2020],       'NE'    ],
-        'Algonquin_Park':       [   '451',      [2010, 2020],       'S'     ],
-        'Armstrong':            [   '444',      [2005],             ''      ], #outdated?
+        'Algonquin_Park':       [   '451',      [2010, 2021],       'S'     ],
+        'Armstrong':            [   '815',      [2005, 2021],       'NW'    ], # updated 2020
         'Bancroft_Minden':      [   '220',      [2011, 2021],       'S'     ],
         'Big_Pic':              [   '067',      [2007, 2017],       'NE'    ], # will be a part of Pic_Forest in 2019
         'Black_River':          [   '370',      [2006],             ''      ], #outdated?
+        'Boundary_Waters':      [   '406',      [2020, 2030],       'NW'    ], # updated 2020
         'Black_Spruce':         [   '035',      [2011, 2021],       'NW'    ],
-        'Caribou':              [   '175',      [2008, 2018],       'NW'    ],
+        'Caribou':              [   '175',      [2008, 2020],       'NW'    ],
         'Crossroute':           [   '405',      [2007, 2017],       'NW'    ],
-        'Dog_River_Matawin':    [   '177',      [2009, 2019],       'NW'    ],
+        'Dog_River_Matawin':    [   '177',      [2009, 2021],       'NW'    ],
         'Dryden':               [   '535',      [2011, 2021],       'NW'    ],
         'English_River':        [   '230',      [2009, 2019],       'NW'    ],
         'French_Severn':        [   '360',      [2009, 2019],       'S'     ],
         'Gordon_Cosens':        [   '438',      [2010, 2020],       'NE'    ],
-        'Hearst':               [   '601',      [2007, 2017],       'NE'    ],
+        'Hearst':               [   '601',      [2007, 2019],       'NE'    ],
         'Kenogami':             [   '350',      [2011, 2021],       'NW'    ],
         'Kenora':               [   '644',      [2012, 2022],       'NW'    ],
         'Lac_Seul':             [   '702',      [2011, 2021],       'NW'    ],
         'Lake_Nipigon':         [   '815',      [2011, 2021],       'NW'    ],
-        'Lakehead':             [   '796',      [2007, 2017],       'NW'    ],
+        'Lakehead':             [   '796',      [2007, 2021],       'NW'    ],
         'Magpie':               [   '565',      [2009, 2019],       'NE'    ],
         'Martel':               [   '509',      [2011, 2021],       'NE'    ],
         'Martel_Magpie':        [   '574',      [2021],             'NE'    ],  # new amalgamation      
@@ -41,20 +43,20 @@ static_db = {
         'Nagagami':             [   '390',      [2011, 2021],       'NE'    ],
         'Nipissing':            [   '754',      [2009, 2019],       'NE'    ],
         'Northshore':           [   '680',      [2010, 2020],       'NE'    ],
-        'Ogoki':                [   '415',      [2008, 2018],       'NW'    ],
+        'Ogoki':                [   '415',      [2008, 2020],       'NW'    ],
         'Ottawa_Valley':        [   '780',      [2011, 2021],       'S'     ],
         'Pic_Forest':           [   '966',      [2021],             'NE'    ], # Amalgamation of Big_Pic and Pic_River as of 2019 plan. Pic's new start year is now 2021
         'Pic_River':            [   '965',      [2006, 2013],       'NE'    ], # will be a part of Pic_Forest in 2019
         'Pineland':             [   '421',      [2011, 2021],       'NW'    ],
-        'Red_Lake':             [   '840',      [2008, 2018],       'NW'    ],
+        'Red_Lake':             [   '840',      [2008, 2020],       'NW'    ],
         'Romeo_Malette':        [   '930',      [2009, 2019],       'NE'    ],
         'Sapawe':               [   '853',      [2010, 2020],       'NW'    ],
         'Spanish':              [   '210',      [2010, 2020],       'NE'    ],
         'Sudbury':              [   '889',      [2010, 2020],       'NE'    ],
         'Temagami':             [   '898',      [2009, 2019],       'NE'    ],
         'Timiskaming':          [   '280',      [2011, 2021],       'NE'    ],
-        'Trout_Lake':           [   '120',      [2009, 2019],       'NW'    ],
-        'Wabigoon':             [   '130',      [2008, 2018],       'NW'    ],
+        'Trout_Lake':           [   '120',      [2009, 2021],       'NW'    ],
+        'Wabigoon':             [   '130',      [2008, 2019],       'NW'    ],
         'Whiskey_Jack':         [   '490',      [2012, 2022],       'NW'    ],
         'White_River':          [   '060',      [2008, 2018],       'NE'    ],
         'Whitefeather':         [   '994',      [2012, 2022],       'NW'    ]
