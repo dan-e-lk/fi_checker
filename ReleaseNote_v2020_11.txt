@@ -1,0 +1,82 @@
+Changes going from v2.4b to v2020.08
+
+- When there are duplicate POLYIDs, the duplicate records will be listed in the details section of the report.
+- Fixed AWS SHR BLOCKID over-flagging error issue
+- Fixed AWS SRA - now the tool does not check "At minimum Decom, Maintain, Monitor or Access must occur" error when AWS_YR is zero.
+- Fixed AWS SHR - The following error will no longer be flagged if AWS_YR is not current year: "HARVCAT = BRIDGING is only available when the AWS start year is equal to the first year of the plan period."
+- Fixed AWS SHR - The following error will no longer be flagged if AWS_YR is not current year: "The population of FUELWOOD is mandatory and must follow the correct coding scheme"
+- Fixed AWS SRC - The following error will no longer be flagged if AWS_YR is not current year: "One of DECOM, MAINTAIN, MONITOR or ACCESS must occur for each record"
+- SMZ field in BMI and OPI is no longer a mandatory field
+- Addition of Wood Storage Yard (WSY) Layer
+- Updated Tech Spec pdf documents and hyperlinks
+- Updated Ontario Logo
+- other minor errors fixed
+
+
+
+Changes going from v2020.08 to v2020.10
+
+AR: Addition of wood storage yard layer to AR checker
+
+Update the AR and AWS Tech Spec PDF file to 2020 version and the link to the pdf file.
+
+AR HRV: The following validation has been removed:
+Bridging (HARVCAT = BRIDGING) is only available when the AR start year is equal to the first year of the plan period.
+
+AR HRV: changes in HRV HRVMTHD:
+· The uniform (HARVMTHD = UNIFORM), strip (HARVMTHD = STRIP) and, group shelterwood (HARVMTHD = GROUPSH) and irregular (HARVMTHD = IRREGULR) harvest categories are only valid codes when the silviculture system is shelterwood (SILVSYS = SH).
+· IRREGULR is added to the list of HRVMTHD options.
+
+AR HRV: added the following validation to TARGETFU
+· A blank or null value is a valid code where HARVCAT = ROADROW
+
+AR HRV: added the following validation to TARGETYD
+· A blank or null value is a valid code where HARVCAT = ROADROW
+
+AR EST: edited the following validation in AGEEST attribute
+· A zero value is a valid code only where SILVSYS =“SE” or SILVSYS =”SH”
+
+AR EST: edited the following validation in HT attribute:
+· The height field can be zero (HT = 0) where ESTIND = N or SILVSYS = “SE” or SILVSYS = “SH”
+
+AR AGG: removed the following validation statement
+· If the area rehabilitated is zero (REHAB = 0) then the tonnes of aggregate extracted should not be zero (TONNES ≠ 0)
+
+AWS: Addition of wood storage yard layer
+
+AWS: All AWS_YR attributes. The following has been toned down from error to warning.
+Warning on AWS_YR attributes: At least one feature should be populated with the current AWS year
+
+AWS SHR: the following has been removed from HARVCAT attribute
+· Bridging (HARVCAT = BRIDGING) is only available when the AWS start year is equal to the first year of the plan period.
+
+AWS SRC: The following statement has been removed from these attributes - Access and Decom
+· At a minimum, one of Decommissioning, Maintenance, Monitoring or Access Control must occur for each record (DECOM is not NULL or MAINTAIN = Y or MONITOR = Y or [ACCESS = APPLY or ACCESS = REMOVE or ACCESS = BOTH])
+
+AWS SRC: Maintain and Monitor attributes are no longer mandatory fields
+
+AWS AGP: CAT9APP - the following statement has been removed
+· The date cannot be greater than 10 years from PITOPEN date.
+
+
+
+
+Change log going from 2020.10 to 2020.11
+
+Addition of Boundary Waters Forest (406) to the tool's user interface and in the Reference.py
+
+FMP->ERU->Control1
+The following statement has been added in 2020:
+The population of CONTROL1 or CONTROL2 is mandatory where ACCESS ≠ REMOVE or ACCESS is not null
+
+FMP->PCI->UAGE=0 rule removal
+The following statement has been removed:
+Zero or null values are only a valid code when DEVSTAGE is a depletion (DEPHARV or DEPNAT)
+
+Addition of Armstrong Forest (443) to the tool's user interface
+
+AWS: All AWS_YR attributes. Remove the following validation:
+Warning on AWS_YR attributes: At least one feature should be populated with the current AWS year
+
+FMP: PRC: the following fields have been removed:
+MAINTAIN, MONITOR
