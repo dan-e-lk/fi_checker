@@ -12,12 +12,13 @@ import os, datetime, time
 
 # plan start year and region information is not being used by the checker tool, but the fmu and the code are being used.
 # https://www.ontario.ca/page/management-units-and-forest-management-plan-renewal-schedules#section-1
+# Last edited on Nov 16, 2020. bug id: *2020.11.04
 static_db = {
 #           fmu                     code        plan start years    region
         'Abitibi_River':        [   '110',      [2012, 2022],       'NE'    ],
         'Algoma':               [   '615',      [2010, 2020],       'NE'    ],
         'Algonquin_Park':       [   '451',      [2010, 2021],       'S'     ],
-        'Armstrong':            [   '815',      [2005, 2021],       'NW'    ], # updated 2020
+        'Armstrong':            [   '443',      [2005, 2021],       'NW'    ], # updated 2020
         'Bancroft_Minden':      [   '220',      [2011, 2021],       'S'     ],
         'Big_Pic':              [   '067',      [2007, 2017],       'NE'    ], # will be a part of Pic_Forest in 2019
         'Black_River':          [   '370',      [2006],             ''      ], #outdated?
@@ -403,12 +404,15 @@ def findDuplicateID(idList, idfieldname):
 
 if __name__ == '__main__':
 
-    # testing findDuplicateID
-    idlist = [0,1,2,3,3,4,5,6,7,7,8,9,14,3,7,0,'','',None, None, None, 'abc','abc',999, 999,]
-    idfieldname = 'POLYID'
-    summary, error_list = findDuplicateID(idlist,idfieldname)
-    print(summary)
-    print(error_list)
+    # # testing findDuplicateID
+    # idlist = [0,1,2,3,3,4,5,6,7,7,8,9,14,3,7,0,'','',None, None, None, 'abc','abc',999, 999,]
+    # idfieldname = 'POLYID'
+    # summary, error_list = findDuplicateID(idlist,idfieldname)
+    # print(summary)
+    # print(error_list)
+
+    for k, v in static_db.items():
+        print('%s, %s'%(k,v[0]))
 
 
     # findPDF('FIM_AWS_TechSpec_2017.pdf#page=50')

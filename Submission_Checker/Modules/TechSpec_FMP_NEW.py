@@ -79,11 +79,11 @@ lyrInfo = {
     "PHR":  ["Planned Harvest",                         ['BLOCKID','SILVSYS','HARVCAT'],                            'polygon',  '4.2.7',        R.findPDF('FIM_FMP_TechSpec_2020.pdf#page=103')],
 
     "PRC":  ["Planned Road Corridors",                  ['ROADID','ROADCLAS','TRANS','ACYEAR','ACCESS','DECOM',
-                                                        'INTENT','MAINTAIN','MONITOR','CONTROL1','CONTROL2'],       'polygon',  '4.2.10',       R.findPDF('FIM_FMP_TechSpec_2020.pdf#page=114')], # revisit this. there were a number of errors in the tech spec itself.
+                                                        'INTENT', 'CONTROL1','CONTROL2'],                           'polygon',  '4.2.10',       R.findPDF('FIM_FMP_TechSpec_2020.pdf#page=114')], # 'MAINTAIN' and 'MONITOR' removed *2020.11.006
 
     "PRP":  ["Planned Residual Patches",                ['RESID'],                                                  'polygon',  '4.2.9',        R.findPDF('FIM_FMP_TechSpec_2020.pdf#page=112')],
 
-    "WSY":  ["Wood Storage Yard",                       ['WSYID','TYPE'],                                                 'polygon',  '4.2.16',       R.findPDF('FIM_FMP_TechSpec_2020.pdf#page=143')], # this layer's been added in 2020
+    "WSY":  ["Wood Storage Yard",                       ['WSYID','TYPE'],                                           'polygon',  '4.2.16',       R.findPDF('FIM_FMP_TechSpec_2020.pdf#page=143')], # this layer's been added in 2020
 
     "WXI":  ["Existing Road Water Crossing Inventory",  ['WATXID','WATXTYPE','RESPONS','ROADID'],                   'point',    '4.2.13',       R.findPDF('FIM_FMP_TechSpec_2020.pdf#page=135')],
         }
@@ -2724,27 +2724,28 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
                 arcpy.AddWarning("***Unable to run full validation on %s field due to the following error:\n"%current_field + str(sys.exc_info()[1]))
                 criticalError += 1
 
-            # DECOM, MAINTAIN, MONITOR, ACCESS
-            try:
-                current_field = 'DECOM, MAINTAIN, MONITOR and ACCESS'            
-                errorList = ["Error on %s %s: At least one of DECOM, MAINTAIN, MONITOR or ACCESS must occur."%(id_field, cursor[id_field_idx]) for row in cursor
-                                if cursor[f.index('DECOM')] in vnull
-                                if cursor[f.index('MAINTAIN')] != 'Y'
-                                if cursor[f.index('MONITOR')] != 'Y'
-                                if cursor[f.index('ACCESS')] in vnull]
-                cursor.reset()
-                if len(errorList) > 0:
-                    errorDetail[lyr].append(errorList)
-                    criticalError += 1
-                    recordValCom[lyr].append("Error on %s record(s): At least one of DECOM, MAINTAIN, MONITOR or ACCESS must occur."%len(errorList))
+            # The following validation has been removed in 2020.  *2020.11.006
+            # # DECOM, MAINTAIN, MONITOR, ACCESS
+            # try:
+            #     current_field = 'DECOM, MAINTAIN, MONITOR and ACCESS'            
+            #     errorList = ["Error on %s %s: At least one of DECOM, MAINTAIN, MONITOR or ACCESS must occur."%(id_field, cursor[id_field_idx]) for row in cursor
+            #                     if cursor[f.index('DECOM')] in vnull
+            #                     if cursor[f.index('MAINTAIN')] != 'Y'
+            #                     if cursor[f.index('MONITOR')] != 'Y'
+            #                     if cursor[f.index('ACCESS')] in vnull]
+            #     cursor.reset()
+            #     if len(errorList) > 0:
+            #         errorDetail[lyr].append(errorList)
+            #         criticalError += 1
+            #         recordValCom[lyr].append("Error on %s record(s): At least one of DECOM, MAINTAIN, MONITOR or ACCESS must occur."%len(errorList))
 
-                # Not checking the following validation statement because CONSTRCT field does not exist:
-                #   At a minimum, one of Construction, Decommissioning, Maintenance, Monitoring or Access Control must occur for each record (CONSTRCT = Y or DECOM IS NOT NULL or MAINTAIN = Y or MONITOR = Y or [ACCESS = APPLY or ACCESS = REMOVE OR ACCESS = BOTH])
+            #     # Not checking the following validation statement because CONSTRCT field does not exist:
+            #     #   At a minimum, one of Construction, Decommissioning, Maintenance, Monitoring or Access Control must occur for each record (CONSTRCT = Y or DECOM IS NOT NULL or MAINTAIN = Y or MONITOR = Y or [ACCESS = APPLY or ACCESS = REMOVE OR ACCESS = BOTH])
 
-            except ValueError:
-                recordValCom[lyr].append("***Unable to run full validation on %s field due to value error - most likely due to missing mandatory field(s)"%current_field)
-                arcpy.AddWarning("***Unable to run full validation on %s field due to the following error:\n"%current_field + str(sys.exc_info()[1]))
-                criticalError += 1
+            # except ValueError:
+            #     recordValCom[lyr].append("***Unable to run full validation on %s field due to value error - most likely due to missing mandatory field(s)"%current_field)
+            #     arcpy.AddWarning("***Unable to run full validation on %s field due to the following error:\n"%current_field + str(sys.exc_info()[1]))
+            #     criticalError += 1
 
 
             # DECOM
@@ -2778,35 +2779,36 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
                 arcpy.AddWarning("***Unable to run full validation on %s field due to the following error:\n"%current_field + str(sys.exc_info()[1]))
                 criticalError += 1
 
-            # MAINTAIN
-            try:
-                current_field = 'MAINTAIN'            
-                errorList = ["Error on %s %s: MAINTAIN must be populated with Y or N."%(id_field, cursor[id_field_idx]) for row in cursor
-                                if cursor[f.index('MAINTAIN')] not in ['Y','N']]
-                cursor.reset()
-                if len(errorList) > 0:
-                    errorDetail[lyr].append(errorList)
-                    criticalError += 1
-                    recordValCom[lyr].append("Error on %s record(s): MAINTAIN must be populated with Y or N."%len(errorList))
-            except ValueError:
-                recordValCom[lyr].append("***Unable to run full validation on %s field due to value error - most likely due to missing mandatory field(s)"%current_field)
-                arcpy.AddWarning("***Unable to run full validation on %s field due to the following error:\n"%current_field + str(sys.exc_info()[1]))
-                criticalError += 1
+            # MAINTAIN and MONITOR are no longer mandatory fields in 2020.  *2020.11.006
+            # # MAINTAIN
+            # try:
+            #     current_field = 'MAINTAIN'            
+            #     errorList = ["Error on %s %s: MAINTAIN must be populated with Y or N."%(id_field, cursor[id_field_idx]) for row in cursor
+            #                     if cursor[f.index('MAINTAIN')] not in ['Y','N']]
+            #     cursor.reset()
+            #     if len(errorList) > 0:
+            #         errorDetail[lyr].append(errorList)
+            #         criticalError += 1
+            #         recordValCom[lyr].append("Error on %s record(s): MAINTAIN must be populated with Y or N."%len(errorList))
+            # except ValueError:
+            #     recordValCom[lyr].append("***Unable to run full validation on %s field due to value error - most likely due to missing mandatory field(s)"%current_field)
+            #     arcpy.AddWarning("***Unable to run full validation on %s field due to the following error:\n"%current_field + str(sys.exc_info()[1]))
+            #     criticalError += 1
 
-            # MONITOR
-            try:
-                current_field = 'MONITOR'            
-                errorList = ["Error on %s %s: MONITOR must be populated with Y or N."%(id_field, cursor[id_field_idx]) for row in cursor
-                                if cursor[f.index('MONITOR')] not in ['Y','N']]
-                cursor.reset()
-                if len(errorList) > 0:
-                    errorDetail[lyr].append(errorList)
-                    criticalError += 1
-                    recordValCom[lyr].append("Error on %s record(s): MONITOR must be populated with Y or N."%len(errorList))
-            except ValueError:
-                recordValCom[lyr].append("***Unable to run full validation on %s field due to value error - most likely due to missing mandatory field(s)"%current_field)
-                arcpy.AddWarning("***Unable to run full validation on %s field due to the following error:\n"%current_field + str(sys.exc_info()[1]))
-                criticalError += 1            
+            # # MONITOR
+            # try:
+            #     current_field = 'MONITOR'            
+            #     errorList = ["Error on %s %s: MONITOR must be populated with Y or N."%(id_field, cursor[id_field_idx]) for row in cursor
+            #                     if cursor[f.index('MONITOR')] not in ['Y','N']]
+            #     cursor.reset()
+            #     if len(errorList) > 0:
+            #         errorDetail[lyr].append(errorList)
+            #         criticalError += 1
+            #         recordValCom[lyr].append("Error on %s record(s): MONITOR must be populated with Y or N."%len(errorList))
+            # except ValueError:
+            #     recordValCom[lyr].append("***Unable to run full validation on %s field due to value error - most likely due to missing mandatory field(s)"%current_field)
+            #     arcpy.AddWarning("***Unable to run full validation on %s field due to the following error:\n"%current_field + str(sys.exc_info()[1]))
+            #     criticalError += 1            
 
             # CONTROL1 and 2
             try:
