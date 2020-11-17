@@ -8,24 +8,8 @@
 # Created:      JUL 31 2017
 # Updates:      MAR 28 2018 - DAN - The script now checks BMI, PCI and OPI
 #               May 30 2018 - DAN - Now the script looks for FID if it cant find OBJECTID to accomodate shp and coverage
-#           Any further updates can be found here: \\cihs.ad.gov.on.ca\mnrf\Groups\ROD\RODOpen\Forestry\Tools_and_Scripts\FI_Checker\ChangeLog
+#               Any further updates can be found here: \\cihs.ad.gov.on.ca\mnrf\Groups\ROD\RODOpen\Forestry\Tools_and_Scripts\FI_Checker\ChangeLog
 #-------------------------------------------------------------------------------
-
-###########################     VALIDATION UPDATES  ############################
-##      Search the script using *UD for validation changes from origianl tech spec
-##    *UD1:
-##    Old:
-##      DEVSTAGE attribute must be DEPHARV or DEPNAT if POLYTYPE = FOR and the stocking attributes equal 0.00 (OSTKG + USTKG + STKG = 0)
-##    New:
-##      DEVSTAGE attribute must be DEP* or NEW* if POLYTYPE = FOR and the stocking attributes equal 0.00 (OSTKG + USTKG + STKG = 0)
-##
-##    *UD2:
-##    Old:
-##        The value (UHT) must be at least 3 less than OHT.
-##    New:
-##        Where VERT is equal to TO, TU, MO or MU, the OHT - UHT must be >= 3 OR OAGE - UAGE must be >= 20.
-##
-########################   END OF VALIDATION UPDATES  ##########################
 
 import arcpy
 import os, sys
@@ -50,7 +34,8 @@ lyrInfo = {
                                                        'PLANFU', 'AU', 'AVAIL', 'SILVSYS', 'NEXTSTG', 'YIELD'],     'polygon',  '4.1.4',        R.findPDF('FIM_FMP_TechSpec_2020.pdf#page=11')], # Note that 'SMZ' is no longer mandatory
 
     "ERU":  ["Existing Road Use Management Strategies", ['ROADID','ROADCLAS','TRANS','ACYEAR','ACCESS','DECOM',
-                                                        'INTENT','MAINTAIN','MONITOR','RESPONS','CONTROL1'],        'arc',      '4.2.12',       R.findPDF('FIM_FMP_TechSpec_2020.pdf#page=125')],
+                                                        'INTENT','MAINTAIN','MONITOR','RESPONS','CONTROL1', 
+                                                        'CONTROL2'],                                                'arc',      '4.2.12',       R.findPDF('FIM_FMP_TechSpec_2020.pdf#page=125')], # CONTROL2 is added as a mandatory field in 2020.
 
     "FDP":  ["Forecast Depletions",                     ['FSOURCE','FYRDEP','FDEVSTAGE'],                           'polygon',  '4.1.8',        R.findPDF('FIM_FMP_TechSpec_2020.pdf#page=91')],
 
@@ -933,23 +918,26 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
             try:
                 current_field = 'UAGE'            
                 if lyrAcro in ["PCI", "BMI"]:
-                    errorList = ["Error on %s %s: UAGE must be zero (or null) when POLYTYPE is not FOR or when DEVSTAGE is DEPHARV or DEPNAT."%(id_field, cursor[id_field_idx]) for row in cursor
-                                    if cursor[f.index('POLYTYPE')] != 'FOR' or cursor[f.index('DEVSTAGE')] in ['DEPHARV','DEPNAT']
-                                    if cursor[f.index('UAGE')] not in [0,None]]
-                    cursor.reset()
-                    if len(errorList) > 0:
-                        errorDetail[lyr].append(errorList)
-                        criticalError += 1
-                        recordValCom[lyr].append("Error on %s record(s): UAGE must be zero (or null) when POLYTYPE is not FOR or when DEVSTAGE is DEPHARV or DEPNAT."%len(errorList))
 
-                    errorList = ["Error on %s %s: UAGE must be populated and follow the correct format when POLYTYPE is FOR and when VERT is TO, TU, MO or MU."%(id_field, cursor[id_field_idx]) for row in cursor
-                                    if cursor[f.index('POLYTYPE')] == 'FOR' and cursor[f.index('VERT')] in ['TO','TU','MO','MU']
-                                    if not isinstance(cursor[f.index('UAGE')],int) or cursor[f.index('UAGE')] <= 0] ## testing if UAGE is always a positive integer.
+                    # the following has been removed in 2020.  id: *2020.11.003
+                    # errorList = ["Error on %s %s: UAGE must be zero (or null) when POLYTYPE is not FOR or when DEVSTAGE is DEPHARV or DEPNAT."%(id_field, cursor[id_field_idx]) for row in cursor
+                    #                 if cursor[f.index('POLYTYPE')] != 'FOR' or cursor[f.index('DEVSTAGE')] in ['DEPHARV','DEPNAT']
+                    #                 if cursor[f.index('UAGE')] not in [0,None]]
+                    # cursor.reset()
+                    # if len(errorList) > 0:
+                    #     errorDetail[lyr].append(errorList)
+                    #     criticalError += 1
+                    #     recordValCom[lyr].append("Error on %s record(s): UAGE must be zero (or null) when POLYTYPE is not FOR or when DEVSTAGE is DEPHARV or DEPNAT."%len(errorList))
+
+                    # Where the stand canopy has been determined to be two-tiered (VERT = TO, TU, MO, or MU), then an understorey age value must be entered (UAGE > 0)
+                    errorList = ["Error on %s %s: UAGE must be greater than zero when VERT is TO, TU, MO or MU."%(id_field, cursor[id_field_idx]) for row in cursor
+                                    if cursor[f.index('VERT')] in ['TO','TU','MO','MU']
+                                    if int(cursor[f.index('UAGE')] or -1) <= 0] ## this will flag even if UAGE is ' ' or NULL.
                     cursor.reset()
                     if len(errorList) > 0:
                         errorDetail[lyr].append(errorList)
                         criticalError += 1
-                        recordValCom[lyr].append("Error on %s record(s): UAGE must be populated and follow the correct format when POLYTYPE is FOR and when VERT is TO, TU, MO or MU."%len(errorList))
+                        recordValCom[lyr].append("Error on %s record(s): UAGE must be greater than zero when VERT is TO, TU, MO or MU."%len(errorList))
             except ValueError:
                 recordValCom[lyr].append("***Unable to run full validation on %s field due to value error - most likely due to missing mandatory field(s)"%current_field)
                 arcpy.AddWarning("***Unable to run full validation on %s field due to the following error:\n"%current_field + str(sys.exc_info()[1]))
@@ -2477,14 +2465,26 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
                     errorDetail[lyr].append(errorList)
                     criticalError += 1
                     recordValCom[lyr].append("Error on %s record(s): CONTROL1 must follow the correct coding scheme if populated."%len(errorList))
-                if "CONTROL2" in f:
-                    errorList = ["Error on %s %s: CONTROL2 must follow the correct coding scheme if populated."%(id_field, cursor[id_field_idx]) for row in cursor
-                                    if cursor[f.index('CONTROL2')] not in vnull + ['BERM','GATE','SCAR','SIGN','PRIV','SLSH','WATX']]
-                    cursor.reset()
-                    if len(errorList) > 0:
-                        errorDetail[lyr].append(errorList)
-                        criticalError += 1
-                        recordValCom[lyr].append("Error on %s record(s): CONTROL2 must follow the correct coding scheme if populated."%len(errorList))
+
+                errorList = ["Error on %s %s: CONTROL2 must follow the correct coding scheme if populated."%(id_field, cursor[id_field_idx]) for row in cursor
+                                if cursor[f.index('CONTROL2')] not in vnull + ['BERM','GATE','SCAR','SIGN','PRIV','SLSH','WATX']]
+                cursor.reset()
+                if len(errorList) > 0:
+                    errorDetail[lyr].append(errorList)
+                    criticalError += 1
+                    recordValCom[lyr].append("Error on %s record(s): CONTROL2 must follow the correct coding scheme if populated."%len(errorList))
+
+                # the following has been added in 2020.  id:*2020.11.001
+                # The population of CONTROL1 or CONTROL2 is mandatory where ACCESS != REMOVE or ACCESS is not null
+                errorList = ["Error on %s %s: Population of CONTROL1 or CONTROL2 is mandatory where ACCESS is not REMOVE or ACCESS is not null."%(id_field, cursor[id_field_idx]) for row in cursor
+                                if cursor[f.index('CONTROL1')] in vnull and cursor[f.index('CONTROL2')] in vnull
+                                if cursor[f.index('ACCESS')] not in vnull + ["REMOVE"] ]
+                cursor.reset()
+                if len(errorList) > 0:
+                    errorDetail[lyr].append(errorList)
+                    criticalError += 1
+                    recordValCom[lyr].append("Error on %s record(s): Population of CONTROL1 or CONTROL2 is mandatory where ACCESS is not REMOVE or ACCESS is not null."%len(errorList))
+
             except ValueError:
                 recordValCom[lyr].append("***Unable to run full validation on %s field due to value error - most likely due to missing mandatory field(s)"%current_field)
                 arcpy.AddWarning("***Unable to run full validation on %s field due to the following error:\n"%current_field + str(sys.exc_info()[1]))

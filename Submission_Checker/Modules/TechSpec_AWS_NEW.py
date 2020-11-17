@@ -101,12 +101,12 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
                     criticalError += 1
                     recordValCom[lyr].append("Error on %s record(s): AWS_YR cannot be less than the FMP start year (except for 0 on areas not scheduled) or greater than the plan end year minus 1."%len(errorList))
 
-                # This has been toned down from error to warning since there's no such validation statement in the tech spec *2020.10.011
-                specialList = ['' for row in cursor if cursor[f.index('AWS_YR')] not in vnull and int(cursor[f.index('AWS_YR')]) == year ]
-                cursor.reset()
-                if len(specialList) == 0:
-                    minorError += 1
-                    recordValCom[lyr].append("Warning on AWS_YR attributes: At least one feature should be populated with the current AWS year (%s)."%year)
+                # This has been removed in 2020. id: *2020.11.005
+                # specialList = ['' for row in cursor if cursor[f.index('AWS_YR')] not in vnull and int(cursor[f.index('AWS_YR')]) == year ]
+                # cursor.reset()
+                # if len(specialList) == 0:
+                #     minorError += 1
+                #     recordValCom[lyr].append("Warning on AWS_YR attributes: At least one feature should be populated with the current AWS year (%s)."%year)
 
             except ValueError:
                 recordValCom[lyr].append("***Unable to run full validation on %s due to missing AWS_YR field"%lyr)
