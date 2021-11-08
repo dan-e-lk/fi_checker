@@ -18,7 +18,6 @@ static_db = {
         'Abitibi_River':        [   '110',      [2012, 2022],       'NE'    ],
         'Algoma':               [   '615',      [2010, 2020],       'NE'    ],
         'Algonquin_Park':       [   '451',      [2010, 2021],       'S'     ],
-        'Wabadowgong_Noopming': [   '443',      [2011, 2023],       'NW'    ], # The former Armstrong Forest has been separated from the Lake Nipigon Forest; the new Wabadowgong Noopming Forest has been designated #update 2021
         'Bancroft_Minden':      [   '220',      [2011, 2021],       'S'     ],
         'Big_Pic':              [   '067',      [2007, 2017],       'NE'    ], # will be a part of Pic_Forest in 2019
         'Black_River':          [   '370',      [2006],             ''      ], #outdated?
@@ -58,6 +57,7 @@ static_db = {
         'Temagami':             [   '898',      [2009, 2019],       'NE'    ],
         'Timiskaming':          [   '280',      [2011, 2021],       'NE'    ],
         'Trout_Lake':           [   '120',      [2009, 2021],       'NW'    ],
+        'Wabadowgong_Noopming': [   '443',      [2011, 2023],       'NW'    ], # The former Armstrong Forest has been separated from the Lake Nipigon Forest; the new Wabadowgong Noopming Forest has been designated #update 2021
         'Wabigoon':             [   '130',      [2008, 2019],       'NW'    ],
         'Whiskey_Jack':         [   '490',      [2012, 2022],       'NW'    ],
         'White_River':          [   '060',      [2008, 2018],       'NE'    ],
