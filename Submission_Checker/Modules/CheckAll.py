@@ -186,6 +186,11 @@ class Check():
                 self.misnamed_lyrs.append(lyr + ' - layer name does not match the submission year (%s).'%str(self.year)[-2:])
             elif lyr[2:5] != self.MUNumber:
                 self.misnamed_lyrs.append(lyr + ' - layer name should contain correct FMU code (%s).'%self.MUNumber)
+            # 20221228 edit: catching layers that doesn't have two or three digits followed by the layer name: eg. MU574_21WSY vs MU574_21WSY00
+            # only two formats allowed: MU123_28SAC00 or MU12328SAC000
+            elif not lyr[11:13].isdigit() and not lyr[10:13].isdigit(): # looking for those numbers on correct positions
+                self.misnamed_lyrs.append(lyr + " - layer name should be in the format of 'MU999_88SAC00' or 'MU99988SAC000'.")
+
         if len(self.misnamed_lyrs) > 0:
             self.str_misnamed_lyrs += "Misnamed layer(s) found:"
             for item in self.misnamed_lyrs:
@@ -292,21 +297,33 @@ class Check():
         arcpy.AddMessage("\nChecking projection...")
 
         projection_list = []
+        no_proj = []
         for lyr in self.lyrs:
             desc = arcpy.Describe(lyr)
-            SRName = desc.spatialReference.name.replace('_',' ') ## eg.NAD 1938 UTM Zone 17N
+            # if the lyr is not properly projected (ie. lacks a prj file), desc will yield None
+            if desc.spatialReference == None:
+                no_proj.append(lyr)
+                SRName = 'ERROR: No Spatial Reference Found'
+            else:
+                SRName = desc.spatialReference.name.replace('_',' ') ## eg.NAD 1938 UTM Zone 17N
+                projection_list.append(SRName)
             self.summarytbl[lyr].append(str(SRName)) ##eg. {'MU110_17SAC10': ['SAC', 'Scheduled Area Of Concern', 'NAD_1983_UTM_Zone_17N'], 'MU110_17SAC11': ['SAC', 'Scheduled Area Of Concern', 'NAD_1983_UTM_Zone_17N'],...}
-            projection_list.append(SRName)
 
         self.num_of_proj_used = len(set(projection_list))
         self.strProjectionCheck = ''
 
-        if self.num_of_proj_used == 1:
-            self.strProjectionCheck += 'All layers are using the same projection: %s'%projection_list[0]
-            arcpy.AddMessage("\t" + self.strProjectionCheck)
-        elif self.num_of_proj_used > 1:
-            self.strProjectionCheck += 'Not all layers are using the same projection!!'
-            arcpy.AddMessage("\t" + self.strProjectionCheck)
+        if len(no_proj) == 0: # this will almost always be the case
+            if self.num_of_proj_used == 1:
+                self.strProjectionCheck += 'All layers are using the same projection: %s'%projection_list[0]
+                arcpy.AddMessage("\t" + self.strProjectionCheck)
+            elif self.num_of_proj_used > 1:
+                self.strProjectionCheck += 'Not all layers are using the same projection!!'
+                arcpy.AddMessage("\t" + self.strProjectionCheck)
+        else:
+            self.strProjectionCheck += 'The following layers does not have a spatial reference:\n\t%s'%no_proj
+            arcpy.AddWarning("\t" + self.strProjectionCheck)
+            arcpy.AddWarning("\tYou must fix the spatial reference errors of the above layers before running this tool.")
+            raise Exception("Could not find a spatial reference for the following files. Ensure you can open these layers on Arc without any issues:\n%s"%no_proj)
 
     def fieldValidation(self):
         """

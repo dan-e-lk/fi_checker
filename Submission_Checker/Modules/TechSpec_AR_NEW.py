@@ -118,13 +118,15 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
                     criticalError += 1
                     recordValCom[lyr].append("Error on %s record(s): The population of PITID is mandatory (A blank or null value is not a valid code)."%len(errorList))
 
-                # The PITID attribute must contain a unique value
-                pitIDList = [cursor[PITID] for row in cursor]
+                # The PITID attribute must contain a unique value # update on 20221228 - list of non-unique PITIDs will now appear in the error detail
+                pitIDList = [str(cursor[PITID]).strip() for row in cursor if cursor[PITID] not in vnull]
                 cursor.reset()
-                if len(set(pitIDList)) < len(pitIDList):
-                    duplicateCount = len(pitIDList) - len(set(pitIDList))
+
+                summary_comments, errorList = R.findDuplicateID(pitIDList, 'PITID')
+                if len(summary_comments) > 0:
                     criticalError += 1
-                    recordValCom[lyr].append("Error on %s record(s): The PITID attribute must contain a unique value."%duplicateCount)
+                    recordValCom[lyr].append(summary_comments)
+                    errorDetail[lyr].append(errorList)
 
             # REHABREQ
                 # The attribute population must follow the correct format (must be between 0 and 9.9) 

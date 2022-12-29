@@ -39,7 +39,7 @@ static_db = {
         'Lakehead':             [   '796',      [2007, 2021],       'NW'    ],
         'Magpie':               [   '565',      [2009, 2019],       'NE'    ],
         'Martel':               [   '509',      [2011, 2021],       'NE'    ],
-        'Missanaibi':        	[   '574',      [2021],             'NE'    ],  # Martel-Magpie became Missanaibi in 2021    
+        'Missinaibi':        	[   '574',      [2021],             'NE'    ],  # Martel-Magpie became Missanaibi in 2021 - Missinaibi (spell correction) in 2022  
         'Mazinaw_Lanark':       [   '140',      [2011, 2021],       'S'     ],
         'Nagagami':             [   '390',      [2011, 2021],       'NE'    ],
         'Nipissing':            [   '754',      [2009, 2019],       'NE'    ],
