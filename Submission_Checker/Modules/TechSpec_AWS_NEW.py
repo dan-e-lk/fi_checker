@@ -60,12 +60,14 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
         minorError = 0
         systemError = False
         # summarytbl[lyr][3] is a list of existing mandatory fields and summarytbl[lyr][4] is a list of existing other fields
+        global f, id_field, id_field_idx # *2023.01 arc pro update
         f = summarytbl[lyr][4] + summarytbl[lyr][3]  ## f is the list of all fields found in lyr. eg. ['FID', 'SHAPE','PIT_ID', 'PIT_OPEN', 'PITCLOSE', 'CAT9APP', ...]
 
         # feature classes have ObjectID, shapefiles and coverages have FID. Search for ObjectID's index value in f, if not possible, search for FID's index value in f. else use whatever field comes first as the ID field.
         id_field = R.find_IdField(f, dataformat) # *23408  This will normally return OBJECTID for feature classes and FID for shapefile and coverage.
         id_field_idx = f.index(id_field)
         
+        global cursor, errorList # *2023.01 arc pro update
         cursor = arcpy.da.SearchCursor(lyr,f)
         recordCount = len(list(cursor))
         cursor.reset()
@@ -437,13 +439,14 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
                     t3check1 = " and cursor[f.index('TRTMTHD3')] not in " + codingScheme
                     t3check2 = " or cursor[f.index('TRTMTHD3')] not in " + codingScheme + " + vnull "                    
 
-                command = """errorList = ["Error on %s %s: The population of TRTMTHD1, 2 or 3 is mandatory and must follow the correct coding scheme where AWS_YR equals the fiscal year to which the AWS applies."
+                command = "global errorList\n"
+                command += """errorList = ["Error on %s %s: The population of TRTMTHD1, 2 or 3 is mandatory and must follow the correct coding scheme where AWS_YR equals the fiscal year to which the AWS applies."
                                 %(id_field, cursor[id_field_idx]) for row in cursor
-                                if cursor[f.index('AWS_YR')] == year
+                                if cursor[f.index('AWS_YR')] == """ + str(year) + """
                                 if cursor[f.index('TRTMTHD1')] not in """ + codingScheme + t2check1 + t3check1 + "or (cursor[f.index('TRTMTHD1')] not in " + codingScheme + " + vnull " + t2check2 + t3check2 + ")]"     
                                 # The first half of the last line checkes if at least one of the 3 fields have been populated with the coding scheme
                                 # The second half of the last line checks if all 3 fields have correct coding scheme if populated
-                exec(command)
+                exec(command, globals(), locals()) # *2023.01 arc pro update
 
                 cursor.reset()
                 if len(errorList) > 0:
@@ -542,8 +545,9 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
             # Checking "At a minimum, one of Decommissioning, Maintenance, Monitoring, Access Control, or Transfer must occur for each record (DECOM = Y or MAINTAIN = Y or MONITOR = Y or ACCESS = Y or TRANS = Y) where AWS_YR equals the fiscal year to which the AWS applies."
                 optField = ['MAINTAIN','MONITOR']
                 matchingField = list(set(optField) & set(f))
-                command = """errorList = ["Error on %s %s: At a minimum, one of Decommissioning, Maintenance, Monitoring or Access Control must occur."%(id_field, cursor[id_field_idx]) for row in cursor
-                                    if cursor[f.index('AWS_YR')] == year
+                command = "global errorList\n"
+                command += """errorList = ["Error on %s %s: At a minimum, one of Decommissioning, Maintenance, Monitoring or Access Control must occur."%(id_field, cursor[id_field_idx]) for row in cursor
+                                    if cursor[f.index('AWS_YR')] == """ + str(year) + """
                                     if cursor[f.index('ACCESS')] in vnull and cursor[f.index('DECOM')] in vnull and cursor[f.index('TRANS')] != 'Y' """ #*24c04 (added TRANS. And only check if AWS_YR = current submission year)
 
                 if len(matchingField) > 0:
@@ -551,7 +555,7 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
                         command += """and cursor[f.index('""" + matchingField[i] + """')] != 'Y' """
                 command += ']'
 
-                exec(command) ## executing the command built above...
+                exec(command, globals(), locals()) # *2023.01 arc pro update
                 cursor.reset()
                 if len(errorList) > 0:
                     errorDetail[lyr].append(errorList)
@@ -590,7 +594,8 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
                         recordValCom[lyr].append("Error on %s record(s): CONTROL2 must follow the correct coding scheme if pouplated."%len(errorList))
 
             # CONTROL1 and 2 both should be null if ACCESS = REMOVE
-                command = """errorList = ["Warning on %s %s: Both CONTROL1 and 2 should be null if ACCESS = REMOVE."%(id_field, cursor[id_field_idx]) for row in cursor
+                command = 'global errorList\n'
+                command += """errorList = ["Warning on %s %s: Both CONTROL1 and 2 should be null if ACCESS = REMOVE."%(id_field, cursor[id_field_idx]) for row in cursor
                                     if cursor[f.index('ACCESS')] == 'REMOVE'
                                     if cursor[f.index('CONTROL1')] not in vnull """
 
@@ -598,7 +603,7 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
                     command += """or cursor[f.index('CONTROL2')] not in vnull """
                 command += ']'
 
-                exec(command) ## executing the command built above...
+                exec(command, globals(), locals()) # *2023.01 arc pro update
                 cursor.reset()
                 if len(errorList) > 0:
                     errorDetail[lyr].append(errorList)
@@ -766,7 +771,8 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
                         recordValCom[lyr].append("Error on %s record(s): CONTROL2 must follow the correct coding scheme if populated."%len(errorList))
 
             # CONTROL1 or 2 must be populated if ACCESS = BOTH or APPLY
-                command = """errorList = ["Warning on %s %s: CONTROL1 or 2 must be populated if ACCESS = BOTH or APPLY."%(id_field, cursor[id_field_idx]) for row in cursor
+                command = 'global errorList\n'
+                command += """errorList = ["Warning on %s %s: CONTROL1 or 2 must be populated if ACCESS = BOTH or APPLY."%(id_field, cursor[id_field_idx]) for row in cursor
                                     if cursor[f.index('ACCESS')] in ['BOTH','APPLY']
                                     if cursor[f.index('CONTROL1')] in vnull """
 
@@ -774,7 +780,7 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
                     command += """and cursor[f.index('CONTROL2')] in vnull """
                 command += ']'
 
-                exec(command) ## executing the command built above...
+                exec(command, globals(), locals()) # *2023.01 arc pro update
                 cursor.reset()
                 if len(errorList) > 0:
                     errorDetail[lyr].append(errorList)
@@ -782,7 +788,8 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
                     recordValCom[lyr].append("Warning on %s record(s): CONTROL1 or 2 must be populated if ACCESS = BOTH or APPLY."%len(errorList)) 
 
             # CONTROL1 and 2 both should be null if ACCESS = REMOVE
-                command = """errorList = ["Warning on %s %s: Both CONTROL1 and 2 should be null if ACCESS = REMOVE."%(id_field, cursor[id_field_idx]) for row in cursor
+                command = 'global errorList\n'
+                command += """errorList = ["Warning on %s %s: Both CONTROL1 and 2 should be null if ACCESS = REMOVE."%(id_field, cursor[id_field_idx]) for row in cursor
                                     if cursor[f.index('ACCESS')] == 'REMOVE'
                                     if cursor[f.index('CONTROL1')] not in vnull """
 
@@ -790,7 +797,7 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
                     command += """or cursor[f.index('CONTROL2')] not in vnull """
                 command += ']'
 
-                exec(command) ## executing the command built above...
+                exec(command, globals(), locals()) # *2023.01 arc pro update
                 cursor.reset()
                 if len(errorList) > 0:
                     errorDetail[lyr].append(errorList)
@@ -829,13 +836,14 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
                     t3check1 = " and cursor[f.index('TRTMTHD3')] not in " + codingScheme
                     t3check2 = " or cursor[f.index('TRTMTHD3')] not in " + codingScheme + " + vnull "                    
 
-                command = """errorList = ["Error on %s %s: The population of TRTMTHD1, 2 or 3 is mandatory and must follow the correct coding scheme where AWS_YR equals the fiscal year to which the AWS applies."
+                command = 'global errorList\n'
+                command += """errorList = ["Error on %s %s: The population of TRTMTHD1, 2 or 3 is mandatory and must follow the correct coding scheme where AWS_YR equals the fiscal year to which the AWS applies."
                                 %(id_field, cursor[id_field_idx]) for row in cursor
-                                if cursor[f.index('AWS_YR')] == year
+                                if cursor[f.index('AWS_YR')] == """ + str(year) + """
                                 if cursor[f.index('TRTMTHD1')] not in """ + codingScheme + t2check1 + t3check1 + "or (cursor[f.index('TRTMTHD1')] not in " + codingScheme + " + vnull " + t2check2 + t3check2 + ")]"     
                                 # The first half of the last line checkes if at least one of the 3 fields have been populated with the coding scheme
                                 # The second half of the last line checks if all 3 fields have correct coding scheme if populated
-                exec(command)
+                exec(command, globals(), locals()) # *2023.01 arc pro update
 
                 cursor.reset()
                 if len(errorList) > 0:
@@ -896,13 +904,14 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
                     t3check1 = " and cursor[f.index('TRTMTHD3')] not in " + codingScheme
                     t3check2 = " or cursor[f.index('TRTMTHD3')] not in " + codingScheme + " + vnull "                    
 
-                command = """errorList = ["Error on %s %s: The population of TRTMTHD1, 2 or 3 is mandatory and must follow the correct coding scheme where AWS_YR equals the fiscal year to which the AWS applies."
+                command = 'global errorList\n'
+                command += """errorList = ["Error on %s %s: The population of TRTMTHD1, 2 or 3 is mandatory and must follow the correct coding scheme where AWS_YR equals the fiscal year to which the AWS applies."
                                 %(id_field, cursor[id_field_idx]) for row in cursor
-                                if cursor[f.index('AWS_YR')] == year
+                                if cursor[f.index('AWS_YR')] == """ + str(year) + """
                                 if cursor[f.index('TRTMTHD1')] not in """ + codingScheme + t2check1 + t3check1 + "or (cursor[f.index('TRTMTHD1')] not in " + codingScheme + " + vnull " + t2check2 + t3check2 + ")]"     
                                 # The first half of the last line checkes if at least one of the 3 fields have been populated with the coding scheme
                                 # The second half of the last line checks if all 3 fields have correct coding scheme if populated
-                exec(command)
+                exec(command, globals(), locals()) # *2023.01 arc pro update
 
                 cursor.reset()
                 if len(errorList) > 0:
@@ -942,13 +951,14 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
                     t3check1 = " and cursor[f.index('TRTMTHD3')] not in " + codingScheme
                     t3check2 = " or cursor[f.index('TRTMTHD3')] not in " + codingScheme + " + vnull "                    
 
-                command = """errorList = ["Error on %s %s: The population of TRTMTHD1, 2 or 3 is mandatory and must follow the correct coding scheme where AWS_YR equals the fiscal year to which the AWS applies."
+                command = 'global errorList\n'
+                command += """errorList = ["Error on %s %s: The population of TRTMTHD1, 2 or 3 is mandatory and must follow the correct coding scheme where AWS_YR equals the fiscal year to which the AWS applies."
                                 %(id_field, cursor[id_field_idx]) for row in cursor
-                                if cursor[f.index('AWS_YR')] == year
+                                if cursor[f.index('AWS_YR')] == """ + str(year) + """
                                 if cursor[f.index('TRTMTHD1')] not in """ + codingScheme + t2check1 + t3check1 + "or (cursor[f.index('TRTMTHD1')] not in " + codingScheme + " + vnull " + t2check2 + t3check2 + ")]"     
                                 # The first half of the last line checkes if at least one of the 3 fields have been populated with the coding scheme
                                 # The second half of the last line checks if all 3 fields have correct coding scheme if populated
-                exec(command)
+                exec(command, globals(), locals()) # *2023.01 arc pro update
 
                 cursor.reset()
                 if len(errorList) > 0:
@@ -1057,8 +1067,9 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
                    fieldValComUpdate[lyr].append("At a minimum, one of CONSTRCT, MONITOR, REMOVE or REPLACE must occur.")
                    fieldValUpdate[lyr] = 'Invalid'
                 else:
-                    command = """errorList = ["Error on %s %s: One of CONSTRCT, MONITOR, REMOVE or REPLACE must occur for each record where AWS_YR equals the start year of the AWS or the following year."%(id_field, cursor[id_field_idx]) for row in cursor
-                                        if int(cursor[f.index('AWS_YR')] or 0) in [year,year+1] 
+                    command = 'global errorList\n'
+                    command += """errorList = ["Error on %s %s: One of CONSTRCT, MONITOR, REMOVE or REPLACE must occur for each record where AWS_YR equals the start year of the AWS or the following year."%(id_field, cursor[id_field_idx]) for row in cursor
+                                        if int(cursor[f.index('AWS_YR')] or 0) in [""" + str(year) + "," + str(year+1) + """] 
                                         if cursor[f.index('""" + matchingField[0] + """')] != 'Y' """
 
                     if len(matchingField) > 1:
@@ -1066,7 +1077,7 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
                             command = command + """and cursor[f.index('""" + matchingField[i] + """')] != 'Y' """
                     command = command + ']'
 
-                    exec(command) ## executing the command built above...
+                    exec(command, globals(), locals()) # *2023.01 arc pro update
                     cursor.reset()
                     if len(errorList) > 0:
                         errorDetail[lyr].append(errorList)

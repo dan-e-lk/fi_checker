@@ -1,7 +1,7 @@
 #-------------------------------------------------------------------------------
-# Name:        	checker_v2
+# Name:        	checker_v2023.01
 
-checker_version = '2021.11'
+checker_version = '2023.01'
 
 # Purpose:	   	This tool checks the FMP, AR or AWS submission (according to the 
 #				FIM Technical Specifications 2009 or 2017) and outputs a validation report 
@@ -16,7 +16,7 @@ checker_version = '2021.11'
 print("Importing Arcpy...")
 import arcpy
 import sys
-import Modules.Reference as R
+import Reference as R
 
 
 
@@ -33,11 +33,11 @@ dataformat_dict = {'shp':'shapefile', 'fc':'feature class', 'cov':'coverage'}
 dataformat = dataformat_dict[dataformat]
 
 
-tech_spec_version = sys.argv[7] # 'old' or 'new'
-if tech_spec_version == 'old':
-	tech_spec_version = "2009"
-else:
+tech_spec_version = sys.argv[7] # 'Old' or 'Latest'
+if tech_spec_version == 'Latest':
 	tech_spec_version = "2020"
+else:
+	tech_spec_version = "2009"
 
 error_limit = sys.argv[8] # 'limit' or 'nolimit'
 if error_limit == 'nolimit':
@@ -49,7 +49,7 @@ else:
 SubID = sys.argv[9] # cant have special character since the filename will include submission id. Also, the Reference.findSubID will try to find the submission ID in fmu/plan/year/ folder.
 
 
-from Modules.CheckAll import Check
+from CheckAll import Check
 try:
 	class_check = Check(plan,fmu,year,fmpStartYear,workspace, dataformat, tech_spec_version, error_limit, checker_version, SubID)
 	class_check.run()

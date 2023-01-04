@@ -46,7 +46,7 @@ static_db = {
         'Northshore':           [   '680',      [2010, 2020],       'NE'    ],
         'Ogoki':                [   '415',      [2008, 2020],       'NW'    ],
         'Ottawa_Valley':        [   '780',      [2011, 2021],       'S'     ],
-        'Pic_Forest':           [   '966',      [2021],             'NE'    ], # Amalgamation of Big_Pic and Pic_River as of 2019 plan. Pic's new start year is now 2021
+        'Pic':                  [   '966',      [2021],             'NE'    ], # Amalgamation of Big_Pic and Pic_River as of 2019 plan. Pic's new start year is now 2021
         'Pic_River':            [   '965',      [2006, 2013],       'NE'    ], # will be a part of Pic_Forest in 2019
         'Pineland':             [   '421',      [2011, 2021],       'NW'    ],
         'Red_Lake':             [   '840',      [2008, 2020],       'NW'    ],
@@ -78,7 +78,7 @@ def spcVal(data, fieldname, version = 2017): #sample data: 'Cw  70La  20Sb  10'
     else:
         try:
             if len(data)%6 == 0:
-                n = len(data)/6
+                n = int(len(data)/6) # updated for arcpro - division yields float in python 3 - hence the addition of "int()"
                 spcList = [data[6*i:6*i+3].strip().upper() for i in range(n)]
                 percentList = [int(data[6*i+3:6*i+6].strip()) for i in range(n)]
 
@@ -367,11 +367,13 @@ def getOntarioLogo():
     this function should test if this ontario logo works before returning it
     However, urllib2.urlopen module doesn't seem to work on OPS network.
     """
-    return 'https://www.ontario.ca/img/logo-ontario@2x.png'
+    # return 'https://www.ontario.ca/img/logo-ontario@2x.png'
+    return "https://www.ontario.ca/img/ontario@2x.png"
 
 
-def findDuplicateID(idList, idfieldname):
+def findDuplicateID_old(idList, idfieldname):
     """
+    do not use this! this is older and slower version of the findDuplicateID
     you must first check if the idList is not a blank list before using this function.
     This function will check the idList for any duplicates.
     It will then output the duplicate ID in a string format.
@@ -402,6 +404,27 @@ def findDuplicateID(idList, idfieldname):
 
 
 
+def findDuplicateID(idList, idfieldname):
+    """ infinitely faster version of findDuplicateID
+    """
+    import collections
+    duplicate_id_list = [i for i, count in collections.Counter(idList).items() if count > 1]
+    duplicate_counter = len(duplicate_id_list)
+
+    summary_msg = ''
+    error_msg_list = []
+    if duplicate_counter == 0:
+        pass # the length of both summary_msg and error_msg_list stays zero.
+    else:
+        duplicates = set(duplicate_id_list)
+        msg1 = "Error on %s record(s): The %s attribute must contain a unique value."%(duplicate_counter,idfieldname)
+        summary_msg += msg1
+        error_msg_list.append(msg1)
+        error_msg_list.append('List of duplicate %s:'%idfieldname)
+        error_msg_list.append(str(list(duplicates)))
+
+    return summary_msg, error_msg_list
+
 
 if __name__ == '__main__':
 
@@ -412,9 +435,22 @@ if __name__ == '__main__':
     # print(summary)
     # print(error_list)
 
-    for k, v in static_db.items():
-        print('%s, %s'%(k,v[0]))
+    # for k, v in static_db.items():
+    #     print('%s, %s'%(k,v[0]))
 
+
+    # speed test of the two findDuplicateID functions
+    from datetime import datetime as dt
+    lst_1M = list(range(1000000))
+    lst_1M = lst_1M + [1,2,3,4,5]
+    
+    start = dt.now()
+    msg, msg_lst = findDuplicateID(lst_1M, 'first_test')
+    end = dt.now()
+
+    print(msg)
+    print(msg_lst)
+    print('Time elapsed: %s'%(end-start))
 
     # findPDF('FIM_AWS_TechSpec_2017.pdf#page=50')
 

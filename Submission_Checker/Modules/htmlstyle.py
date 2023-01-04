@@ -55,7 +55,8 @@ h1 {
     font-size: 1.5em;
     margin: 0;
     font-weight: bold;
-    background: #000000;
+/*    background: #000000; black*/
+    background: #d4af37;
     color: white;
     padding: 30px 0 10px 20px;
 }
@@ -65,8 +66,9 @@ h2 {
     font-size: 1.3em;
     margin-top: 0;
     font-weight: bold;
-    background: linear-gradient(to right, #DBE2D6, white);
-    border-bottom: 1px solid #DBE2D6;
+/*    background: linear-gradient(to right, #DBE2D6, white);*/
+    background: linear-gradient(to right, #f6e3bd, white);
+    border-bottom: 1px solid #f6e3bd;
     padding: 5px 0 2px 5px;
 }
 
@@ -155,7 +157,7 @@ img {
 /* Collapsible content */
 
 .collapsible {
-    background: linear-gradient(to right, #DBE2D6, white);
+    background: linear-gradient(to right, #f6e3bd, white);
     cursor: pointer;
     padding: 5px 0 2px 5px;
     width: 100%;
@@ -167,7 +169,7 @@ img {
 }
 
 .active, .collapsible:hover {
-    background: #86af6d;
+    background: #d4af37;
     color: white;
 }
 

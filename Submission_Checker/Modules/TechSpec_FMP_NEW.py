@@ -94,13 +94,14 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
         minorError = 0
         systemError = False
         # summarytbl[lyr][3] is a list of existing mandatory fields and summarytbl[lyr][4] is a list of existing other fields
+        global f, id_field, id_field_idx # need this for the exec function later on (arcpro update)
         f = summarytbl[lyr][4] + summarytbl[lyr][3]  ## f is the list of all fields found in lyr. eg. ['FID', 'SHAPE','PIT_ID', 'PIT_OPEN', 'PITCLOSE', 'CAT9APP', ...]
         
         # feature classes have ObjectID, shapefiles and coverages have FID. Search for ObjectID's index value in f, if not possible, search for FID's index value in f. else use whatever field comes first as the ID field.
         id_field = R.find_IdField(f, dataformat) # *23408  This will normally return OBJECTID for feature classes and FID for shapefile and coverage.
         id_field_idx = f.index(id_field)
 
-
+        global cursor, errorList # need this for the exec function later on (arcpro update)
         cursor = arcpy.da.SearchCursor(lyr,f)
         recordCount = len(list(cursor))
         cursor.reset()
@@ -136,7 +137,8 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
 
             # POLYID
             try:
-                current_field = 'POLYID' 
+                current_field = 'POLYID'
+                arcpy.AddMessage("\tChecking %s..."%current_field) #*2023.01
                                 
                 errorList = ["Error on %s %s: The population of POLYID is mandatory."%(id_field, cursor[id_field_idx]) for row in cursor
                                 if cursor[f.index('POLYID')] in vnull]
@@ -163,6 +165,7 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
             # POLYTYPE
             try:
                 current_field = 'POLYTYPE'
+                arcpy.AddMessage("\tChecking %s..."%current_field) #*2023.01
                 errorList = ["Error on %s %s: The population of POLYTYPE is mandatory and must follow the correct coding scheme."%(id_field, cursor[id_field_idx]) for row in cursor
                                 if cursor[f.index('POLYTYPE')] not in ['WAT','DAL','GRS','ISL','UCL','BSH','RCK','TMS','OMS','FOR']]
                 cursor.reset()
@@ -181,7 +184,8 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
 
             # OWNER
             try:
-                current_field = 'OWNER'            
+                current_field = 'OWNER'
+                arcpy.AddMessage("\tChecking %s..."%current_field) #*2023.01      
                 errorList = ["Error on %s %s: The population of OWNER is mandatory and must follow the correct coding scheme."%(id_field, cursor[id_field_idx]) for row in cursor
                                 if str(cursor[f.index('OWNER')]) not in ['0','1','2','3','4','5','6','7','8','9']]
                 cursor.reset()
@@ -196,7 +200,8 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
 
             # YRSOURCE
             try:
-                current_field = 'YRSOURCE'                 
+                current_field = 'YRSOURCE'
+                arcpy.AddMessage("\tChecking %s..."%current_field) #*2023.01             
                 errorList = ["Error on %s %s: The YRSOURCE must be populated with the correct format (YYYY)."%(id_field, cursor[id_field_idx]) for row in cursor
                                 if cursor[f.index('YRSOURCE')] in vnull or cursor[f.index('YRSOURCE')] < 1000 or cursor[f.index('YRSOURCE')] > 9999 ]
                 cursor.reset()
@@ -219,7 +224,8 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
 
             # SOURCE
             try:
-                current_field = 'SOURCE'                
+                current_field = 'SOURCE'
+                arcpy.AddMessage("\tChecking %s..."%current_field) #*2023.01                
                 errorList = ["Error on %s %s: The population of SOURCE must follow the correct coding scheme."%(id_field, cursor[id_field_idx]) for row in cursor
                                 if cursor[f.index('SOURCE')] not in ['BASECOVR','DIGITALA','DIGITALP','ESTIMATE','FOC','FORECAST','FRICNVRT','INFRARED','MARKING','OCULARA','OCULARG','OPC','PHOTO','PHOTOLS','PHOTOSS','PLOTFIXD','PLOTVAR','RADAR','REGENASS','SEMEXTEN','SEMINTEN','SPECTRAL','SUPINFO']]
                 cursor.reset()
@@ -253,7 +259,8 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
 
             # FORMOD
             try:
-                current_field = 'FORMOD'              
+                current_field = 'FORMOD'
+                arcpy.AddMessage("\tChecking %s..."%current_field) #*2023.01              
                 errorList = ["Error on %s %s: FORMOD must be null when POLYTYPE is not equal to FOR."%(id_field, cursor[id_field_idx]) for row in cursor
                                 if cursor[f.index('POLYTYPE')] != 'FOR'
                                 if cursor[f.index('FORMOD')] not in vnull]
@@ -289,7 +296,8 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
 
             # DEVSTAGE
             try:
-                current_field = 'DEVSTAGE'                
+                current_field = 'DEVSTAGE'
+                arcpy.AddMessage("\tChecking %s..."%current_field) #*2023.01                
                 errorList = ["Error on %s %s: DEVSTAGE must be null when POLYTYPE is not equal to FOR."%(id_field, cursor[id_field_idx]) for row in cursor
                                 if cursor[f.index('POLYTYPE')] != 'FOR'
                                 if cursor[f.index('DEVSTAGE')] not in vnull]
@@ -311,7 +319,8 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
 
                 optField = ['OSTKG','USTKG','STKG']
                 matchingField = list(set(optField) & set(f))
-                command = """errorList = ["Error on %s %s: DEVSTAGE attribute must be DEP* or NEW* if POLYTYPE = FOR and the stocking attributes equal 0.00 (OSTKG + USTKG + STKG = 0)."%(id_field, cursor[id_field_idx]) for row in cursor
+                command = "global errorList\n" ## arcpro update
+                command += """errorList = ["Error on %s %s: DEVSTAGE attribute must be DEP* or NEW* if POLYTYPE = FOR and the stocking attributes equal 0.00 (OSTKG + USTKG + STKG = 0)."%(id_field, cursor[id_field_idx]) for row in cursor
                                     if cursor[f.index('POLYTYPE')] == 'FOR'
                                     if cursor[f.index('DEVSTAGE')] not in ['DEPHARV','DEPNAT','NEWPLANT','NEWSEED','NEWNAT']
                                     if float(cursor[f.index('""" + matchingField[0] + """')] or 0)"""    # float(x or 0) will give 0.0 if x is None. *UD1: Added NEWPLANT, NEWSEED and NEWNAT on Dec 2017
@@ -319,7 +328,8 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
                     for i in range(1,len(matchingField)):
                         command += """ + float(cursor[f.index('""" + matchingField[i] + """')] or 0)"""
                 command += """ == 0]"""
-                exec(command) ## executing the command built above...
+                # exec(command) ## executing the command built above...
+                exec(command, globals()) ## arcpro update
                 cursor.reset()
                 if len(errorList) > 0:
                     errorDetail[lyr].append(errorList)
@@ -344,7 +354,8 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
 
             # YRDEP
             try:
-                current_field = 'YRDEP'               
+                current_field = 'YRDEP'
+                arcpy.AddMessage("\tChecking %s..."%current_field) #*2023.01              
                 errorList = ["Error on %s %s: YRDEP must equal zero or null when POLYTYPE is not FOR."%(id_field, cursor[id_field_idx]) for row in cursor
                                 if cursor[f.index('POLYTYPE')] != 'FOR'
                                 if cursor[f.index('YRDEP')] not in [0,None]] 
@@ -388,7 +399,8 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
 
             # DEPTYPE
             try:
-                current_field = 'DEPTYPE'               
+                current_field = 'DEPTYPE'
+                arcpy.AddMessage("\tChecking %s..."%current_field) #*2023.01               
                 errorList = ["Error on %s %s: DEPTYPE must be null when POLYTYPE is not FOR."%(id_field, cursor[id_field_idx]) for row in cursor
                                 if cursor[f.index('POLYTYPE')] != 'FOR'
                                 if cursor[f.index('DEPTYPE')] not in vnull]
@@ -426,7 +438,8 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
 
             # OYRORG (PCI and BMI only)
             try:
-                current_field = 'OYRORG'                 
+                current_field = 'OYRORG'
+                arcpy.AddMessage("\tChecking %s..."%current_field) #*2023.01                 
                 if lyrAcro in ["PCI", "BMI"]:
                     errorList = ["Error on %s %s: OYRORG must be zero or null when POLYTYPE is not FOR."%(id_field, cursor[id_field_idx]) for row in cursor
                                     if cursor[f.index('POLYTYPE')] != 'FOR'
@@ -462,7 +475,8 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
 
             # OSPCOMP (PCI and BMI only)
             try:
-                current_field = 'OSPCOMP'                
+                current_field = 'OSPCOMP'
+                arcpy.AddMessage("\tChecking %s..."%current_field) #*2023.01                
                 if lyrAcro in ["PCI", "BMI"]:
                     errorList = ["Error on %s %s: OSPCOMP must be null when POLYTYPE is not FOR."%(id_field, cursor[id_field_idx]) for row in cursor
                                     if cursor[f.index('POLYTYPE')] != 'FOR'
@@ -520,7 +534,8 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
 
             # OLEADSPC (PCI and BMI only)
             try:
-                current_field = 'OLEADSPC'               
+                current_field = 'OLEADSPC'
+                arcpy.AddMessage("\tChecking %s..."%current_field) #*2023.01               
                 if lyrAcro in ["PCI", "BMI"]:
                     errorList = ["Error on %s %s: OLEADSPC must be null when POLYTYPE is not FOR."%(id_field, cursor[id_field_idx]) for row in cursor
                                     if cursor[f.index('POLYTYPE')] != 'FOR'
@@ -568,7 +583,8 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
 
             # OAGE (PCI and BMI only)
             try:
-                current_field = 'OAGE'              
+                current_field = 'OAGE'
+                arcpy.AddMessage("\tChecking %s..."%current_field) #*2023.01              
                 if lyrAcro in ["PCI", "BMI"]:
                     errorList = ["Error on %s %s: OAGE must be zero or null when POLYTYPE is not FOR."%(id_field, cursor[id_field_idx]) for row in cursor
                                     if cursor[f.index('POLYTYPE')] != 'FOR'
@@ -604,7 +620,8 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
 
             # OHT (PCI and BMI only)
             try:
-                current_field = 'OHT'              
+                current_field = 'OHT'
+                arcpy.AddMessage("\tChecking %s..."%current_field) #*2023.01              
                 if lyrAcro in ["PCI", "BMI"]:
                     errorList = ["Error on %s %s: OHT must be zero or null when POLYTYPE is not FOR."%(id_field, cursor[id_field_idx]) for row in cursor
                                     if cursor[f.index('POLYTYPE')] != 'FOR'
@@ -642,7 +659,8 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
 
             # OCCLO (PCI and BMI only)
             try:
-                current_field = 'OCCLO'            
+                current_field = 'OCCLO'
+                arcpy.AddMessage("\tChecking %s..."%current_field) #*2023.01            
                 if lyrAcro in ["PCI", "BMI"]:
                     errorList = ["Error on %s %s: OCCLO must be zero or null when POLYTYPE is not FOR."%(id_field, cursor[id_field_idx]) for row in cursor
                                     if cursor[f.index('POLYTYPE')] != 'FOR'
@@ -668,7 +686,8 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
 
             # OSTKG (PCI and BMI only)
             try:
-                current_field = 'OSTKG'            
+                current_field = 'OSTKG'
+                arcpy.AddMessage("\tChecking %s..."%current_field) #*2023.01            
                 if lyrAcro in ["PCI", "BMI"]:
                     errorList = ["Error on %s %s: OSTKG must be zero or null when POLYTYPE is not FOR."%(id_field, cursor[id_field_idx]) for row in cursor
                                     if cursor[f.index('POLYTYPE')] != 'FOR'
@@ -733,7 +752,8 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
 
             # OSC (PCI and BMI only)
             try:
-                current_field = 'OSC'            
+                current_field = 'OSC'
+                arcpy.AddMessage("\tChecking %s..."%current_field) #*2023.01            
                 if lyrAcro in ["PCI", "BMI"]:
                     errorList = ["Error on %s %s: OSC must be zero or null when POLYTYPE is not FOR."%(id_field, cursor[id_field_idx]) for row in cursor
                                     if cursor[f.index('POLYTYPE')] != 'FOR'
@@ -760,6 +780,7 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
             # UYRORG (PCI and BMI only)
             try:
                 current_field = 'UYRORG'
+                arcpy.AddMessage("\tChecking %s..."%current_field) #*2023.01
                 if lyrAcro in ["PCI", "BMI"]:
                     errorList = ["Error on %s %s: UYRORG must be zero or null when POLYTYPE is not FOR or if DEVSTAGE is DEPHARV or DEPNAT."%(id_field, cursor[id_field_idx]) for row in cursor
                                     if cursor[f.index('POLYTYPE')] != 'FOR' or cursor[f.index('DEVSTAGE')] in ['DEPHARV','DEPNAT']
@@ -812,7 +833,8 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
 
             # USPCOMP (PCI and BMI only)
             try:
-                current_field = 'USPCOMP'            
+                current_field = 'USPCOMP'
+                arcpy.AddMessage("\tChecking %s..."%current_field) #*2023.01            
                 if lyrAcro in ["PCI", "BMI"]:
                     errorList = ["Error on %s %s: USPCOMP must be null when POLYTYPE is not FOR or when DEVSTAGE is DEPHARV or DEPNAT."%(id_field, cursor[id_field_idx]) for row in cursor
                                     if cursor[f.index('POLYTYPE')] != 'FOR' or cursor[f.index('DEVSTAGE')] in ['DEPHARV','DEPNAT']
@@ -869,7 +891,8 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
 
             # ULEADSPC (PCI and BMI only)
             try:
-                current_field = 'ULEADSPC'            
+                current_field = 'ULEADSPC'
+                arcpy.AddMessage("\tChecking %s..."%current_field) #*2023.01            
                 if lyrAcro in ["PCI", "BMI"]:
                     errorList = ["Error on %s %s: ULEADSPC must be null when POLYTYPE is not FOR or when DEVSTAGE is DEPHARV or DEPNAT."%(id_field, cursor[id_field_idx]) for row in cursor
                                     if cursor[f.index('POLYTYPE')] != 'FOR' or cursor[f.index('DEVSTAGE')] in ['DEPHARV','DEPNAT']
@@ -916,7 +939,8 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
 
             # UAGE (PCI and BMI only)
             try:
-                current_field = 'UAGE'            
+                current_field = 'UAGE'
+                arcpy.AddMessage("\tChecking %s..."%current_field) #*2023.01            
                 if lyrAcro in ["PCI", "BMI"]:
 
                     # the following has been removed in 2020.  id: *2020.11.003
@@ -945,7 +969,8 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
 
             # UHT (PCI and BMI only)
             try:
-                current_field = 'UHT'              
+                current_field = 'UHT'
+                arcpy.AddMessage("\tChecking %s..."%current_field) #*2023.01              
                 if lyrAcro in ["PCI", "BMI"]:
                     errorList = ["Error on %s %s: UHT must be zero (or null) when POLYTYPE is not FOR or when DEVSTAGE is DEPHARV or DEPNAT."%(id_field, cursor[id_field_idx]) for row in cursor
                                     if cursor[f.index('POLYTYPE')] != 'FOR' or cursor[f.index('DEVSTAGE')] in ['DEPHARV','DEPNAT']
@@ -992,7 +1017,8 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
 
             # UCCLO (PCI and BMI only)
             try:
-                current_field = 'UCCLO'              
+                current_field = 'UCCLO'
+                arcpy.AddMessage("\tChecking %s..."%current_field) #*2023.01              
                 if lyrAcro in ["PCI", "BMI"]:
                     errorList = ["Error on %s %s: UCCLO must be zero or null when POLYTYPE is not FOR or when DEVSTAGE is DEPHARV or DEPNAT."%(id_field, cursor[id_field_idx]) for row in cursor
                                     if cursor[f.index('POLYTYPE')] != 'FOR' or cursor[f.index('DEVSTAGE')] in ['DEPHARV','DEPNAT']
@@ -1027,7 +1053,8 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
 
             # USTKG (PCI and BMI only)
             try:
-                current_field = 'USTKG'             
+                current_field = 'USTKG'
+                arcpy.AddMessage("\tChecking %s..."%current_field) #*2023.01             
                 if lyrAcro in ["PCI", "BMI"]:
                     errorList = ["Error on %s %s: USTKG must be zero or null when POLYTYPE is not FOR or when DEVSTAGE is DEPHARV or DEPNAT."%(id_field, cursor[id_field_idx]) for row in cursor
                                     if cursor[f.index('POLYTYPE')] != 'FOR' or cursor[f.index('DEVSTAGE')] in ['DEPHARV','DEPNAT']
@@ -1074,7 +1101,8 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
 
             # USC (PCI and BMI only)
             try:
-                current_field = 'USC'            
+                current_field = 'USC'
+                arcpy.AddMessage("\tChecking %s..."%current_field) #*2023.01            
                 if lyrAcro in ["PCI", "BMI"]:
                     errorList = ["Error on %s %s: USC must be zero or null when POLYTYPE is not FOR."%(id_field, cursor[id_field_idx]) for row in cursor
                                     if cursor[f.index('POLYTYPE')] != 'FOR'
@@ -1111,7 +1139,8 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
 
             # INCIDSPC (applies to PCI BMI and OPI)
             try:
-                current_field = 'INCIDSPC'            
+                current_field = 'INCIDSPC'
+                arcpy.AddMessage("\tChecking %s..."%current_field) #*2023.01            
                 errorList = ["Error on %s %s: INCIDSPC must be null when POLYTYPE is not FOR."%(id_field, cursor[id_field_idx]) for row in cursor
                                 if cursor[f.index('POLYTYPE')] != 'FOR'
                                 if cursor[f.index('INCIDSPC')] not in vnull]
@@ -1170,7 +1199,8 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
 
             # VERT
             try:
-                current_field = 'VERT'            
+                current_field = 'VERT'
+                arcpy.AddMessage("\tChecking %s..."%current_field) #*2023.01            
                 errorList = ["Error on %s %s: VERT must be populated and must follow the correct coding scheme when POLYTYPE is FOR."%(id_field, cursor[id_field_idx]) for row in cursor
                                 if cursor[f.index('POLYTYPE')] == 'FOR'
                                 if cursor[f.index('VERT')] not in ['SI','SV','TO','TU','MO','MU','CX']]
@@ -1186,7 +1216,8 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
 
             # HORIZ
             try:
-                current_field = 'HORIZ'            
+                current_field = 'HORIZ'
+                arcpy.AddMessage("\tChecking %s..."%current_field) #*2023.01            
                 errorList = ["Error on %s %s: HORIZ must be populated and must follow the correct coding scheme when POLYTYPE is FOR."%(id_field, cursor[id_field_idx]) for row in cursor
                                 if cursor[f.index('POLYTYPE')] == 'FOR'
                                 if cursor[f.index('HORIZ')] not in ['SS','SP','FP','MP','OC','OU']]
@@ -1203,6 +1234,7 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
             # PRI_ECO and SEC_ECO
             try:
                 current_field = 'PRI_ECO and SEC_ECO'
+                arcpy.AddMessage("\tChecking %s..."%current_field) #*2023.01
                 errorList = ["Error on %s %s: PRI_ECO must be populated when POLYTYPE is FOR or when SEC_ECO is not null."%(id_field, cursor[id_field_idx]) for row in cursor
                                 if cursor[f.index('POLYTYPE')] == 'FOR' or cursor[f.index('SEC_ECO')] not in vnull
                                 if cursor[f.index('PRI_ECO')] in vnull]
@@ -1235,7 +1267,8 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
 
             # ACCESS1
             try:
-                current_field = 'ACCESS1'            
+                current_field = 'ACCESS1'
+                arcpy.AddMessage("\tChecking %s..."%current_field) #*2023.01            
                 errorList = ["Error on %s %s: ACCESS1 must be null when POLYTYPE is not FOR."%(id_field, cursor[id_field_idx]) for row in cursor
                                 if cursor[f.index('POLYTYPE')] != 'FOR'
                                 if cursor[f.index('ACCESS1')] not in vnull]
@@ -1261,7 +1294,8 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
 
             # ACCESS2
             try:
-                current_field = 'ACCESS2'               
+                current_field = 'ACCESS2'
+                arcpy.AddMessage("\tChecking %s..."%current_field) #*2023.01               
                 if 'ACCESS2' in f:
                     errorList = ["Error on %s %s: ACCESS2 must be null when POLYTYPE is not FOR."%(id_field, cursor[id_field_idx]) for row in cursor
                                     if cursor[f.index('POLYTYPE')] != 'FOR'
@@ -1306,7 +1340,8 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
 
             # MGMTCON1
             try:
-                current_field = 'MGMTCON1'            
+                current_field = 'MGMTCON1'
+                arcpy.AddMessage("\tChecking %s..."%current_field) #*2023.01            
                 try:
                     errorList = ["Error on %s %s: MGMTCON1, MGMTCON2 and MGMTCON3 must be null when POLYTYPE is not FOR."%(id_field, cursor[id_field_idx]) for row in cursor
                                     if cursor[f.index('POLYTYPE')] != 'FOR'
@@ -1385,7 +1420,8 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
 
             # MGMTCON2, MGMTCON3
             try:
-                current_field = 'MGMTCON2 and MGMTCON3'            
+                current_field = 'MGMTCON2 and MGMTCON3'
+                arcpy.AddMessage("\tChecking %s..."%current_field) #*2023.01            
                 if "MGMTCON2" in f:
                     errorList = ["Error on %s %s: MGMTCON1 must not be 'NONE' if MGMTCON2 has been populated with a value other than 'NONE'."%(id_field, cursor[id_field_idx]) for row in cursor
                                     if cursor[f.index('POLYTYPE')] == 'FOR'
@@ -1476,7 +1512,8 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
 
             # YRORG (BMI and OPI only)
             try:
-                current_field = 'YRORG'             
+                current_field = 'YRORG'
+                arcpy.AddMessage("\tChecking %s..."%current_field) #*2023.01             
                 if lyrAcro in ["BMI","OPI"]:
                     errorList = ["Error on %s %s: YRORG must be zero or null when POLYTYPE is not FOR."%(id_field, cursor[id_field_idx]) for row in cursor
                                     if cursor[f.index('POLYTYPE')] != 'FOR'
@@ -1531,7 +1568,8 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
 
             # SPCOMP (BMI and OPI only)
             try:
-                current_field = 'SPCOMP'            
+                current_field = 'SPCOMP'
+                arcpy.AddMessage("\tChecking %s..."%current_field) #*2023.01            
                 if lyrAcro in ["BMI", "OPI"]:
                     errorList = ["Error on %s %s: SPCOMP must be null when POLYTYPE is not FOR."%(id_field, cursor[id_field_idx]) for row in cursor
                                     if cursor[f.index('POLYTYPE')] != 'FOR'
@@ -1588,7 +1626,8 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
 
             # LEADSPC (BMI and OPI only)
             try:
-                current_field = 'LEADSPC'              
+                current_field = 'LEADSPC'
+                arcpy.AddMessage("\tChecking %s..."%current_field) #*2023.01              
                 if lyrAcro in ["BMI", "OPI"]:
                     errorList = ["Error on %s %s: LEADSPC must be null when POLYTYPE is not FOR."%(id_field, cursor[id_field_idx]) for row in cursor
                                     if cursor[f.index('POLYTYPE')] != 'FOR'
@@ -1636,7 +1675,8 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
 
             # AGE (BMI and OPI only)
             try:
-                current_field = 'LEADSPC'              
+                current_field = 'AGE'
+                arcpy.AddMessage("\tChecking %s..."%current_field) #*2023.01              
                 if lyrAcro in ["BMI", "OPI"]:
                     errorList = ["Error on %s %s: AGE must be zero or null when POLYTYPE is not FOR."%(id_field, cursor[id_field_idx]) for row in cursor
                                     if cursor[f.index('POLYTYPE')] != 'FOR'
@@ -1682,7 +1722,8 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
 
             # HT (BMI and OPI only)
             try:
-                current_field = 'HT'            
+                current_field = 'HT'
+                arcpy.AddMessage("\tChecking %s..."%current_field) #*2023.01            
                 if lyrAcro in ["BMI", "OPI"]:
                     errorList = ["Error on %s %s: HT must be zero or null when POLYTYPE is not FOR."%(id_field, cursor[id_field_idx]) for row in cursor
                                     if cursor[f.index('POLYTYPE')] != 'FOR'
@@ -1731,7 +1772,8 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
 
             # CCLO (BMI and OPI only)
             try:
-                current_field = 'CCLO'            
+                current_field = 'CCLO'
+                arcpy.AddMessage("\tChecking %s..."%current_field) #*2023.01            
                 if lyrAcro in ["BMI", "OPI"]:
                     errorList = ["Error on %s %s: CCLO must be zero or null when POLYTYPE is not FOR."%(id_field, cursor[id_field_idx]) for row in cursor
                                     if cursor[f.index('POLYTYPE')] != 'FOR'
@@ -1757,7 +1799,8 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
 
             # STKG (BMI and OPI only)
             try:
-                current_field = 'STKG'             
+                current_field = 'STKG'
+                arcpy.AddMessage("\tChecking %s..."%current_field) #*2023.01             
                 if lyrAcro in ["BMI", "OPI"]:
                     errorList = ["Error on %s %s: STKG must be zero or null when POLYTYPE is not FOR."%(id_field, cursor[id_field_idx]) for row in cursor
                                     if cursor[f.index('POLYTYPE')] != 'FOR'
@@ -1792,10 +1835,10 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
 
 
                     errorList = ["Warning on %s %s: STKG should be greater than 0.4 if DEVSTAGE is NAT or starts with EST (when POLYTYPE = FOR)."%(id_field, cursor[id_field_idx]) for row in cursor
-                                    if cursor[f.index('POLYTYPE')] == 'FOR'
+                                    if cursor[f.index('POLYTYPE')] == 'FOR' and cursor[f.index('STKG')] != None
                                     if cursor[f.index('STKG')] < 0.4
                                     if cursor[f.index('DEVSTAGE')] not in vnull
-                                    if cursor[f.index('DEVSTAGE')][:3] in ['NAT','EST']]
+                                    if cursor[f.index('DEVSTAGE')][:3] in ['NAT','EST']] # *2023.01
                     cursor.reset()
                     if len(errorList) > 0:
                         errorDetail[lyr].append(errorList)
@@ -1815,7 +1858,8 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
 
 
                     errorList = ["Warning on %s %s: STKG should be less than 2.5."%(id_field, cursor[id_field_idx]) for row in cursor
-                                    if cursor[f.index('STKG')] > 2.5]
+                                    if cursor[f.index('STKG')] != None
+                                    if cursor[f.index('STKG')] > 2.5] # *2023.01
                     cursor.reset()
                     if len(errorList) > 0:
                         errorDetail[lyr].append(errorList)
@@ -1829,7 +1873,8 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
 
             # SC (BMI and OPI only)
             try:
-                current_field = 'SC'            
+                current_field = 'SC'
+                arcpy.AddMessage("\tChecking %s..."%current_field) #*2023.01            
                 if lyrAcro in ["BMI", "OPI"]:
                     errorList = ["Error on %s %s: SC must be zero or null when POLYTYPE is not FOR."%(id_field, cursor[id_field_idx]) for row in cursor
                                     if cursor[f.index('POLYTYPE')] != 'FOR'
@@ -1855,7 +1900,8 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
 
             # MANAGED (BMI and OPI only)
             try:
-                current_field = 'MANAGED'            
+                current_field = 'MANAGED'
+                arcpy.AddMessage("\tChecking %s..."%current_field) #*2023.01            
                 if lyrAcro in ["BMI", "OPI"]:
                     errorList = ["Error on %s %s: MANAGED must be null when POLYTYPE is not FOR."%(id_field, cursor[id_field_idx]) for row in cursor
                                     if cursor[f.index('POLYTYPE')] != 'FOR'
@@ -1897,7 +1943,8 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
 
             # PLANFU (BMI and OPI only)
             try:
-                current_field = 'PLANFU'         
+                current_field = 'PLANFU'
+                arcpy.AddMessage("\tChecking %s..."%current_field) #*2023.01         
                 if lyrAcro in ["BMI", "OPI"]:
                     errorList = ["Error on %s %s: PLANFU must be null when POLYTYPE is not FOR."%(id_field, cursor[id_field_idx]) for row in cursor
                                     if cursor[f.index('POLYTYPE')] != 'FOR'
@@ -1923,7 +1970,8 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
 
             # AU (BMI and OPI only)
             try:
-                current_field = 'AU'             
+                current_field = 'AU'
+                arcpy.AddMessage("\tChecking %s..."%current_field) #*2023.01             
                 if lyrAcro in ["BMI", "OPI"]:
                     errorList = ["Error on %s %s: AU must be null when POLYTYPE is not FOR."%(id_field, cursor[id_field_idx]) for row in cursor
                                     if cursor[f.index('POLYTYPE')] != 'FOR'
@@ -1940,7 +1988,8 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
 
             # AVAIL (BMI and OPI only)
             try:
-                current_field = 'AVAIL'             
+                current_field = 'AVAIL'
+                arcpy.AddMessage("\tChecking %s..."%current_field) #*2023.01             
                 if lyrAcro in ["BMI", "OPI"]:
                     errorList = ["Error on %s %s: AVAIL must be null when POLYTYPE is not FOR."%(id_field, cursor[id_field_idx]) for row in cursor
                                     if cursor[f.index('POLYTYPE')] != 'FOR'
@@ -2009,7 +2058,8 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
 
             # SILVSYS (BMI and OPI only)
             try:
-                current_field = 'SILVSYS'            
+                current_field = 'SILVSYS'
+                arcpy.AddMessage("\tChecking %s..."%current_field) #*2023.01            
                 if lyrAcro in ["BMI", "OPI"]:
                     errorList = ["Error on %s %s: SILVSYS must be null when POLYTYPE is not FOR."%(id_field, cursor[id_field_idx]) for row in cursor
                                     if cursor[f.index('POLYTYPE')] != 'FOR'
@@ -2035,7 +2085,8 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
 
             # NEXTSTG (BMI and OPI only)
             try:
-                current_field = 'NEXTSTG'            
+                current_field = 'NEXTSTG'
+                arcpy.AddMessage("\tChecking %s..."%current_field) #*2023.01            
                 if lyrAcro in ["BMI", "OPI"]:
                     errorList = ["Error on %s %s: NEXTSTG must be null when POLYTYPE is not FOR."%(id_field, cursor[id_field_idx]) for row in cursor
                                     if cursor[f.index('POLYTYPE')] != 'FOR'
@@ -2062,7 +2113,8 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
 
             # YIELD (BMI and OPI only)
             try:
-                current_field = 'YIELD'            
+                current_field = 'YIELD'
+                arcpy.AddMessage("\tChecking %s..."%current_field) #*2023.01            
                 if lyrAcro in ["BMI", "OPI"]:
                     errorList = ["Error on %s %s: YIELD must be null when POLYTYPE is not FOR."%(id_field, cursor[id_field_idx]) for row in cursor
                                     if cursor[f.index('POLYTYPE')] != 'FOR'
@@ -2093,7 +2145,8 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
 
             # SGR (OPI only)
             try:
-                current_field = 'YIELD'            
+                current_field = 'SGR'
+                arcpy.AddMessage("\tChecking %s..."%current_field) #*2023.01            
                 if lyrAcro == "OPI":
                     errorList = ["Error on %s %s: SGR must be null when POLYTYPE is not FOR."%(id_field, cursor[id_field_idx]) for row in cursor
                                     if cursor[f.index('POLYTYPE')] != 'FOR'

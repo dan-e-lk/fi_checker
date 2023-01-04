@@ -1,0 +1,19 @@
+:: Rename this file by replacing .txt with .bat extension when you use it.
+:: Open command prompt, cd into the folder where this file is stored, then run the edited version of this file as a batch file.
+::
+:: HOW TO RUN THIS BATCH FILE
+:: <path to ArcGIS python exe> <path to Checker_command_line.py file> <aws, ar or fmp> 
+::		<fmu name eg.Gordon_Cosens (case sensitive, underscore instead of space, first letter of every word is capital, and without the "Forest")> 
+::		<submission year> <plan start year> 
+::		<path to the gdb or to the parent folder of shpfiles/coverage files> 
+::		<fc/shp/cov depending on your file type> <Old or Latest (tech spec version)> <limit or nolimit> 
+::		<suffix - don't use special characters>
+
+:: use rem or :: to comment out a line
+
+:: Here are two examples:
+C:\Python27\ArcGIS10.8\python.exe "C:\DanielK_Workspace\FI_Checker_Live\Submission_Checker\Modules\Checker_command_line.py" aws Temagami 2022 2019 "C:\DanielK_Workspace\_TestData\Temagami\AWS\2022\FM-898-2019-AWS-1712\Layers\shp_short" shp Latest limit batchrunPy2_7
+
+C:\Python27\ArcGIS10.8\python.exe C:\DanielK_Workspace\FI_Checker_Live\Submission_Checker\Modules\Checker_command_line.py aws Pic 2023 2021 "C:\Users\kimdan\Government of Ontario\Forest Data Portal - Documents\Pic_Forest\AWS\2023\Layers\MU966_2023_AWS_LAYERS\MU966_2023_AWS.gdb" gdb Latest limit batchrunPy2_7
+
+

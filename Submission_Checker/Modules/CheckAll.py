@@ -12,14 +12,14 @@
 #-------------------------------------------------------------------------------
 
 import Reference, htmlstyle
-import os, datetime, pprint, inspect, webbrowser
+import os, datetime, pprint, inspect, webbrowser, sys
 import arcpy
 # import importlib
 
 test_mode = False
 
 class Check():
-    def __init__(self,plan,fmu,year,fmpStartYear,workspace,dataformat,tech_spec_version,error_limit,checker_version,subID = None):
+    def __init__(self,plan,fmu,year,fmpStartYear,workspace,dataformat,tech_spec_version,error_limit,checker_version,subID=None):
         self.plan = plan.upper()
         self.fmu = fmu
         self.year = year
@@ -38,12 +38,13 @@ class Check():
         This method is the backbone of the tool.
         It initiates all the other modules and methods necessary to check the data based on the given input in the init method.
         """
+        self.timeStart = datetime.datetime.now()
+        self.today = datetime.date.today()
+        self.python_ver = sys.version
 
         importstr = "import TechSpec_" + self.plan + "_" + self.old_or_new + " as TechSpec" ## for example "import TechSpec_FMP_NEW as TechSpec"
-        exec(importstr)
+        exec(importstr, globals()) # added globals() during arcpro update
         self.TechSpec = TechSpec
-
-        self.today = datetime.date.today()
 
         print("\nWorking on " + self.workspace)
         arcpy.AddMessage("\nWorking on " + self.workspace)
@@ -103,7 +104,7 @@ class Check():
         rep.write('</body></html>')
         rep.close()
 
-        print("Time: :" + self.timeEnd)
+        print("Time: : %s"%self.timeEnd)
         print("The report can be found here:\n" + self.htmlfile)
         print("*************       Script Complete!        ******************\n")
         arcpy.AddMessage("\nThe report can be found here:\n" + self.htmlfile)
@@ -114,7 +115,7 @@ class Check():
 
         htmlstring = '<body>'
         htmlstring +='\n<img src="' + Reference.getOntarioLogo() + '''" alt="Ontario MNRF">'''        
-        htmlstring +='\n<h1>%s Tech Spec Validation Report</h1>'%self.plan
+        htmlstring +='\n<h1>FI Checker: %s Tech Spec Validation Report</h1>'%self.plan
         htmlstring += '''
             <h2>Report Summary</h2>
             <div class = "h2content">
@@ -162,7 +163,7 @@ class Check():
 
         #U001 Warning if all we found are additional layers (i.e. no layer found with correct naming convention)
         if len(self.lyrs) == 0:
-            arcpy.AddError("!!!!!! Could not find any %s spatial data. \nMake sure your spatial data follows the correct naming convention (i.e. MU123_99LYR00)."%self.plan)
+            arcpy.AddError("!!!!!! Could not find any %s spatial data. \nMake sure you've picked the correct Submission Type, and check if your spatial data follows the correct naming convention (i.e. MU123_99LYR00)."%self.plan)
         # letting the users know which spatial layers are found and will be checking.
         else:
             arcpy.AddMessage("\tThe following layers have been found:")
@@ -507,12 +508,15 @@ class Check():
     def htmlFootnote(self):
         htmlstring = '''\n<br><button class="collapsible">Footnote</button>'''
         htmlstring += '''\n<div class="content">'''
-        self.timeEnd = str(datetime.datetime.now())
+        self.timeEnd = datetime.datetime.now()
+        self.timeElapsed = str(self.timeEnd - self.timeStart) # eg. '0:00:12.901000' *2023.01
         htmlstring += '\n<p>'
         htmlstring += '\nThis report has been saved as: ' + self.htmlfile + '<br>'
-        htmlstring += '\nTime created: ' + self.timeEnd + '<br>'
+        htmlstring += '\nTime created: %s<br>'%self.timeEnd
+        htmlstring += '\nTime it took to run the FI Checker tool: %s<br>'%self.timeElapsed
         htmlstring += '\nPython script used: ' + inspect.getfile(inspect.currentframe())  + '<br>'        
-        htmlstring += '\nChecker version used: v' + self.checker_version  + '<br>'
+        htmlstring += '\nChecker version used: v%s<br>'%self.checker_version
+        htmlstring += '\nPython version used: %s<br>'%self.python_ver
         htmlstring += '</p>'
         htmlstring += '\n</div>' # closing div class="content"
         return htmlstring
