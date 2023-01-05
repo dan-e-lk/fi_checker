@@ -562,10 +562,10 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
                     criticalError += 1
                     recordValCom[lyr].append("Error on %s record(s): At a minimum, one of Decommissioning, Maintenance, Monitoring or Access Control must occur."%len(errorList))
 
-            # CONTROL1
-                errorList = ["Error on %s %s: CONTROL1 must be populated with the correct coding scheme where ACCESS is APPLY, ADD, BOTH or REMOVE.  *CONTROL1 = [%s]"
+            # CONTROL1 #*2023.01 bug fix, wrong interpretation of tech spec. fix: replaced REMOVE with ADDREMOVE
+                errorList = ["Error on %s %s: CONTROL1 must be populated with the correct coding scheme where ACCESS is APPLY, ADD, BOTH or ADDREMOVE.  *CONTROL1 = [%s]"
                                 %(id_field, cursor[id_field_idx],cursor[f.index('CONTROL1')]) for row in cursor
-                                if cursor[f.index('ACCESS')] in ['APPLY','ADD','BOTH','REMOVE']
+                                if cursor[f.index('ACCESS')] in ['APPLY','ADD','BOTH','ADDREMOVE']
                                 if cursor[f.index('CONTROL1')] not in ['BERM','GATE','SCAR','SIGN','PRIV','SLSH','WATX']]
                 cursor.reset()
                 if len(errorList) > 0:

@@ -65,12 +65,13 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
         minorError = 0
         systemError = False
         # summarytbl[lyr][3] is a list of existing mandatory fields and summarytbl[lyr][4] is a list of existing other fields
+        global f, id_field, id_field_idx # *2023.01 arc pro update
         f = summarytbl[lyr][4] + summarytbl[lyr][3]  ## f is the list of all fields found in lyr. eg. ['FID', 'SHAPE','PIT_ID', 'PIT_OPEN', 'PITCLOSE', 'CAT9APP', ...]
 
         # each fieldname is a new variable where the value is its index number - for example, OBJECTID = 0.
         for i in range(len(f)):
             try:
-                exec(f[i] + "=" + str(i)) ## POLYID = 0, POLYTYPE = 1, etc.
+                exec("global %s\n%s = %s"%(f[i], f[i], i)) ## global POLYID; POLYID = 0, global POLYTYPE; POLYTYPE = 1, etc...
             except:
                 pass # some field names are not valid as a variable name.
 
@@ -78,6 +79,7 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
         id_field = R.find_IdField(f, dataformat) # *23408  This will normally return OBJECTID for feature classes and FID for shapefile and coverage.
         id_field_idx = f.index(id_field)
 
+        global cursor, errorList # *2023.01 arc pro update
         cursor = arcpy.da.SearchCursor(lyr,f)
         recordCount = len(list(cursor))
         cursor.reset()
@@ -1283,13 +1285,14 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
             # TRTMTHD1, 2 and 3
                 # For TRTMTHD1, 2 or 3, the population of one of these attributes is mandatory.
                 opt_flds = ['TRTMTHD2','TRTMTHD3'] # optional fields
-                command = """errorList = ["Error on %s %s: For TRTMTHD1, TRTMTHD2 and TRTMTHD3, the population of one of these attributes is mandatory."%(id_field, cursor[id_field_idx]) for row in cursor
+                command = "global errorList\n"
+                command += """errorList = ["Error on %s %s: For TRTMTHD1, TRTMTHD2 and TRTMTHD3, the population of one of these attributes is mandatory."%(id_field, cursor[id_field_idx]) for row in cursor
                                     if cursor[TRTMTHD1] in vnull"""
                 for opt_fld in opt_flds:
                     if opt_fld in f:
                         command += """ and cursor[""" + opt_fld + """] in vnull"""
                 command += ']'
-                exec(command)
+                exec(command, globals(), locals()) # *2023.01 arc pro update
                 cursor.reset()
 
                 if len(errorList) > 0:
@@ -1353,10 +1356,11 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
                     trt2_check = " or cursor[TRTMTHD2] in ['PCHEMA','PCHEMG']" if "TRTMTHD2" in f else ""
                     trt3_check = " or cursor[TRTMTHD3] in ['PCHEMA','PCHEMG']" if "TRTMTHD3" in f else ""
 
-                    command = """errorList = ["Error on %s %s: PRODTYPE must be populated when any of the treatment methods are chemical."%(id_field, cursor[id_field_idx]) for row in cursor
+                    command = "global errorList\n"
+                    command += """errorList = ["Error on %s %s: PRODTYPE must be populated when any of the treatment methods are chemical."%(id_field, cursor[id_field_idx]) for row in cursor
                                     if cursor[PRODTYPE] in vnull
                                     if cursor[TRTMTHD1] in ['PCHEMA','PCHEMG']""" + trt2_check + trt3_check + "]"
-                    exec(command)
+                    exec(command, globals(), locals()) # *2023.01 arc pro update
                     cursor.reset()
                     if len(errorList) > 0:
                         errorDetail[lyr].append(errorList)
@@ -1367,10 +1371,11 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
                     trt2_check = " and cursor[TRTMTHD2] not in ['PCHEMA','PCHEMG']" if "TRTMTHD2" in f else ""
                     trt3_check = " and cursor[TRTMTHD3] not in ['PCHEMA','PCHEMG']" if "TRTMTHD3" in f else ""
 
-                    command = """errorList = ["Error on %s %s: PRODTYPE must be null when none of the treatment methods are chemical."%(id_field, cursor[id_field_idx]) for row in cursor
+                    command = "global errorList\n"
+                    command += """errorList = ["Error on %s %s: PRODTYPE must be null when none of the treatment methods are chemical."%(id_field, cursor[id_field_idx]) for row in cursor
                                     if cursor[PRODTYPE] not in vnull
                                     if cursor[TRTMTHD1] not in ['PCHEMA','PCHEMG']""" + trt2_check + trt3_check + "]"
-                    exec(command)
+                    exec(command, globals(), locals()) # *2023.01 arc pro update
                     cursor.reset()
                     if len(errorList) > 0:
                         errorDetail[lyr].append(errorList)
@@ -1388,10 +1393,11 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
                     trt2_check = " or cursor[TRTMTHD2] in ['PCHEMA','PCHEMG']" if "TRTMTHD2" in f else ""
                     trt3_check = " or cursor[TRTMTHD3] in ['PCHEMA','PCHEMG']" if "TRTMTHD3" in f else ""
 
-                    command = """errorList = ["Error on %s %s: RATE_AI must be greater than 0 and less than or equal to 9.99 when any of the treatment methods are chemical."%(id_field, cursor[id_field_idx]) for row in cursor
+                    command = "global errorList\n"
+                    command += """errorList = ["Error on %s %s: RATE_AI must be greater than 0 and less than or equal to 9.99 when any of the treatment methods are chemical."%(id_field, cursor[id_field_idx]) for row in cursor
                                     if cursor[RATE_AI] == None or cursor[RATE_AI] <= 0 or cursor[RATE_AI] > 9.99
                                     if cursor[TRTMTHD1] in ['PCHEMA','PCHEMG']""" + trt2_check + trt3_check + "]" #*24b09
-                    exec(command)
+                    exec(command, globals(), locals()) # *2023.01 arc pro update
                     cursor.reset()
                     if len(errorList) > 0:
                         errorDetail[lyr].append(errorList)
@@ -1402,10 +1408,11 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
                     trt2_check = " and cursor[TRTMTHD2] not in ['PCHEMA','PCHEMG']" if "TRTMTHD2" in f else ""
                     trt3_check = " and cursor[TRTMTHD3] not in ['PCHEMA','PCHEMG']" if "TRTMTHD3" in f else ""
 
-                    command = """errorList = ["Error on %s %s: RATE_AI must be zero or null when none of the treatment methods are chemical."%(id_field, cursor[id_field_idx]) for row in cursor
+                    command = "global errorList\n"
+                    command += """errorList = ["Error on %s %s: RATE_AI must be zero or null when none of the treatment methods are chemical."%(id_field, cursor[id_field_idx]) for row in cursor
                                     if cursor[RATE_AI] not in [None, 0]
                                     if cursor[TRTMTHD1] not in ['PCHEMA','PCHEMG']""" + trt2_check + trt3_check + "]"
-                    exec(command)
+                    exec(command, globals(), locals()) # *2023.01 arc pro update
                     cursor.reset()
                     if len(errorList) > 0:
                         errorDetail[lyr].append(errorList)
@@ -1423,10 +1430,11 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
                     trt2_check = " or cursor[TRTMTHD2] in ['PCHEMA','PCHEMG']" if "TRTMTHD2" in f else ""
                     trt3_check = " or cursor[TRTMTHD3] in ['PCHEMA','PCHEMG']" if "TRTMTHD3" in f else ""
 
-                    command = """errorList = ["Error on %s %s: APPNUM must be greater than 0 and less than or equal to 9 when any of the treatment methods are chemical."%(id_field, cursor[id_field_idx]) for row in cursor
+                    command = "global errorList\n"
+                    command += """errorList = ["Error on %s %s: APPNUM must be greater than 0 and less than or equal to 9 when any of the treatment methods are chemical."%(id_field, cursor[id_field_idx]) for row in cursor
                                     if cursor[APPNUM] == None or cursor[APPNUM] <= 0 or cursor[APPNUM] > 9
                                     if cursor[TRTMTHD1] in ['PCHEMA','PCHEMG']""" + trt2_check + trt3_check + "]" #*24b09
-                    exec(command)
+                    exec(command, globals(), locals()) # *2023.01 arc pro update
                     cursor.reset()
                     if len(errorList) > 0:
                         errorDetail[lyr].append(errorList)
@@ -1437,10 +1445,11 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
                     trt2_check = " and cursor[TRTMTHD2] not in ['PCHEMA','PCHEMG']" if "TRTMTHD2" in f else ""
                     trt3_check = " and cursor[TRTMTHD3] not in ['PCHEMA','PCHEMG']" if "TRTMTHD3" in f else ""
 
-                    command = """errorList = ["Error on %s %s: APPNUM must be zero or null when none of the treatment methods are chemical."%(id_field, cursor[id_field_idx]) for row in cursor
+                    command = "global errorList\n"
+                    command += """errorList = ["Error on %s %s: APPNUM must be zero or null when none of the treatment methods are chemical."%(id_field, cursor[id_field_idx]) for row in cursor
                                     if cursor[APPNUM] not in [None, 0]
                                     if cursor[TRTMTHD1] not in ['PCHEMA','PCHEMG']""" + trt2_check + trt3_check + "]"
-                    exec(command)
+                    exec(command, globals(), locals()) # *2023.01 arc pro update
                     cursor.reset()
                     if len(errorList) > 0:
                         errorDetail[lyr].append(errorList)
@@ -1666,13 +1675,14 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
             # TRTMTHD1, 2 and 3
                 # For TRTMTHD1, 2 or 3, the population of one of these attributes is mandatory.
                 opt_flds = ['TRTMTHD2','TRTMTHD3'] # optional fields
-                command = """errorList = ["Error on %s %s: For TRTMTHD1, TRTMTHD2 and TRTMTHD3, the population of one of these attributes is mandatory."%(id_field, cursor[id_field_idx]) for row in cursor
+                command = "global errorList\n"
+                command += """errorList = ["Error on %s %s: For TRTMTHD1, TRTMTHD2 and TRTMTHD3, the population of one of these attributes is mandatory."%(id_field, cursor[id_field_idx]) for row in cursor
                                     if cursor[TRTMTHD1] in vnull"""
                 for opt_fld in opt_flds:
                     if opt_fld in f:
                         command += """ and cursor[""" + opt_fld + """] in vnull"""
                 command += ']'
-                exec(command)
+                exec(command, globals(), locals()) # *2023.01 arc pro update
                 cursor.reset()
 
                 if len(errorList) > 0:
@@ -1862,10 +1872,11 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
                 # (ESTAREA cannot be zero anyways, so it's redundant to check if ESTAREA is greater than zero)
                 trt2_check = " or cursor[TRTMTHD2] == 'STRIPCUT'" if "TRTMTHD2" in f else ""
                 trt3_check = " or cursor[TRTMTHD3] == 'STRIPCUT'" if "TRTMTHD3" in f else ""
-                command = """errorList = ["Error on %s %s: ESTAREA must be less than 1 when any of the TRTMTHD1, 2 or 3 is STRIPCUT."%(id_field, cursor[id_field_idx]) for row in cursor
+                command = "global errorList\n"
+                command += """errorList = ["Error on %s %s: ESTAREA must be less than 1 when any of the TRTMTHD1, 2 or 3 is STRIPCUT."%(id_field, cursor[id_field_idx]) for row in cursor
                                 if cursor[TRTMTHD1] == 'STRIPCUT'""" + trt2_check + trt3_check + " \
                                 if cursor[ESTAREA] == 1.0]"
-                exec(command)
+                exec(command, globals(), locals()) # *2023.01 arc pro update
                 cursor.reset()
                 if len(errorList) > 0:
                     errorDetail[lyr].append(errorList)
@@ -1876,11 +1887,12 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
                 # (ESTAREA cannot be zero anyways, so it's redundant to check if ESTAREA is greater than zero)
                 trt2_check = " or cursor[TRTMTHD2] == 'PLANT'" if "TRTMTHD2" in f else ""
                 trt3_check = " or cursor[TRTMTHD3] == 'PLANT'" if "TRTMTHD3" in f else ""
-                command = """errorList = ["Error on %s %s: ESTAREA must be less than 1 when any of the TRTMTHD1, 2 or 3 is PLANT and both SP1 and SP2 are populated."%(id_field, cursor[id_field_idx]) for row in cursor
+                command = "global errorList\n"
+                command += """errorList = ["Error on %s %s: ESTAREA must be less than 1 when any of the TRTMTHD1, 2 or 3 is PLANT and both SP1 and SP2 are populated."%(id_field, cursor[id_field_idx]) for row in cursor
                                 if cursor[TRTMTHD1] == 'PLANT'""" + trt2_check + trt3_check + " \
                                 if cursor[SP1] not in vnull and cursor[SP2] not in vnull \
                                 if cursor[ESTAREA] == 1.0]"
-                exec(command)                    
+                exec(command, globals(), locals()) # *2023.01 arc pro update                    
                 cursor.reset()
                 if len(errorList) > 0:
                     errorDetail[lyr].append(errorList)
@@ -1890,10 +1902,11 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
                 # ESTAREA must be 1 if TRTMTHD# is neither PLANT nor STRIPCUT.
                 trt2_check = " and cursor[TRTMTHD2] not in ['PLANT','STRIPCUT']" if "TRTMTHD2" in f else ""
                 trt3_check = " and cursor[TRTMTHD3] not in ['PLANT','STRIPCUT']" if "TRTMTHD3" in f else ""
-                command = """errorList = ["Error on %s %s: ESTAREA must be 1 if all of the Treatment Methods (TRTMTHD#) are neither PLANT nor STRIPCUT."%(id_field, cursor[id_field_idx]) for row in cursor
+                command = "global errorList\n"
+                command += """errorList = ["Error on %s %s: ESTAREA must be 1 if all of the Treatment Methods (TRTMTHD#) are neither PLANT nor STRIPCUT."%(id_field, cursor[id_field_idx]) for row in cursor
                                 if cursor[TRTMTHD1] not in ['PLANT','STRIPCUT']""" + trt2_check + trt3_check + " \
                                 if cursor[ESTAREA] != 1]"
-                exec(command)
+                exec(command, globals(), locals()) # *2023.01 arc pro update
                 cursor.reset()
                 if len(errorList) > 0:
                     errorDetail[lyr].append(errorList)
@@ -1925,10 +1938,11 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
                 # SP2 must be null if the treatment method is not planting (TRTMTHD# != PLANT)
                 trt2_check = " and cursor[TRTMTHD2] != 'PLANT'" if "TRTMTHD2" in f else ""
                 trt3_check = " and cursor[TRTMTHD3] != 'PLANT'" if "TRTMTHD3" in f else ""
-                command = """errorList = ["Error on %s %s: SP2 must be null if none of the Treatment Methods (TRTMTHD#) is PLANT."%(id_field, cursor[id_field_idx]) for row in cursor
+                command = "global errorList\n"
+                command += """errorList = ["Error on %s %s: SP2 must be null if none of the Treatment Methods (TRTMTHD#) is PLANT."%(id_field, cursor[id_field_idx]) for row in cursor
                                 if cursor[TRTMTHD1] != 'PLANT'""" + trt2_check + trt3_check + " \
                                 if cursor[SP2] not in vnull]"
-                exec(command)
+                exec(command, globals(), locals()) # *2023.01 arc pro update
                 cursor.reset()
                 if len(errorList) > 0:
                     errorDetail[lyr].append(errorList)
@@ -1938,10 +1952,11 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
                 # SP1 must be populated if any of the treatment methods are planting (TRTMTHD# = PLANT)
                 trt2_check = " or cursor[TRTMTHD2] == 'PLANT'" if "TRTMTHD2" in f else ""
                 trt3_check = " or cursor[TRTMTHD3] == 'PLANT'" if "TRTMTHD3" in f else ""
-                command = """errorList = ["Error on %s %s: SP1 must be populated if any of the Treatment Methods (TRTMTHD#) are PLANT."%(id_field, cursor[id_field_idx]) for row in cursor
+                command = "global errorList\n"
+                command += """errorList = ["Error on %s %s: SP1 must be populated if any of the Treatment Methods (TRTMTHD#) are PLANT."%(id_field, cursor[id_field_idx]) for row in cursor
                                 if cursor[TRTMTHD1] == 'PLANT'""" + trt2_check + trt3_check + " \
                                 if cursor[SP1] in vnull]"
-                exec(command)
+                exec(command, globals(), locals()) # *2023.01 arc pro update
                 cursor.reset()
                 if len(errorList) > 0:
                     errorDetail[lyr].append(errorList)
@@ -1952,10 +1967,11 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
                 # The species fields (SP1 and SP2) should be null if all of the treatment methods are CLAAG, NATURAL, HARP, SCARIFY, STRIPCUT or SEEDTREE or Null (or if none of the treatment methods is PLANT, SEED or SEEDSIP)
                 trt2_check = " and cursor[TRTMTHD2] not in ['PLANT','SEED','SEEDSIP']" if "TRTMTHD2" in f else ""
                 trt3_check = " and cursor[TRTMTHD3] not in ['PLANT','SEED','SEEDSIP']" if "TRTMTHD3" in f else ""
-                command = """errorList = ["Warning on %s %s: SP1 and SP2 should be null if none of the treatment methods is PLANT, SEED or SEEDSIP."%(id_field, cursor[id_field_idx]) for row in cursor
+                command = "global errorList\n"
+                command += """errorList = ["Warning on %s %s: SP1 and SP2 should be null if none of the treatment methods is PLANT, SEED or SEEDSIP."%(id_field, cursor[id_field_idx]) for row in cursor
                                 if cursor[TRTMTHD1] not in ['PLANT','SEED','SEEDSIP']""" + trt2_check + trt3_check + " \
                                 if cursor[SP1] not in vnull or cursor[SP2] not in vnull]"
-                exec(command)
+                exec(command, globals(), locals()) # *2023.01 arc pro update
                 cursor.reset()
                 if len(errorList) > 0:
                     errorDetail[lyr].append(errorList)
@@ -2135,13 +2151,14 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
             # TRTMTHD1, 2 and 3
                 # For TRTMTHD1, 2 or 3, the population of one of these attributes is mandatory.
                 opt_flds = ['TRTMTHD2','TRTMTHD3'] # optional fields
-                command = """errorList = ["Error on %s %s: For TRTMTHD1, TRTMTHD2 and TRTMTHD3, the population of one of these attributes is mandatory."%(id_field, cursor[id_field_idx]) for row in cursor
+                command = "global errorList\n"
+                command += """errorList = ["Error on %s %s: For TRTMTHD1, TRTMTHD2 and TRTMTHD3, the population of one of these attributes is mandatory."%(id_field, cursor[id_field_idx]) for row in cursor
                                     if cursor[TRTMTHD1] in vnull"""
                 for opt_fld in opt_flds:
                     if opt_fld in f:
                         command += """ and cursor[""" + opt_fld + """] in vnull"""
                 command += ']'
-                exec(command)
+                exec(command, globals(), locals()) # *2023.01 arc pro update
                 cursor.reset()
 
                 if len(errorList) > 0:
@@ -2249,10 +2266,11 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
                     trt2_check = " or cursor[TRTMTHD2] in ['SIPCHEMA','SIPCHEMG']" if "TRTMTHD2" in f else ""
                     trt3_check = " or cursor[TRTMTHD3] in ['SIPCHEMA','SIPCHEMG']" if "TRTMTHD3" in f else ""
 
-                    command = """errorList = ["Error on %s %s: PRODTYPE must be populated when any of the treatment methods are chemical."%(id_field, cursor[id_field_idx]) for row in cursor
+                    command = "global errorList\n"
+                    command += """errorList = ["Error on %s %s: PRODTYPE must be populated when any of the treatment methods are chemical."%(id_field, cursor[id_field_idx]) for row in cursor
                                     if cursor[PRODTYPE] in vnull
                                     if cursor[TRTMTHD1] in ['SIPCHEMA','SIPCHEMG']""" + trt2_check + trt3_check + "]"
-                    exec(command)
+                    exec(command, globals(), locals()) # *2023.01 arc pro update
                     cursor.reset()
                     if len(errorList) > 0:
                         errorDetail[lyr].append(errorList)
@@ -2263,10 +2281,11 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
                     trt2_check = " and cursor[TRTMTHD2] not in ['SIPCHEMA','SIPCHEMG']" if "TRTMTHD2" in f else ""
                     trt3_check = " and cursor[TRTMTHD3] not in ['SIPCHEMA','SIPCHEMG']" if "TRTMTHD3" in f else ""
 
-                    command = """errorList = ["Error on %s %s: PRODTYPE must be null when none of the treatment methods are chemical."%(id_field, cursor[id_field_idx]) for row in cursor
+                    command = "global errorList\n"
+                    command += """errorList = ["Error on %s %s: PRODTYPE must be null when none of the treatment methods are chemical."%(id_field, cursor[id_field_idx]) for row in cursor
                                     if cursor[PRODTYPE] not in vnull
                                     if cursor[TRTMTHD1] not in ['SIPCHEMA','SIPCHEMG']""" + trt2_check + trt3_check + "]"
-                    exec(command)
+                    exec(command, globals(), locals()) # *2023.01 arc pro update
                     cursor.reset()
                     if len(errorList) > 0:
                         errorDetail[lyr].append(errorList)
@@ -2284,10 +2303,11 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
                     trt2_check = " or cursor[TRTMTHD2] in ['SIPCHEMA','SIPCHEMG']" if "TRTMTHD2" in f else ""
                     trt3_check = " or cursor[TRTMTHD3] in ['SIPCHEMA','SIPCHEMG']" if "TRTMTHD3" in f else ""
 
-                    command = """errorList = ["Error on %s %s: RATE_AI must be greater than 0 and less than or equal to 9.99 when any of the treatment methods are chemical."%(id_field, cursor[id_field_idx]) for row in cursor
+                    command = "global errorList\n"
+                    command += """errorList = ["Error on %s %s: RATE_AI must be greater than 0 and less than or equal to 9.99 when any of the treatment methods are chemical."%(id_field, cursor[id_field_idx]) for row in cursor
                                     if cursor[RATE_AI] == None or cursor[RATE_AI] <= 0 or cursor[RATE_AI] > 9.99
                                     if cursor[TRTMTHD1] in ['SIPCHEMA','SIPCHEMG']""" + trt2_check + trt3_check + "]" #*24b09
-                    exec(command)
+                    exec(command, globals(), locals()) # *2023.01 arc pro update
                     cursor.reset()
                     if len(errorList) > 0:
                         errorDetail[lyr].append(errorList)
@@ -2298,10 +2318,11 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
                     trt2_check = " and cursor[TRTMTHD2] not in ['SIPCHEMA','SIPCHEMG']" if "TRTMTHD2" in f else ""
                     trt3_check = " and cursor[TRTMTHD3] not in ['SIPCHEMA','SIPCHEMG']" if "TRTMTHD3" in f else ""
 
-                    command = """errorList = ["Error on %s %s: RATE_AI must be zero or null when none of the treatment methods are chemical."%(id_field, cursor[id_field_idx]) for row in cursor
+                    command = "global errorList\n"
+                    command += """errorList = ["Error on %s %s: RATE_AI must be zero or null when none of the treatment methods are chemical."%(id_field, cursor[id_field_idx]) for row in cursor
                                     if cursor[RATE_AI] not in [None, 0]
                                     if cursor[TRTMTHD1] not in ['SIPCHEMA','SIPCHEMG']""" + trt2_check + trt3_check + "]"
-                    exec(command)
+                    exec(command, globals(), locals()) # *2023.01 arc pro update
                     cursor.reset()
                     if len(errorList) > 0:
                         errorDetail[lyr].append(errorList)
@@ -2319,10 +2340,11 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
                     trt2_check = " or cursor[TRTMTHD2] in ['SIPCHEMA','SIPCHEMG']" if "TRTMTHD2" in f else ""
                     trt3_check = " or cursor[TRTMTHD3] in ['SIPCHEMA','SIPCHEMG']" if "TRTMTHD3" in f else ""
 
-                    command = """errorList = ["Error on %s %s: APPNUM must be greater than 0 and less than or equal to 9 when any of the treatment methods are chemical."%(id_field, cursor[id_field_idx]) for row in cursor
+                    command = "global errorList\n"
+                    command += """errorList = ["Error on %s %s: APPNUM must be greater than 0 and less than or equal to 9 when any of the treatment methods are chemical."%(id_field, cursor[id_field_idx]) for row in cursor
                                     if cursor[APPNUM] == None or cursor[APPNUM] <= 0 or cursor[APPNUM] > 9
                                     if cursor[TRTMTHD1] in ['SIPCHEMA','SIPCHEMG']""" + trt2_check + trt3_check + "]" #*24b09
-                    exec(command)
+                    exec(command, globals(), locals()) # *2023.01 arc pro update
                     cursor.reset()
                     if len(errorList) > 0:
                         errorDetail[lyr].append(errorList)
@@ -2333,10 +2355,11 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
                     trt2_check = " and cursor[TRTMTHD2] not in ['SIPCHEMA','SIPCHEMG']" if "TRTMTHD2" in f else ""
                     trt3_check = " and cursor[TRTMTHD3] not in ['SIPCHEMA','SIPCHEMG']" if "TRTMTHD3" in f else ""
 
-                    command = """errorList = ["Error on %s %s: APPNUM must be zero or null when none of the treatment methods are chemical."%(id_field, cursor[id_field_idx]) for row in cursor
+                    command = "global errorList\n"
+                    command += """errorList = ["Error on %s %s: APPNUM must be zero or null when none of the treatment methods are chemical."%(id_field, cursor[id_field_idx]) for row in cursor
                                     if cursor[APPNUM] not in [None, 0]
                                     if cursor[TRTMTHD1] not in ['SIPCHEMA','SIPCHEMG']""" + trt2_check + trt3_check + "]"
-                    exec(command)
+                    exec(command, globals(), locals()) # *2023.01 arc pro update
                     cursor.reset()
                     if len(errorList) > 0:
                         errorDetail[lyr].append(errorList)
@@ -2393,13 +2416,14 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
             # TRTMTHD1, 2 and 3
                 # For TRTMTHD1, 2 or 3, the population of one of these attributes is mandatory.
                 opt_flds = ['TRTMTHD2','TRTMTHD3'] # optional fields
-                command = """errorList = ["Error on %s %s: For TRTMTHD1, TRTMTHD2 and TRTMTHD3, the population of one of these attributes is mandatory."%(id_field, cursor[id_field_idx]) for row in cursor
+                command = "global errorList\n"
+                command += """errorList = ["Error on %s %s: For TRTMTHD1, TRTMTHD2 and TRTMTHD3, the population of one of these attributes is mandatory."%(id_field, cursor[id_field_idx]) for row in cursor
                                     if cursor[TRTMTHD1] in vnull"""
                 for opt_fld in opt_flds:
                     if opt_fld in f:
                         command += """ and cursor[""" + opt_fld + """] in vnull"""
                 command += ']'
-                exec(command)
+                exec(command, globals(), locals()) # *2023.01 arc pro update
                 cursor.reset()
 
                 if len(errorList) > 0:
@@ -2503,10 +2527,11 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
                     trt2_check = " or cursor[TRTMTHD2] in ['CLCHEMA','CLCHEMG']" if "TRTMTHD2" in f else ""
                     trt3_check = " or cursor[TRTMTHD3] in ['CLCHEMA','CLCHEMG']" if "TRTMTHD3" in f else ""
 
-                    command = """errorList = ["Error on %s %s: PRODTYPE must be populated when any of the treatment methods are chemical."%(id_field, cursor[id_field_idx]) for row in cursor
+                    command = "global errorList\n"
+                    command += """errorList = ["Error on %s %s: PRODTYPE must be populated when any of the treatment methods are chemical."%(id_field, cursor[id_field_idx]) for row in cursor
                                     if cursor[PRODTYPE] in vnull
                                     if cursor[TRTMTHD1] in ['CLCHEMA','CLCHEMG']""" + trt2_check + trt3_check + "]"
-                    exec(command)
+                    exec(command, globals(), locals()) # *2023.01 arc pro update
                     cursor.reset()
                     if len(errorList) > 0:
                         errorDetail[lyr].append(errorList)
@@ -2517,10 +2542,11 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
                     trt2_check = " and cursor[TRTMTHD2] not in ['CLCHEMA','CLCHEMG']" if "TRTMTHD2" in f else ""
                     trt3_check = " and cursor[TRTMTHD3] not in ['CLCHEMA','CLCHEMG']" if "TRTMTHD3" in f else ""
 
-                    command = """errorList = ["Error on %s %s: PRODTYPE must be null when none of the treatment methods are chemical."%(id_field, cursor[id_field_idx]) for row in cursor
+                    command = "global errorList\n"
+                    command += """errorList = ["Error on %s %s: PRODTYPE must be null when none of the treatment methods are chemical."%(id_field, cursor[id_field_idx]) for row in cursor
                                     if cursor[PRODTYPE] not in vnull
                                     if cursor[TRTMTHD1] not in ['CLCHEMA','CLCHEMG']""" + trt2_check + trt3_check + "]"
-                    exec(command)
+                    exec(command, globals(), locals()) # *2023.01 arc pro update
                     cursor.reset()
                     if len(errorList) > 0:
                         errorDetail[lyr].append(errorList)
@@ -2538,10 +2564,11 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
                     trt2_check = " or cursor[TRTMTHD2] in ['CLCHEMA','CLCHEMG']" if "TRTMTHD2" in f else ""
                     trt3_check = " or cursor[TRTMTHD3] in ['CLCHEMA','CLCHEMG']" if "TRTMTHD3" in f else ""
 
-                    command = """errorList = ["Error on %s %s: RATE_AI must be greater than 0 and less than or equal to 9.99 when any of the treatment methods are chemical."%(id_field, cursor[id_field_idx]) for row in cursor
+                    command = "global errorList\n"
+                    command += """errorList = ["Error on %s %s: RATE_AI must be greater than 0 and less than or equal to 9.99 when any of the treatment methods are chemical."%(id_field, cursor[id_field_idx]) for row in cursor
                                     if cursor[RATE_AI] == None or cursor[RATE_AI] <= 0 or cursor[RATE_AI] > 9.99
                                     if cursor[TRTMTHD1] in ['CLCHEMA','CLCHEMG']""" + trt2_check + trt3_check + "]" #*24b09
-                    exec(command)
+                    exec(command, globals(), locals()) # *2023.01 arc pro update
                     cursor.reset()
                     if len(errorList) > 0:
                         errorDetail[lyr].append(errorList)
@@ -2552,10 +2579,11 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
                     trt2_check = " and cursor[TRTMTHD2] not in ['CLCHEMA','CLCHEMG']" if "TRTMTHD2" in f else ""
                     trt3_check = " and cursor[TRTMTHD3] not in ['CLCHEMA','CLCHEMG']" if "TRTMTHD3" in f else ""
 
-                    command = """errorList = ["Error on %s %s: RATE_AI must be zero or null when none of the treatment methods are chemical."%(id_field, cursor[id_field_idx]) for row in cursor
+                    command = "global errorList\n"
+                    command += """errorList = ["Error on %s %s: RATE_AI must be zero or null when none of the treatment methods are chemical."%(id_field, cursor[id_field_idx]) for row in cursor
                                     if cursor[RATE_AI] not in [None, 0]
                                     if cursor[TRTMTHD1] not in ['CLCHEMA','CLCHEMG']""" + trt2_check + trt3_check + "]"
-                    exec(command)
+                    exec(command, globals(), locals()) # *2023.01 arc pro update
                     cursor.reset()
                     if len(errorList) > 0:
                         errorDetail[lyr].append(errorList)
@@ -2573,10 +2601,11 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
                     trt2_check = " or cursor[TRTMTHD2] in ['CLCHEMA','CLCHEMG']" if "TRTMTHD2" in f else ""
                     trt3_check = " or cursor[TRTMTHD3] in ['CLCHEMA','CLCHEMG']" if "TRTMTHD3" in f else ""
 
-                    command = """errorList = ["Error on %s %s: APPNUM must be greater than 0 and less than or equal to 9 when any of the treatment methods are chemical."%(id_field, cursor[id_field_idx]) for row in cursor
+                    command = "global errorList\n"
+                    command += """errorList = ["Error on %s %s: APPNUM must be greater than 0 and less than or equal to 9 when any of the treatment methods are chemical."%(id_field, cursor[id_field_idx]) for row in cursor
                                     if cursor[APPNUM] == None or cursor[APPNUM] <= 0 or cursor[APPNUM] > 9
                                     if cursor[TRTMTHD1] in ['CLCHEMA','CLCHEMG']""" + trt2_check + trt3_check + "]" #*24b09
-                    exec(command)
+                    exec(command, globals(), locals()) # *2023.01 arc pro update
                     cursor.reset()
                     if len(errorList) > 0:
                         errorDetail[lyr].append(errorList)
@@ -2587,10 +2616,11 @@ def run(gdb, summarytbl, year, fmpStartYear, dataformat):  ## eg. summarytbl = {
                     trt2_check = " and cursor[TRTMTHD2] not in ['CLCHEMA','CLCHEMG']" if "TRTMTHD2" in f else ""
                     trt3_check = " and cursor[TRTMTHD3] not in ['CLCHEMA','CLCHEMG']" if "TRTMTHD3" in f else ""
 
-                    command = """errorList = ["Error on %s %s: APPNUM must be zero or null when none of the treatment methods are chemical."%(id_field, cursor[id_field_idx]) for row in cursor
+                    command = "global errorList\n"
+                    command += """errorList = ["Error on %s %s: APPNUM must be zero or null when none of the treatment methods are chemical."%(id_field, cursor[id_field_idx]) for row in cursor
                                     if cursor[APPNUM] not in [None, 0]
                                     if cursor[TRTMTHD1] not in ['CLCHEMA','CLCHEMG']""" + trt2_check + trt3_check + "]"
-                    exec(command)
+                    exec(command, globals(), locals()) # *2023.01 arc pro update
                     cursor.reset()
                     if len(errorList) > 0:
                         errorDetail[lyr].append(errorList)
