@@ -1,3 +1,4 @@
+
 Changes going from v2.4b to v2020.08
 
 - When there are duplicate POLYIDs, the duplicate records will be listed in the details section of the report.
@@ -80,3 +81,15 @@ Warning on AWS_YR attributes: At least one feature should be populated with the 
 
 FMP: PRC: the following fields have been removed:
 MAINTAIN, MONITOR
+
+
+
+
+Change log going from 2020.11 to 2023.01
+
+The FI Checker Tool now works on ArcGIS Pro v2.2 and above.
+Checker Tool GUI - spelling correction.  Old: Missanaibi; NEW: Missinaibi
+AR AGG PITID - The PITID duplicates are now listed under Error Detail section.
+Other minor details and bugs fixed
+
+
