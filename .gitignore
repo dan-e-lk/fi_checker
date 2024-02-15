@@ -1,0 +1,4 @@
+# GIT-SCM ignore file (2018-07-03)
+*.pyc
+*.lnk
+*.onetoc2
