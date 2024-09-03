@@ -67,12 +67,24 @@ static_db = {
 # spcomp list in 2017 tech spec
 ##spcList2017 = ['AX', 'AB', 'AW', 'PL', 'PT', 'BD', 'BE', 'BW', 'BY', 'BN', 'CE', 'CR', 'CH', 'CB', 'OC', 'EX', 'EW', 'BF', 'OH', 'HE', 'HI', 'IW', 'LA', 'MH', 'MR', 'MS', 'MR', 'MH', 'OB', 'OR', 'OW', 'PN', 'PJ', 'PR', 'PS', 'PW', 'PO', 'PB', 'SX', 'SB', 'SR', 'SW', 'LA']
 
-SpcListInterp = ['AB', 'AW', 'AX', 'BD', 'BE', 'BF', 'BG', 'BN', 'BW', 'BY', 'CB', 'CD', 'CE', 'CH', 'CR', 'CW', 'EW', 'EX', 'HE', 'HI', 'IW', 'LA', 'LO', 'MH', 'MR', 'MS', 'MX', 'OC', 'OH', 'OR', 'OW', 'OX', 'PB', 'PD', 'PJ', 'PL', 'PO', 'PR', 'PS', 'PT', 'PW', 'PX', 'SB', 'SW', 'SX', 'WB', 'WI']
+# *2024.09 Changes to SpcListInterp:
+# BY->YB, OR->QR
+# removed BG, CD, CW, LO, MX, OX, PD, PX, WB, WI
+# added OB, PN, SR
+SpcListInterp =     ['AB', 'AW', 'AX', 'BD', 'BE', 'BF', 'BG', 'BN', 'BW', 'BY', 'CB', 'CD', 'CE', 'CH', 'CR', 'CW', 'EW', 'EX', 'HE', 'HI', 'IW', 'LA', 'LO', 'MH', 'MR', 'MS', 'MX', 'OC', 'OH', 'OR', 'OW', 'OX', 'PB', 'PD', 'PJ', 'PL', 'PO', 'PR', 'PS', 'PT', 'PW', 'PX', 'SB', 'SW', 'SX', 'WB', 'WI']
+SpcListInterp2024 = ['AB', 'AW', 'AX', 'BD', 'BE', 'BF', 'BN', 'BW', 'CB', 'CE', 'CH', 'CR', 'EW', 'EX', 'HE', 'HI', 'IW', 'LA', 'MH', 'MR', 'MS', 'OB', 'OC', 'OH', 'OW', 'PB', 'PJ', 'PL', 'PN', 'PO', 'PR', 'PS', 'PT', 'PW', 'QR', 'SB', 'SR', 'SW', 'SX', 'YB']
 
 SpcListOther = ['AL', 'AQ', 'AP', 'AG', 'BC', 'BP', 'GB', 'BB', 'CAT', 'CC', 'CM', 'CP', 'CS', 'CT', 'ER', 'EU', 'HK', 'HT', 'HL', 'HB', 'HM', 'HP', 'HS', 'HC', 'KK', 'LE', 'LJ', 'BL', 'LL', 'LB', 'GT', 'MB', 'MF', 'MM', 'MT', 'MN', 'MP', 'AM', 'EMA', 'MO', 'OBL', 'OB', 'OCH', 'OP', 'OS', 'OSW', 'PA', 'PN', 'PP', 'PC', 'PH', 'PE', 'RED', 'SS', 'SC', 'SK', 'SN', 'SR', 'SY', 'TP', 'HAZ']
+# this one below is not used, but I made them to complement the 2024 changes
+SpcListOther2024 = ['BG', 'CD', 'CW', 'LO', 'MX', 'OX', 'PD', 'PX', 'WB', 'WI', 'AL', 'AQ', 'AP', 'AG', 'BC', 'BP', 'GB', 'BB', 'CAT', 'CC', 'CM', 'CP', 'CS', 'CT', 'ER', 'EU', 'HK', 'HT', 'HL', 'HB', 'HM', 'HP', 'HS', 'HC', 'KK', 'LE', 'LJ', 'BL', 'LL', 'LB', 'GT', 'MB', 'MF', 'MM', 'MT', 'MN', 'MP', 'AM', 'EMA', 'MO', 'OBL', 'OCH', 'OP', 'OS', 'OSW', 'PA', 'PP', 'PC', 'PH', 'PE', 'RED', 'SS', 'SC', 'SK', 'SN', 'SY', 'TP', 'HAZ']
 
-def spcVal(data, fieldname, version = 2017): #sample data: 'Cw  70La  20Sb  10'
+
+def spcVal(data, fieldname, version = 2017): #sample data: 'Cw  70La  20Sb  10'  version can be 2024 or left blank
     # This function will return None if no error's found or if the input is None or empty string.
+    if version == 2024:
+        sl = SpcListInterp2024
+    else:
+        sl = SpcListInterp
     if data in [None,'',' ']:
         return None
     else:
@@ -85,10 +97,10 @@ def spcVal(data, fieldname, version = 2017): #sample data: 'Cw  70La  20Sb  10'
                 if sum(percentList) == 100:
                     if len(set(spcList)) == len(spcList):
 
-                        correctList = list(set(spcList)&set(SpcListInterp))
-                        # To save processing time, check the spc code with the most common spc list (SpcListInterp) first, if not found, check the other possible spc code
-                        if len(correctList) != len(spcList):
-                            correctList = list(set(spcList)&set(SpcListInterp + SpcListOther))
+                        correctList = list(set(spcList)&set(sl))
+                        # To save processing time, check the spc code with the most common spc list (sl) first, if not found, check the other possible spc code
+                        if version != 2024 and len(correctList) != len(spcList): #*2024.09 change
+                            correctList = list(set(spcList)&set(sl + SpcListOther))
 
                         if len(correctList) == len(spcList):
                             if sorted(percentList,reverse=True) == percentList:
@@ -97,7 +109,10 @@ def spcVal(data, fieldname, version = 2017): #sample data: 'Cw  70La  20Sb  10'
                                 return ["Warning1","%s values are not in descending order."%fieldname]
                         else:
                             wrongList = list(set(spcList) - set(correctList))
-                            return ["Error4","%s has invalid species code(s)"%fieldname]
+                            if version == 2024:
+                                return ["Warning4","%s has invalid species code(s) - %s"%(fieldname,wrongList)]
+                            else:
+                                return ["Error4","%s has invalid species code(s) - %s"%(fieldname,wrongList)]
                     else:
                         return ["Error3","%s has duplicate species codes"%fieldname]
                 else:
@@ -439,18 +454,18 @@ if __name__ == '__main__':
     #     print('%s, %s'%(k,v[0]))
 
 
-    # speed test of the two findDuplicateID functions
-    from datetime import datetime as dt
-    lst_1M = list(range(1000000))
-    lst_1M = lst_1M + [1,2,3,4,5]
+    # # speed test of the two findDuplicateID functions
+    # from datetime import datetime as dt
+    # lst_1M = list(range(1000000))
+    # lst_1M = lst_1M + [1,2,3,4,5]
     
-    start = dt.now()
-    msg, msg_lst = findDuplicateID(lst_1M, 'first_test')
-    end = dt.now()
+    # start = dt.now()
+    # msg, msg_lst = findDuplicateID(lst_1M, 'first_test')
+    # end = dt.now()
 
-    print(msg)
-    print(msg_lst)
-    print('Time elapsed: %s'%(end-start))
+    # print(msg)
+    # print(msg_lst)
+    # print('Time elapsed: %s'%(end-start))
 
     # findPDF('FIM_AWS_TechSpec_2017.pdf#page=50')
 
@@ -462,8 +477,8 @@ if __name__ == '__main__':
 ##    except:
 ##        pass
 
-##    for i in ['Cw  70La  20Sb  10','Pt 50Bf  30Bw  10Sb  10','Sb  40La  60','Pt  40Bw  40Sb  20Pb  10','']:
-##        print spcVal(i, 'OSPCOMP')
+   for i in ['Cw  70La  20Sb  10','Pt 50Bf  30Bw  10Sb  10','Sb  40La  60','Pt  40Bw  40Sb  20Pb  10','']:
+       print(spcVal(i, 'OSPCOMP', 2024))
 ##
 ##
 ##
