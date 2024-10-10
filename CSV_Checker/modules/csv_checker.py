@@ -28,7 +28,7 @@ def main(input_list):
 	print("\nChecking field names...")
 	check_fieldname_summary = {}	
 	for file in fmp_file_list:
-		desc = check_filename_summary[file][1] # eg. SGRLIST
+		desc = check_filename_summary[file][2] # eg. SGRLIST
 		check_fieldname_summary[file] = check_fieldname(file, desc) # input is the fullpath of the csv file and the description (type) of the csv file
 	print("\nFieldname Summary:")
 	for k,v in check_fieldname_summary.items():
@@ -44,7 +44,7 @@ def main(input_list):
 		print(k)
 		for flags in v:
 			print("\t%s"%flags)
-
+		print("")
 
 
 def grab_all_csv(input_folder):
@@ -73,15 +73,18 @@ def check_filename(csv_fullpath_list, submission_year, mu_no):
 	"""
 	# looking for csv files with the right format: MU<MUNO>_<SUB_YEAR>_<INFO_PROD>_TBL_<DESC>.csv  eg. MU123_2022_FMPDP_TBL_SGRList.csv
 	naming_conv = "MU<MUNO>_<SUB_YEAR>_<INFO_PROD>_TBL_<DESC>.csv"
-	check_filename_summary = {i:['',''] for i in csv_fullpath_list} # this summary will tell you which files are either ERROR, WARNING, or PASS. eg. {"T:\TESTDATA\4507_MU123_2022_FMP_TBL_SGRLIST.CSV": ['PASS', 'SGRLIST'], ...}
+	check_filename_summary = {i:None for i in csv_fullpath_list} # this summary will tell you which files are either ERROR, WARNING, or PASS. eg. {"T:\TESTDATA\4507_MU123_2022_FMP_TBL_SGRLIST.CSV": ['PASS', 'SGRLIST'], ...}
 	not_fmp_file_list = [] # fullpath - if the file has nothing to do with fmp tables
 	fmp_file_list = [] # fullpath - fmp table with correct naming convention
 	duplicate_filetype_list = [] # can't have two or more of the same kind (can't have more than one SGRList.csv) unless it has different info product
 	duplicate_checker = []
 	for csv_file in csv_fullpath_list:
-		orig_filename = os.path.split(csv_file)[1]
-		if 'MU' in orig_filename and 'TBL' in orig_filename:
-			orig_filename = orig_filename[orig_filename.find('MU'):-4] # this gets rid of prefix and extension. eg. MU123_2022_FMPDP_TBL_SGRLIST
+		orig_filename_full = os.path.split(csv_file)[1]
+		if 'MU' in orig_filename_full and 'TBL' in orig_filename_full:
+			orig_filename = orig_filename_full[orig_filename_full.find('MU'):-4] # this gets rid of prefix and extension. eg. MU123_2022_FMPDP_TBL_SGRLIST
+			# but really the file should start with the word MU
+			if orig_filename_full.find('MU') != 0:
+				check_filename_summary[csv_file] = ["WARNING", "Filename should begin with 'MU'."]
 		else:
 			not_fmp_file_list.append(csv_file)
 			check_filename_summary[csv_file] = ["ERROR", "Filename does not follow the naming convention: %s"%naming_conv]
@@ -92,6 +95,8 @@ def check_filename(csv_fullpath_list, submission_year, mu_no):
 			not_fmp_file_list.append(csv_file)
 			check_filename_summary[csv_file] = ["ERROR", "Filename does not follow the naming convention: %s"%naming_conv]
 			continue #move on to the next file
+		elif len(parts) > 5:
+			check_filename_summary[csv_file] = ["WARNING", "Filename shouldn't have prefix or suffix. (Filename does not follow the naming convention)"]
 		MUNO = parts[0][2:] # eg '123'
 		SUB_YEAR = parts[1]
 		INFO_PROD = parts[2]
@@ -122,12 +127,17 @@ def check_filename(csv_fullpath_list, submission_year, mu_no):
 			continue
 		if parts_list in duplicate_checker:
 			duplicate_filetype_list.append(csv_file)
-			# check_filename_summary[csv_file] = ["ERROR", "Cannot have multiple csv tables of the same type. %s already exists"%parts_list]
-			# continue
+			# check_filename_summary[csv_file] = ["WARNING", "Cannot have multiple csv tables of the same type. %s already exists"%parts_list]
+
 		# all other files pass
 		fmp_file_list.append(csv_file)
 		duplicate_checker.append(parts_list)
-		check_filename_summary[csv_file] = ["PASS",DESC]
+		if check_filename_summary[csv_file] == None:
+			check_filename_summary[csv_file] = ["PASS", "The file type is %s"%DESC ,DESC]
+		else: # cases for WARNING
+			val = check_filename_summary[csv_file]
+			val.append(DESC)
+			check_filename_summary[csv_file] = val
 
 	print("\n")
 	for k,v in check_filename_summary.items():
@@ -222,8 +232,8 @@ def check_value(fname_sum):
 				file_in_memory.append(new_dict)
 		num_of_rec[k] = len(file_in_memory)
 		print("\t\t%s records found"%len(file_in_memory))
-		# print(file_in_memory)
-
+		
+		# print(file_in_memory) # for debug
 
 		#####################       validation       #####################
 
@@ -231,21 +241,21 @@ def check_value(fname_sum):
 		
 		if DESC == 'SGRLIST':
 			# checking SGR CODE
-			field = 'SGR_CODE'
+			field = 'SGR CODE'
 			if field in existing_fields:
 				# Population of this column is mandatory
 				flags = techspec.c_mandatory_population(file_in_memory, field)
 				if flags != None:
 					error_warning_list.append(flags)
 			# checking SILVICULTURAL SYSTEM
-			field = 'SILVICULTURAL_SYSTEM'
+			field = 'SILVICULTURAL SYSTEM'
 			if field in existing_fields:
 				# Population of SILVICULTURAL SYSTEM must follow the coding scheme
 				flags = techspec.c_coding_scheme(file_in_memory, field, techspec.cs_silvsys)
 				if flags != None:
 					error_warning_list.append(flags)
 			# checking TARGET_FU
-			field = 'TARGET_FU'
+			field = 'TARGET FU'
 			if field in existing_fields:
 				# Population of this column is mandatory
 				flags = techspec.c_mandatory_population(file_in_memory, field)
@@ -253,7 +263,7 @@ def check_value(fname_sum):
 					error_warning_list.append(flags)
 				# the only acceptable values are those from PLANFU... we can't check this here because this varies from one FMU to another
 			# checking TARGET_YIELD
-			field = 'TARGET_YIELD'
+			field = 'TARGET YIELD'
 			if field in existing_fields:
 				# Population of this column is mandatory
 				flags = techspec.c_mandatory_population(file_in_memory, field)
@@ -267,6 +277,66 @@ def check_value(fname_sum):
 				flags = techspec.c_coding_scheme(file_in_memory, field, techspec.cs_regen)
 				if flags != None:
 					error_warning_list.append(flags)
+			# checking SITE_PREPARATION
+			field = 'SITE PREPARATION'
+			if field in existing_fields:
+				# Population of SITE_PREPARATION must follow the coding scheme
+				flags = techspec.c_coding_scheme(file_in_memory, field, techspec.cs_siteprep)
+				if flags != None:
+					error_warning_list.append(flags)
+			# checking TENDING
+			field = 'TENDING'
+			if field in existing_fields:
+				# Population of TENDING must follow the coding scheme
+				flags = techspec.c_coding_scheme(file_in_memory, field, techspec.cs_tending)
+				if flags != None:
+					error_warning_list.append(flags)
+
+		# PROJECTEDFOREST
+		if DESC == 'PROJECTEDFOREST':
+			# checking next field
+			field = 'FOREST UNIT'
+			if field in existing_fields:
+				# Population of this column is mandatory
+				flags = techspec.c_mandatory_population(file_in_memory, field)
+				if flags != None:
+					error_warning_list.append(flags)
+			# checking next field
+			field = 'AGE CLASS'
+			if field in existing_fields:
+				# Population of this column is mandatory and must follow appendix 3 of FMP tech spec
+				flags = techspec.c_age_class(file_in_memory, field)
+				if flags != None:
+					error_warning_list.append(flags)
+			# checking next field
+			field = 'TERM'
+			if field in existing_fields:
+				# Population of this column is mandatory
+				flags = techspec.c_mandatory_population(file_in_memory, field)
+				if flags != None:
+					error_warning_list.append(flags)			
+				# the formal must be YYYY
+				flags = techspec.c_year(file_in_memory, field)
+				if flags != None:
+					error_warning_list.append(flags)
+			# checking next field
+			field = 'AREA'
+			if field in existing_fields:
+				# Population of this column is mandatory
+				flags = techspec.c_mandatory_population(file_in_memory, field)
+				if flags != None:
+					error_warning_list.append(flags)
+				# the format must be integer with no decimal places
+				flags = techspec.c_isnumeric(file_in_memory, field)
+				if flags != None:
+					error_warning_list.append(flags)
+
+
+
+
+
+
+
 
 
 
